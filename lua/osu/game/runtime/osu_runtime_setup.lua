@@ -56,6 +56,54 @@ function OSU:OsuPixelToScreen(pX, pY)
 	return x + pX, y + pY
 end
 
+function OSU:NewCombo(int)
+	local bit = math.IntToBin(int)
+	local rbit = string.reverse(bit)
+	if(rbit[3] == "1") then
+		return true
+	else
+		return false
+	end
+end
+
+function OSU:GetHitsoundTable(int)
+	local t = {
+		[0] = false,
+		[1] = false,
+		[2] = false,
+		[3] = false,
+	}
+	if(int <= 0) then
+		t[0] = true
+		return t
+	end
+	local bit = math.IntToBin(int)
+	local rbit = string.reverse(bit)
+	local ret = ""
+	for i = 1, 4, 1 do
+		if(rbit[i] == "" || rbit[i] == "0") then
+			t[i - 1] = false
+		else
+			t[i - 1] = true
+		end
+	end
+	return t
+end
+
+function OSU:GetHitsoundType(bitindex)
+	if(bit.band(bitindex, OSU.HITSOUND_NORMAL) > 0) then
+		return 0
+	elseif(bit.band(bitindex, OSU.HITSOUND_WHISTLE) > 0) then
+		return 1
+	elseif(bit.band(bitindex, OSU.HITSOUND_FINISH) > 0) then
+		return 2
+	elseif(bit.band(bitindex, OSU.HITSOUND_CLAP) > 0) then
+		return 3
+	else
+		return 0
+	end
+end
+
 function OSU:GetObjectType(bitindex)
 	if(bit.band(bitindex, OSU.HITOBJECT_CIRCLE) > 0) then
 		return 1
@@ -63,6 +111,14 @@ function OSU:GetObjectType(bitindex)
 		return 2
 	else
 		return 3
+	end
+end
+
+function OSU:GetManiaObjectType(bitindex)
+	if(bit.band(bitindex, OSU.HITOBJECT_CIRCLE) > 0) then
+		return 1
+	else
+		return 2
 	end
 end
 
@@ -78,6 +134,12 @@ function OSU:PickSampleSet(sample)
 	end
 end
 
+function OSU:GetColumn(ctx, k)
+	local xAxis = tonumber(ctx)
+	return math.floor((xAxis * k) / 512) + 1
+end
+
+local _stop = false
 function OSU:StartBeatmap(beatmap, details, id, replay)
 	if(IsValid(OSU.HealthBar)) then OSU.HealthBar:Remove() end
 	if(IsValid(OSU.FailPanel)) then OSU.FailPanel:Remove() end
@@ -85,23 +147,28 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.ReplayMode = replay
 	OSU.ShouldDrawFakeCursor = replay
 	OSU:ResetReplayData()
+	
+	if(!_stop) then
+		OSU.GameEnded = false
+		OSU.BeatmapDetails = details
+		OSU.PlayMenuAnimStarted = true
+		OSU.MusicStarted = false
+		OSU.SoundChannel:Pause()
+		OSU.SoundChannel:SetTime(0)
+		OSU.CurrentZPos = 32767
+		OSU.PlayFieldLayer = OSU:CreateFrame(OSU.MainGameFrame, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), false)
+		OSU.PlayFieldLayer.FollowPoints = {}
+		OSU.HealthBar = vgui.Create("DPanel", OSU.PlayFieldLayer)
+		OSU.HealthBar.Paint = function() return end
+		OSU.HealthBar.Bar = vgui.Create("DImage", OSU.HealthBar)
+		OSU.HealthBar:SetVisible(false)
+		OSU.BaseSliderMultiplier = 1
+		OSU.SliderMultiplier = 1
+		OSU.CurrentTableIndex = 1
+		OSU.CurrentTableIndex_Read = 1
+	end	
 
-	OSU.GameEnded = false
-	OSU.BeatmapDetails = details
-	OSU.PlayMenuAnimStarted = true
-	OSU.MusicStarted = false
-	OSU.SoundChannel:Pause()
-	OSU.SoundChannel:SetTime(0)
-	OSU.CurrentZPos = 32767
-	OSU.PlayFieldLayer = OSU:CreateFrame(OSU.MainGameFrame, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), false)
-	OSU.HealthBar = vgui.Create("DPanel", OSU.PlayFieldLayer)
-	OSU.HealthBar.Paint = function() return end
-	OSU.HealthBar.Bar = vgui.Create("DImage", OSU.HealthBar)
-	OSU.HealthBar:SetVisible(false)
-	OSU.BaseSliderMultiplier = 1
-	OSU.SliderMultiplier = 1
-	OSU.CurrentTableIndex = 1
-	OSU.CurrentTableIndex_Read = 1
+	OSU.OriginalSize = ScreenScale(54.4)
 
 	OSU.BeatmapEndTime = 0
 	OSU.BeatmapStartTime = 0
@@ -117,15 +184,20 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.Combo = 0
 	OSU.HighestCombo = 0
 	OSU.PlayFieldYOffs = 0
-
+	OSU.CurrentColourIndex = 1
+	OSU.CurrentComboIndex = 1
 	OSU.Health = 100
 
+	for i = 0, 9, 1 do
+		OSU.DefaultMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["default-"..i])
+	end
 	for i = 0, 9, 1 do
 		OSU.ScoreMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["score-"..i])
 	end
 	OSU.ScoreMaterialTable["x"] = Material(OSU.CurrentSkin["score-x"])
 	OSU.ScoreMaterialTable["p"] = Material(OSU.CurrentSkin["score-percent"])
 	OSU.ScoreMaterialTable["."] = Material(OSU.CurrentSkin["score-dot"])
+
 	OSU.SliderFollow = Material(OSU.CurrentSkin["sliderfollowcircle"])
 	local w, h = OSU:GetMaterialSize(OSU.CurrentSkin["play-unranked@2x"])
 	OSU.UnrankedTx = {
@@ -166,10 +238,13 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.Objects = {}
 	OSU.TimingPoints = {}
 	OSU.Breaks = {}
+	OSU.ComboColours = details["Colours"]
+	OSU.CurrentObjectColor = OSU.ComboColours[1]
 	OSU.BreakTime = 0
 	OSU.AppearTime = 0
 	OSU.ObjectIndex = 0
 	OSU.SliderBackground = Material("osu/internal/hitcircle.png", "smooth")
+	OSU.rHitCircleOverlay = Material(OSU.CurrentSkin["hitcircleoverlay"], "smooth")
 	OSU.HitCircleOverlay = Material(OSU.CurrentSkin["sliderb0"], "smooth")
 	OSU.RevArrow = Material(OSU.CurrentSkin["reversearrow"], "smooth")
 	OSU.PlayFieldSize = OSU:GetPlayFieldSize_Vec2t()
@@ -195,296 +270,323 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	local cached = file.Exists(OSU.HitObjectsCachePath..id..".dat", "DATA")
 	local obj_start, obj_end = details["Object Range"][1], details["Object Range"][2]
 	local tps_start, tps_end = details["Timepoint Range"][1], details["Timepoint Range"][2]
-	if(cached) then
-		local _sTime = SysTime()
-		local ctx = file.Read(OSU.HitObjectsCachePath..id..".dat", "DATA")
-		local data = util.JSONToTable(ctx)
-		OSU.Objects = data["objects"]
-		OSU.TimingPoints = data["timing"]
-		local _eTime = SysTime()
-		local _processTime = _eTime - _sTime
-		OSU:CenteredMessage("Loading beatmap temp ("..id..".dat, "..math.Round(_processTime, 3).."s)")
-		OSU.BeatmapTime = OSU.CurTime + 2 + _processTime
-		for k,v in next, OSU.TimingPoints do
-			v[1] = v[1] + OSU.BeatmapTime
-		end
-		for k,v in next, OSU.Objects do
-			v["time"] = OSU.BeatmapTime + v["time"] - apprTime
-			if(v["type"] == 3) then
-				v["killttime"] = OSU.BeatmapTime + v["killttime"]
+	if(OSU.CurrentMode == 0) then
+		if(cached) then
+			local _sTime = SysTime()
+			local ctx = file.Read(OSU.HitObjectsCachePath..id..".dat", "DATA")
+			local data = util.JSONToTable(ctx)
+			OSU.Objects = data["objects"]
+			OSU.TimingPoints = data["timing"]
+			local _eTime = SysTime()
+			local _processTime = _eTime - _sTime
+			OSU:CenteredMessage("Loading beatmap temp ("..id..".dat, "..math.Round(_processTime, 3).."s)")
+			OSU.BeatmapTime = OSU.CurTime + 2 + _processTime
+			for k,v in next, OSU.TimingPoints do
+				v[1] = v[1] + OSU.BeatmapTime
 			end
-			if(k == 1) then
-				OSU.BeatmapStartTime = v["time"]
-			end
-			if(k == #OSU.Objects) then
-				OSU.BeatmapEndTime = v["time"] + 2.5
-			end
-			if(OSU.HR) then
-				if(v["type"] == 2) then
-					v["vec_2"].x = ScrW() - v["vec_2"].x
-					v["vec_2"].y = ScrH() - v["vec_2"].y
-					for x,y in next, v["followpoint"] do
-						y.x = ScrW() - y.x
-						y.y = ScrH() - y.y
-					end
-					for x,y in next, v["realfollowpoint"] do
-						y.x = ScrW() - y.x
-						y.y = ScrH() - y.y
-					end
+			for k,v in next, OSU.Objects do
+				v["time"] = OSU.BeatmapTime + v["time"] - apprTime
+				if(v["type"] == 3) then
+					v["killttime"] = OSU.BeatmapTime + v["killttime"]
 				end
-				if(v["type"] == 1) then
-					v["vec_2"].x = ScrW() - v["vec_2"].x
-					v["vec_2"].y = ScrH() - v["vec_2"].y
+				if(k == 1) then
+					OSU.BeatmapStartTime = v["time"]
 				end
-			end
-		end
-		local ctx_ = string.Explode("\n", beatmap)
-		for i = tps_start, tps_end, 1 do
-			local _ctx = ctx_[i]
-			local ret = string.Explode(",", _ctx)
-			if(i == tps_start) then
-				OSU.BeatLength = tonumber(ret[2])
-			end
-			if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
-			if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
-			table.insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
-		end
-		local breakStart = 0
-		local breakEnd = 0
-		for k,v in pairs(ctx_) do
-			if(string.find(v, "SliderMultiplier:")) then
-				local num = string.Replace(v, "SliderMultiplier:", "")
-				OSU.SliderMultiplier = tonumber(num)
-				OSU.SliderVelocity = OSU.SliderMultiplier
-			end
-			if(string.find(v, "SampleSet:")) then
-				OSU.CurrentHitSound = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
-				OSU.BeatmapDefaultSet = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
-			end
-			if(breakStart == 0) then
-				if(string.find(v, "//Break")) then
-					breakStart = k + 1
+				if(k == #OSU.Objects) then
+					OSU.BeatmapEndTime = v["time"] + 2.5
 				end
-			else
-				if(breakEnd == 0) then
-					if(string.find(v, "//Storyboard Layer 0")) then
-						breakEnd = k - 1
-					end
-				end
-			end
-		end
-		if(breakStart != 0 && breakEnd != 0) then
-			for i = breakStart, breakEnd, 1 do
-				local _bd = string.Explode(",", ctx_[i])
-				table.insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000), OSU.BeatmapTime + (tonumber(_bd[3]) / 1000)})
-			end
-		end
-	else
-		local nextTime = OSU.BeatmapTime
-		local ctx = string.Explode("\n", beatmap)
-		--[[
-			Object types
-				1 - Circle
-				2 - Slider
-				3 - Spinner
-		]]
-
-		local _sTime = SysTime()
-		for i = obj_start, obj_end, 1 do
-			local _ctx = ctx[i]
-			local ret = string.Explode(",", _ctx)
-			-- x, y, time, type, hitSound, objectParams, hitSample
-			local gX, gY = tonumber(ret[1]), tonumber(ret[2])
-			local scX, scY = OSU:OsuPixelToPixel(gX, gY)
-			local _x, _y = OSU:OsuPixelToScreen(scX, scY)
-			local time = (tonumber(ret[3]) / 1000)
-			local hitsound = tonumber(ret[5])
-			if(OSU:GetObjectType(ret[4]) == 1) then -- Circle
-				table.insert(OSU.Objects, {
-					["otime"] = time,
-					["type"] = 1,
-					["time"] = time,
-					["sound"] = hitsound,
-					["vec_2"] = osu_vec2t(_x, _y),
-					["spawned"] = false,
-				})
-			elseif(OSU:GetObjectType(ret[4]) == 2) then -- Slider
-				local points = {}
-				local _repeat = 1
-				local length = 1
-				local type = string.Left(ret[6], 1)
-				local curveStart = 0
-				local _len = string.len(_ctx)
-				local sliderDataString = ""
-				for _ = 1, _len, 1 do
-					if(string.sub(_ctx, _, _) == "|") then
-							curveStart = _ + 1
-						break
-					end
-				end
-				local curveData = string.Explode("|", string.sub(_ctx, curveStart, _len))
-				local _max = #curveData
-				for _ = 1, #curveData, 1 do -- Make sure it ends on corrent position
-					local inx = string.Explode(":", curveData[_])
-					local ex = string.Explode(",", inx[2])
-					if(#ex >= 3) then
-						_max = _
-						break
-					end
-				end
-				table.insert(points, Vector(_x, _y))
-				for x, y in pairs(curveData) do
-					if(x > _max) then continue end -- Unused datas
-					
-					if(x < _max) then -- Vec datas
-						local _v = string.Explode(":", y)
-						local scX, scY = OSU:OsuPixelToPixel(tonumber(_v[1]), tonumber(_v[2]))
-						local _x, _y = OSU:OsuPixelToScreen(scX, scY)
-						table.insert(points, Vector(_x, _y))
-					else -- Slider datas
-						sliderDataString = y
-						local dataStart = 1
-						local dataLen = string.len(y)
-						for _ = 1, dataLen, 1 do
-							if(string.sub(y, _, _) == ",") then
-									dataStart = _ + 1
-								break
-							end
+				if(OSU.HR) then
+					if(v["type"] == 2) then
+						v["vec_2"].x = ScrW() - v["vec_2"].x
+						v["vec_2"].y = ScrH() - v["vec_2"].y
+						for x,y in next, v["followpoint"] do
+							y.x = ScrW() - y.x
+							y.y = ScrH() - y.y
 						end
-						local sliderDatas = string.Explode(",", string.sub(y, dataStart, dataLen))
-						_repeat = sliderDatas[1]
-						length = sliderDatas[2]
-						local _v = string.Explode(":", string.sub(y, 1, dataStart - 2))
-						local scX, scY = OSU:OsuPixelToPixel(tonumber(_v[1]), tonumber(_v[2]))
-						local _x, _y = OSU:OsuPixelToScreen(scX, scY)
-						table.insert(points, Vector(_x, _y))
-						--[[
-							local scX, scY = OSU:OsuPixelToPixel(_v[1], _v[2])
-							local _x, _y = OSU:OsuPixelToScreen(scX, scY)
-						]]
-					end 
+						for x,y in next, v["realfollowpoint"] do
+							y.x = ScrW() - y.x
+							y.y = ScrH() - y.y
+						end
+					end
+					if(v["type"] == 1) then
+						v["vec_2"].x = ScrW() - v["vec_2"].x
+						v["vec_2"].y = ScrH() - v["vec_2"].y
+					end
 				end
-				_repeat = tonumber(_repeat)
-				length = tonumber(length)
-				local ret_curves, realFollowPoint = OSU:GetCurves(type, points, length)
-				table.insert(OSU.Objects, {
-					["otime"] = time,
-					["type"] = 2,
-					["time"] = time,
-					["sound"] = hitsound,
-					["vec_2"] = osu_vec2t(_x, _y),
-					["followpoint"] = ret_curves,
-					["realfollowpoint"] = realFollowPoint,
-					["connectpoints"] = points,
-					["stype"] = type,
-					["length"] = length,
-					["repeat"] = _repeat,
-					["spawned"] = false,
-				})
-			else -- Spinner
-				table.insert(OSU.Objects, {
-					["otime"] = time,
-					["type"] = 3,
-					["time"] = time,
-					["sound"] = hitsound,
-					["vec_2"] = osu_vec2t(_x, _y),
-					["killttime"] = (tonumber(ret[6]) / 1000) - apprTime,
-					["okilltime"] = (tonumber(ret[6]) / 1000) - apprTime,
-					["spawned"] = false,
-				})
 			end
-			nextTime = OSU.CurTime + 2
-		end
-		local _eTime = SysTime()
-		local _processTime = (_eTime - _sTime)
-		OSU.BeatmapTime = nextTime + _processTime
-		for i = tps_start, tps_end, 1 do
-			local _ctx = ctx[i]
-			local ret = string.Explode(",", _ctx)
-			if(i == tps_start) then
-				OSU.BeatLength = tonumber(ret[2])
+			local ctx_ = string.Explode("\n", beatmap)
+			for i = tps_start, tps_end, 1 do
+				local _ctx = ctx_[i]
+				local ret = string.Explode(",", _ctx)
+				if(i == tps_start) then
+					OSU.BeatLength = tonumber(ret[2])
+				end
+				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
+				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
+				table.insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
 			end
-			if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
-			if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
-			table.insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
-		end
-		local temp = {
-			["objects"] = OSU.Objects,
-			["timing"] = OSU.TimingPoints,
-		}
-		if(OSU.WriteObjectFile) then
-			file.Write(OSU.HitObjectsCachePath..id..".dat", util.TableToJSON(temp))
-			OSU:CenteredMessage("Writing beatmap temp ("..id..".dat), this lag will only happen once per beatmap!  ("..math.Round(_processTime, 3).."s)", _processTime)
+			local breakStart = 0
+			local breakEnd = 0
+			for k,v in pairs(ctx_) do
+				if(string.find(v, "SliderMultiplier:")) then
+					local num = string.Replace(v, "SliderMultiplier:", "")
+					OSU.SliderMultiplier = tonumber(num)
+					OSU.SliderVelocity = OSU.SliderMultiplier
+				end
+				if(string.find(v, "SampleSet:")) then
+					OSU.CurrentHitSound = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
+					OSU.BeatmapDefaultSet = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
+				end
+				if(breakStart == 0) then
+					if(string.find(v, "//Break")) then
+						breakStart = k + 1
+					end
+				else
+					if(breakEnd == 0) then
+						if(string.find(v, "//Storyboard Layer 0")) then
+							breakEnd = k - 1
+						end
+					end
+				end
+			end
+			if(breakStart != 0 && breakEnd != 0) then
+				for i = breakStart, breakEnd, 1 do
+					local _bd = string.Explode(",", ctx_[i])
+					table.insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000), OSU.BeatmapTime + (tonumber(_bd[3]) / 1000)})
+				end
+			end
 		else
-			OSU:CenteredMessage("Map loaded with "..math.Round(_processTime, 3).."s", _processTime)
-		end
-		for k,v in next, OSU.TimingPoints do
-			v[1] = v[1] + OSU.BeatmapTime
-		end
-		for k,v in next, OSU.Objects do
-			v["time"] = OSU.BeatmapTime + v["time"] - apprTime
-			if(v["type"] == 3) then
-				v["killttime"] = OSU.BeatmapTime + v["killttime"]
-			end
-			if(k == 1) then
-				OSU.BeatmapStartTime = v["time"]
-			end
-			if(k == #OSU.Objects) then
-				OSU.BeatmapEndTime = v["time"] + 2.5
-			end
-			if(OSU.HR) then
-				if(v["type"] == 2) then
-					v["vec_2"].x = ScrW() - v["vec_2"].x
-					v["vec_2"].y = ScrH() - v["vec_2"].y
-					for x,y in next, v["followpoint"] do
-						if(x == 1) then
-							table.remove(v["followpoint"], k)
-							continue
+			local nextTime = OSU.BeatmapTime
+			local ctx = string.Explode("\n", beatmap)
+			--[[
+				Object types
+					1 - Circle
+					2 - Slider
+					3 - Spinner
+			]]
+			local _sTime = SysTime()
+			for i = obj_start, obj_end, 1 do
+				local _ctx = ctx[i]
+				local ret = string.Explode(",", _ctx)
+				-- x, y, time, type, hitSound, objectParams, hitSample
+				local gX, gY = tonumber(ret[1]), tonumber(ret[2])
+				local scX, scY = OSU:OsuPixelToPixel(gX, gY)
+				local _x, _y = OSU:OsuPixelToScreen(scX, scY)
+				local time = (tonumber(ret[3]) / 1000)
+				local hitsound = OSU:GetHitsoundTable(tonumber(ret[5]))
+				local newcombo = OSU:NewCombo(tonumber(ret[4]))
+				if(OSU:GetObjectType(ret[4]) == 1) then -- Circle
+					table.insert(OSU.Objects, {
+						["otime"] = time,
+						["type"] = 1,
+						["time"] = time,
+						["sound"] = hitsound,
+						["vec_2"] = osu_vec2t(_x, _y),
+						["spawned"] = false,
+						["newcombo"] = newcombo,
+					})
+				elseif(OSU:GetObjectType(ret[4]) == 2) then -- Slider
+					local points = {}
+					local _repeat = 1
+					local length = 1
+					local type = string.Left(ret[6], 1)
+					local curveStart = 0
+					local _len = string.len(_ctx)
+					local sliderDataString = ""
+					local edgesound = OSU:GetHitsoundTable(tonumber(ret[5]))
+					for _ = 1, _len, 1 do
+						if(string.sub(_ctx, _, _) == "|") then
+								curveStart = _ + 1
+							break
 						end
-						y.x = ScrW() - y.x
-						y.y = ScrH() - y.y
 					end
-					for x,y in next, v["realfollowpoint"] do
-						y.x = ScrW() - y.x
-						y.y = ScrH() - y.y
+					local curveData = string.Explode("|", string.sub(_ctx, curveStart, _len))
+					local _max = #curveData
+					for _ = 1, #curveData, 1 do -- Make sure it ends on corrent position
+						local inx = string.Explode(":", curveData[_])
+						local ex = string.Explode(",", inx[2])
+						if(#ex >= 3) then
+							_max = _
+							break
+						end
 					end
+					table.insert(points, Vector(_x, _y))
+					for x, y in pairs(curveData) do
+						if(x > _max) then continue end -- Unused datas
+						
+						if(x < _max) then -- Vec datas
+							local _v = string.Explode(":", y)
+							local scX, scY = OSU:OsuPixelToPixel(tonumber(_v[1]), tonumber(_v[2]))
+							local _x, _y = OSU:OsuPixelToScreen(scX, scY)
+							table.insert(points, Vector(_x, _y))
+						else -- Slider datas
+							sliderDataString = y
+							local dataStart = 1
+							local dataLen = string.len(y)
+							for _ = 1, dataLen, 1 do
+								if(string.sub(y, _, _) == ",") then
+										dataStart = _ + 1
+									break
+								end
+							end
+							local sliderDatas = string.Explode(",", string.sub(y, dataStart, dataLen))
+							_repeat = sliderDatas[1]
+							length = sliderDatas[2]
+							if(sliderDatas[3] != nil) then
+								edgesound = OSU:GetHitsoundTable(tonumber(sliderDatas[3]))
+							end
+							local _v = string.Explode(":", string.sub(y, 1, dataStart - 2))
+							local scX, scY = OSU:OsuPixelToPixel(tonumber(_v[1]), tonumber(_v[2]))
+							local _x, _y = OSU:OsuPixelToScreen(scX, scY)
+							table.insert(points, Vector(_x, _y))
+							--[[
+								local scX, scY = OSU:OsuPixelToPixel(_v[1], _v[2])
+								local _x, _y = OSU:OsuPixelToScreen(scX, scY)
+							]]
+						end 
+					end
+					_repeat = tonumber(_repeat)
+					length = tonumber(length)
+					local ret_curves, realFollowPoint = OSU:GetCurves(type, points, length)
+					table.insert(OSU.Objects, {
+						["otime"] = time,
+						["type"] = 2,
+						["time"] = time,
+						["sound"] = hitsound,
+						["vec_2"] = osu_vec2t(_x, _y),
+						["followpoint"] = ret_curves,
+						["realfollowpoint"] = realFollowPoint,
+						["connectpoints"] = points,
+						["stype"] = type,
+						["length"] = length,
+						["repeat"] = _repeat,
+						["edgesd"] = edgesound,
+						["spawned"] = false,
+						["newcombo"] = newcombo,
+					})
+				else -- Spinner
+					table.insert(OSU.Objects, {
+						["otime"] = time,
+						["type"] = 3,
+						["time"] = time,
+						["sound"] = hitsound,
+						["vec_2"] = osu_vec2t(_x, _y),
+						["killttime"] = (tonumber(ret[6]) / 1000) - apprTime,
+						["okilltime"] = (tonumber(ret[6]) / 1000) - apprTime,
+						["spawned"] = false,
+					})
 				end
-				if(v["type"] == 1) then
-					v["vec_2"].x = ScrW() - v["vec_2"].x
-					v["vec_2"].y = ScrH() - v["vec_2"].y
+				nextTime = OSU.CurTime + 2
+			end
+			local _eTime = SysTime()
+			local _processTime = (_eTime - _sTime)
+			OSU.BeatmapTime = nextTime + _processTime
+			for i = tps_start, tps_end, 1 do
+				local _ctx = ctx[i]
+				local ret = string.Explode(",", _ctx)
+				if(i == tps_start) then
+					OSU.BeatLength = tonumber(ret[2])
 				end
+				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
+				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
+				table.insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
 			end
-		end
-		local breakStart = 0
-		local breakEnd = 0
-		for k,v in pairs(ctx) do
-			if(string.find(v, "SliderMultiplier:")) then
-				local num = string.Replace(v, "SliderMultiplier:", "")
-				OSU.SliderMultiplier = tonumber(num)
-				OSU.SliderVelocity = OSU.SliderMultiplier
-			end
-			if(string.find(v, "SampleSet:")) then
-				OSU.CurrentHitSound = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
-				OSU.BeatmapDefaultSet = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
-			end
-			if(breakStart == 0) then
-				if(string.find(v, "//Break")) then
-					breakStart = k + 1
-				end
+			local temp = {
+				["objects"] = OSU.Objects,
+				["timing"] = OSU.TimingPoints,
+			}
+			if(OSU.WriteObjectFile) then
+				file.Write(OSU.HitObjectsCachePath..id..".dat", util.TableToJSON(temp))
+				OSU:CenteredMessage("Writing beatmap temp ("..id..".dat), this lag will only happen once per beatmap!  ("..math.Round(_processTime, 3).."s)", _processTime)
 			else
-				if(breakEnd == 0) then
-					if(string.find(v, "//Storyboard Layer 0")) then
-						breakEnd = k - 1
+				--OSU:CenteredMessage("Map loaded ("..math.Round(_processTime, 3).."s)", _processTime)
+			end
+			for k,v in next, OSU.TimingPoints do
+				v[1] = v[1] + OSU.BeatmapTime
+			end
+			for k,v in next, OSU.Objects do
+				v["time"] = OSU.BeatmapTime + v["time"] - apprTime
+				if(v["type"] == 3) then
+					v["killttime"] = OSU.BeatmapTime + v["killttime"]
+				end
+				if(k == 1) then
+					OSU.BeatmapStartTime = v["time"]
+				end
+				if(k == #OSU.Objects) then
+					OSU.BeatmapEndTime = v["time"] + 2.5
+				end
+				if(OSU.HR) then
+					if(v["type"] == 2) then
+						v["vec_2"].x = ScrW() - v["vec_2"].x
+						v["vec_2"].y = ScrH() - v["vec_2"].y
+						for x,y in next, v["followpoint"] do
+							if(x == 1) then
+								table.remove(v["followpoint"], k)
+								continue
+							end
+							y.x = ScrW() - y.x
+							y.y = ScrH() - y.y
+						end
+						for x,y in next, v["realfollowpoint"] do
+							y.x = ScrW() - y.x
+							y.y = ScrH() - y.y
+						end
+					end
+					if(v["type"] == 1) then
+						v["vec_2"].x = ScrW() - v["vec_2"].x
+						v["vec_2"].y = ScrH() - v["vec_2"].y
 					end
 				end
 			end
-		end
-		if(breakStart != 0 && breakEnd != 0) then
-			for i = breakStart, breakEnd, 1 do
-				if(ctx[i] == nil) then continue end
-				local _bd = string.Explode(",", ctx[i])
-				table.insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000),OSU.BeatmapTime + (tonumber(_bd[3]) / 1000), false})
+			local breakStart = 0
+			local breakEnd = 0
+			for k,v in pairs(ctx) do
+				if(string.find(v, "SliderMultiplier:")) then
+					local num = string.Replace(v, "SliderMultiplier:", "")
+					OSU.SliderMultiplier = tonumber(num)
+					OSU.SliderVelocity = OSU.SliderMultiplier
+				end
+				if(string.find(v, "SampleSet:")) then
+					OSU.CurrentHitSound = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
+					OSU.BeatmapDefaultSet = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
+				end
+				if(breakStart == 0) then
+					if(string.find(v, "//Break")) then
+						breakStart = k + 1
+					end
+				else
+					if(breakEnd == 0) then
+						if(string.find(v, "//Storyboard Layer 0")) then
+							breakEnd = k - 1
+						end
+					end
+				end
 			end
+			if(breakStart != 0 && breakEnd != 0) then
+				for i = breakStart, breakEnd, 1 do
+					if(ctx[i] == nil) then continue end
+					local _bd = string.Explode(",", ctx[i])
+					table.insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000),OSU.BeatmapTime + (tonumber(_bd[3]) / 1000), false})
+				end
+			end
+		end
+	elseif(OSU.CurrentMode == 3) then
+		local ctx = string.Explode("\n", beatmap)
+		for i = obj_start, obj_end, 1 do
+			local object = string.Explode(",", ctx[i])
+			local column = OSU:GetColumn(object[1], details["Keys"])
+			local time = tonumber(object[3])
+			local type = tonumber(object[4])
+			local hittype = OSU:GetHitsoundTable(tonumber(object[5]))
+			local param = object[6]
+			local _sTime = SysTime()
+			if(OSU:GetManiaObjectType(type) == 1) then -- Normal note
+				print("Normal note", column, time / 1000, type, hittype)
+			else -- Hold note
+				local param_ = string.Explode(":", param)
+				print("Hold note", column, time / 1000, type, hittype, tonumber(param_[1]) / 1000)
+			end
+			local _eTime = SysTime()
 		end
 	end
 	OSU.OffsList = {}
@@ -508,93 +610,96 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	local _x, _y = ScreenScale(4), ScreenScale(4)
 	local nextExecute = 0.1
 	local ExecuteTime = 0
+	if(!IsValid(OSU.PlayFieldLayer)) then return end
 	OSU.PlayFieldLayer.Paint = function()
-		if(OSU.GlobalMatShadowSize > OSU.GlobalMatSize) then
-			OSU.GlobalMatShadowSize = math.Clamp(OSU.GlobalMatShadowSize - OSU:GetFixedValue(0.03), OSU.GlobalMatSize, 2)
-			OSU:DrawStringAsMaterial(OSU.Combo.."x", 0 + gap, ScrH() - gap, OSU.GlobalMatShadowSize, 2, 100, false, false)
-		end
-		OSU.GlobalMatSize = math.Clamp(OSU.GlobalMatSize - OSU:GetFixedValue(0.02), 1, 1.15)
-		OSU:DrawStringAsMaterial(OSU.Combo.."x", 0 + gap, ScrH() - gap, OSU.GlobalMatSize, 2, 255, false, false)
-		OSU:DrawStringAsMaterial(OSU.DisplayScore, ScrW() - gap, 0 + gap, 1, -gap, 255, true, true)
-		OSU:DrawStringAsMaterial(OSU.Accuracy.."p", ScrW() - gap, 0 + gap + h, 0.75, 0, 255, true, false)
+		if(OSU.CurrentMode == 0) then
+			if(OSU.GlobalMatShadowSize > OSU.GlobalMatSize) then
+				OSU.GlobalMatShadowSize = math.Clamp(OSU.GlobalMatShadowSize - OSU:GetFixedValue(0.03), OSU.GlobalMatSize, 2)
+				OSU:DrawStringAsMaterial(OSU.Combo.."x", 0 + gap, ScrH() - gap, OSU.GlobalMatShadowSize, 2, 100, false, false)
+			end
+			OSU.GlobalMatSize = math.Clamp(OSU.GlobalMatSize - OSU:GetFixedValue(0.02), 1, 1.15)
+			OSU:DrawStringAsMaterial(OSU.Combo.."x", 0 + gap, ScrH() - gap, OSU.GlobalMatSize, 2, 255, false, false)
+			OSU:DrawStringAsMaterial(OSU.DisplayScore, ScrW() - gap, 0 + gap, 1, -gap, 255, true, true)
+			OSU:DrawStringAsMaterial(string.format("%3.2fp", OSU.Accuracy), ScrW() - gap, 0 + gap + h, 0.75, 0, 255, true, false)
 
-		surface.SetDrawColor(255, 255, 255, 255 * OSU.GlobalAlphaMult)
-		surface.SetMaterial(OSU.ScoreBarData["bg"])
-		surface.DrawTexturedRect(0, 0, OSU.ScoreBarData["gw"], OSU.ScoreBarData["gh"])
-		if(IsValid(OSU.HealthBar)) then
-			OSU.HealthBar:SetVisible(true)
-			OSU.HealthBar:SetPos(_x, _y)
-			OSU.HealthBar.Bar:SetImage(OSU.ScoreBarData["bc"])
-			OSU.HealthBar.Bar:SetSize(OSU.ScoreBarData["cw"], OSU.ScoreBarData["ch"])
-			OSU.HealthBar.Bar:SetImageColor(Color(255, 255, 255, 255 * OSU.GlobalAlphaMult))
-			local len = OSU.ScoreBarData["cw"] * (OSU.Health / 100)
-			local cWide = OSU.HealthBar:GetWide()
-			local scl = OSU:GetFixedValue((len - cWide) * 0.1)
-			if(scl > 0 && scl < 1) then
-				scl = 1
+			surface.SetDrawColor(255, 255, 255, 255 * OSU.GlobalAlphaMult)
+			surface.SetMaterial(OSU.ScoreBarData["bg"])
+			surface.DrawTexturedRect(0, 0, OSU.ScoreBarData["gw"], OSU.ScoreBarData["gh"])
+			if(IsValid(OSU.HealthBar)) then
+				OSU.HealthBar:SetVisible(true)
+				OSU.HealthBar:SetPos(_x, _y)
+				OSU.HealthBar.Bar:SetImage(OSU.ScoreBarData["bc"])
+				OSU.HealthBar.Bar:SetSize(OSU.ScoreBarData["cw"], OSU.ScoreBarData["ch"])
+				OSU.HealthBar.Bar:SetImageColor(Color(255, 255, 255, 255 * OSU.GlobalAlphaMult))
+				local len = OSU.ScoreBarData["cw"] * (OSU.Health / 100)
+				local cWide = OSU.HealthBar:GetWide()
+				local scl = OSU:GetFixedValue((len - cWide) * 0.1)
+				if(scl > 0 && scl < 1) then
+					scl = 1
+				end
+				if(scl < 0 && scl > -0.1) then
+					scl = -0.1
+				end
+				OSU.HealthBar:SetSize(math.Clamp(cWide + scl, 0, OSU.ScoreBarData["cw"]), OSU.ScoreBarData["ch"])
 			end
-			if(scl < 0 && scl > -0.1) then
-				scl = -0.1
+			if(OSU.AutoNotes) then
+				local alp = 255
+				surface.SetMaterial(OSU.UnrankedTx["t"])
+				surface.SetDrawColor(255, 255, 255, alp)
+				surface.DrawTexturedRect((ScrW() / 2) - OSU.UnrankedTx["w"] / 2, (ScrH() * 0.125) - OSU.UnrankedTx["h"] / 2, OSU.UnrankedTx["w"], OSU.UnrankedTx["h"])
+				local t = "Watching osu! playing   "..OSU.BeatmapDetails["Title"]
+				local xh = OSU:GetTextSize("OSUBeatmapResultMapper", t)
+				if(OSU.AutoplayTextOffs <= 0) then
+					OSU.AutoplayTextOffs = ScrW() + (xh * 1.25)
+				end
+				draw.DrawText(t, "OSUBeatmapResultMapper", OSU.AutoplayTextOffs, ScrH() * 0.175, Color(255, 255, 255, alp), TEXT_ALIGN_RIGHT)
+				OSU.AutoplayTextOffs = OSU.AutoplayTextOffs - OSU:GetFixedValue(2)
 			end
-			OSU.HealthBar:SetSize(math.Clamp(cWide + scl, 0, OSU.ScoreBarData["cw"]), OSU.ScoreBarData["ch"])
-		end
-		if(OSU.AutoNotes) then
-			local alp = 255
-			surface.SetMaterial(OSU.UnrankedTx["t"])
-			surface.SetDrawColor(255, 255, 255, alp)
-			surface.DrawTexturedRect((ScrW() / 2) - OSU.UnrankedTx["w"] / 2, (ScrH() * 0.125) - OSU.UnrankedTx["h"] / 2, OSU.UnrankedTx["w"], OSU.UnrankedTx["h"])
-			local t = "Watching osu! playing   "..OSU.BeatmapDetails["Title"]
-			local xh = OSU:GetTextSize("OSUBeatmapResultMapper", t)
-			if(OSU.AutoplayTextOffs <= 0) then
-				OSU.AutoplayTextOffs = ScrW() + (xh * 1.25)
-			end
-			draw.DrawText(t, "OSUBeatmapResultMapper", OSU.AutoplayTextOffs, ScrH() * 0.175, Color(255, 255, 255, alp), TEXT_ALIGN_RIGHT)
-			OSU.AutoplayTextOffs = OSU.AutoplayTextOffs - OSU:GetFixedValue(2)
-		end
-		if(OSU.HitErrorBar) then
-			local alp = 255 * OSU.GlobalAlphaMult
-			local xAxis, yAxis = ScrW() / 2, ScrH() * 0.98
-			local h = ScreenScale(3)
-			local fTime = OSU.HIT50Time
-			local fullLen = ScreenScale(400) * OSU.HIT50Time
-			local len1 = fullLen * (OSU.HIT300Time / fTime)
-			local len2 = fullLen * (OSU.HIT100Time / fTime)
-			surface.SetDrawColor(206, 178, 78, alp)
-			surface.DrawRect(xAxis - (fullLen / 2), yAxis - h / 2, fullLen, h)
-			surface.SetDrawColor(137, 225, 45, alp)
-			surface.DrawRect(xAxis - (len2 / 2), yAxis - h / 2, len2, h)
-			surface.SetDrawColor(112, 183, 230, alp)
-			surface.DrawRect(xAxis - (len1 / 2), yAxis - h / 2, len1, h)
-			surface.SetDrawColor(255, 255, 255, alp)
-			local w = ScreenScale(1)
-			h = ScreenScale(9)
-			surface.DrawRect(xAxis - (w / 2), yAxis - h / 2, w, h)
-			if(OSU.ArrowTargetPos != 0) then
-				OSU.ArrowAlpha = math.Clamp(OSU.ArrowAlpha + OSU:GetFixedValue(15), 0, 255)
-				local sx = ScreenScale(5)
-				surface.SetDrawColor(255, 255, 255, OSU.ArrowAlpha * OSU.GlobalAlphaMult)
-				surface.SetMaterial(OSU.HitArrowTx)
-				local hLen = fullLen / 2
-				OSU.CurrentArrowPos = math.Clamp(OSU.CurrentArrowPos + OSU:GetFixedValue((OSU.ArrowTargetPos - OSU.CurrentArrowPos) * 0.05), -hLen, hLen)
-				surface.DrawTexturedRect((xAxis + OSU.CurrentArrowPos) - sx / 2, yAxis - (sx * 1.2), sx, sx)
-				h = ScreenScale(7)
-				for k,v in next, OSU.OffsList do
-					if(v[3] < OSU.CurTime) then
-						v[2] = math.Clamp(v[2] - OSU:GetFixedValue(15), 0, 255)
-						if(v[2] <= 0) then
-							table.remove(OSU.OffsList, k)
+			if(OSU.HitErrorBar) then
+				local alp = 255 * OSU.GlobalAlphaMult
+				local xAxis, yAxis = ScrW() / 2, ScrH() * 0.98
+				local h = ScreenScale(3)
+				local fTime = OSU.HIT50Time
+				local fullLen = ScreenScale(400) * OSU.HIT50Time
+				local len1 = fullLen * (OSU.HIT300Time / fTime)
+				local len2 = fullLen * (OSU.HIT100Time / fTime)
+				surface.SetDrawColor(206, 178, 78, alp)
+				surface.DrawRect(xAxis - (fullLen / 2), yAxis - h / 2, fullLen, h)
+				surface.SetDrawColor(137, 225, 45, alp)
+				surface.DrawRect(xAxis - (len2 / 2), yAxis - h / 2, len2, h)
+				surface.SetDrawColor(112, 183, 230, alp)
+				surface.DrawRect(xAxis - (len1 / 2), yAxis - h / 2, len1, h)
+				surface.SetDrawColor(255, 255, 255, alp)
+				local w = ScreenScale(1)
+				h = ScreenScale(9)
+				surface.DrawRect(xAxis - (w / 2), yAxis - h / 2, w, h)
+				if(OSU.ArrowTargetPos != 0) then
+					OSU.ArrowAlpha = math.Clamp(OSU.ArrowAlpha + OSU:GetFixedValue(15), 0, 255)
+					local sx = ScreenScale(5)
+					surface.SetDrawColor(255, 255, 255, OSU.ArrowAlpha * OSU.GlobalAlphaMult)
+					surface.SetMaterial(OSU.HitArrowTx)
+					local hLen = fullLen / 2
+					OSU.CurrentArrowPos = math.Clamp(OSU.CurrentArrowPos + OSU:GetFixedValue((OSU.ArrowTargetPos - OSU.CurrentArrowPos) * 0.05), -hLen, hLen)
+					surface.DrawTexturedRect((xAxis + OSU.CurrentArrowPos) - sx / 2, yAxis - (sx * 1.2), sx, sx)
+					h = ScreenScale(7)
+					for k,v in next, OSU.OffsList do
+						if(v[3] < OSU.CurTime) then
+							v[2] = math.Clamp(v[2] - OSU:GetFixedValue(15), 0, 255)
+							if(v[2] <= 0) then
+								table.remove(OSU.OffsList, k)
+							end
 						end
+						surface.SetDrawColor(255, 255, 255, v[2])
+						surface.DrawRect((xAxis + v[1]) - w / 2, yAxis - (h / 2), w, h)
 					end
-					surface.SetDrawColor(255, 255, 255, v[2])
-					surface.DrawRect((xAxis + v[1]) - w / 2, yAxis - (h / 2), w, h)
-				end
-				if(OSU.NextResetTime < OSU.CurTime) then
-					OSU.TotalHitObjects = 0
-					OSU.TotalHitOffs = 0
-					OSU.NextResetTime = OSU.CurTime + 1.5
+					if(OSU.NextResetTime < OSU.CurTime) then
+						OSU.TotalHitObjects = 0
+						OSU.TotalHitOffs = 0
+						OSU.NextResetTime = OSU.CurTime + 1.5
+					end
 				end
 			end
+			OSU.KiExt = math.Clamp(OSU.KiExt - OSU:GetFixedValue(5), 0, 1024)
 		end
-		OSU.KiExt = math.Clamp(OSU.KiExt - OSU:GetFixedValue(5), 0, 1024)
 	end
 end

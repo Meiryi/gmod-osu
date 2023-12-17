@@ -11,7 +11,7 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
-function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, len, _amount, sound, zp, stype, ___index)
+function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, len, _amount, sound, zp, stype, ___index, edgesd, comboidx)
 	-- https://osu.ppy.sh/wiki/en/Beatmap/Circle_size
 	local radius = ScreenScale(54.4 - 1.5 * OSU.CS)
 	local radius2 = radius * 0.9
@@ -41,12 +41,18 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local alprate = 255 / (60 * (OSU.AppearTime / 4))
 	local alprate2 = alprate * 2
 	local _roffset = -64
+	local basetime = OSU.CurTime
+	local ctime = OSU.CurTime
+	local _clr = OSU.CurrentObjectColor
 	if(OSU.ReplayMode) then
 		if(OSU.CurrentReplayData.HitData[___index] != nil) then
 			_roffset = OSU.CurrentReplayData.HitData[___index]
 		end
 	end
-	OSU:CreateCircle(vec_2t, sound, zp, true, -OSU.ObjectIndex)
+	if(OSU.NoEdgeSound) then
+		edgesd  = sound
+	end
+	OSU:CreateCircle(vec_2t, sound, zp, true, -OSU.ObjectIndex, comboidx)
 	area:SetSize(ScrW(), ScrH())
 	area:SetZPos(zp)
 	area.IsSlider = true
@@ -66,13 +72,15 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 		area.MaxDrawIndex = #followpoint
 	end
 	local apprTime = OSU:GetApprTime()
-	local snakingRate = #followpoint / (11 * apprTime)
+	local snakingRate = #followpoint / (10 * apprTime)
 	area.Paint = function()
 	if(OSU.SnakingSliders) then
 		area.MaxDrawIndex = math.Clamp(area.MaxDrawIndex + OSU:GetFixedValue(snakingRate), 1, #followpoint)
 	end
+	local beat = OSU.SliderBeat * 1.5
 	local completeTime = len / (OSU.SliderMultiplier * 100 * OSU.SliderVelocity) * OSU.BeatLength -- ms
-	completeTime = completeTime / 1000
+	completeTime = (completeTime / 1000)
+	ctime = basetime + completeTime
 	local incrate = #realfollowpoint / (60 * completeTime)
 		surface.SetMaterial(OSU.SliderBackground)
 		if(!OSU.SingleColorSlider) then
@@ -80,18 +88,18 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			for i = 1, area.MaxDrawIndex, 1 do
 				local v = followpoint[i]
 				surface.DrawTexturedRect(v.x - offs, v.y - offs, radius, radius)
-				surface.SetDrawColor(Color(255, 255, 255, area.iAlpha))
+				surface.SetDrawColor(255, 255, 255, area.iAlpha)
 			end
 			for i = 1, area.MaxDrawIndex, 1 do
 				local v = followpoint[i]
 				surface.DrawTexturedRect(v.x - offs2, v.y - offs2, radius2, radius2)
-				surface.SetDrawColor(Color(50 + OSU.SliderBeat, 50 + OSU.SliderBeat, 50 + OSU.SliderBeat, area.iAlpha))
+				surface.SetDrawColor(math.Clamp((_clr.r * 0.7) + beat, 0, 255), math.Clamp((_clr.g * 0.7) + beat, 0, 255), math.Clamp((_clr.b * 0.7) + beat, 0, 255), area.iAlpha)
 			end
 		else
 			for i = 1, area.MaxDrawIndex, 1 do
 				local v = followpoint[i]
 				surface.DrawTexturedRect(v.x - offs, v.y - offs, radius, radius)
-				surface.SetDrawColor(Color(50 + OSU.SliderBeat, 50 + OSU.SliderBeat, 50 + OSU.SliderBeat, area.iAlpha))
+				surface.SetDrawColor(_clr.r, _clr.g, _clr.b, area.iAlpha)
 			end
 		end
 		surface.SetDrawColor(Color(255, 0, 255, 255))
@@ -101,7 +109,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				local n = connectpoints[k + 1]
 				surface.DrawLine(v.x, v.y, n.x, n.y)
 			end
-			draw.DrawText(stype, "OSUBeatmapTitle", connectpoints[1].x, connectpoints[1].y, Color(255, 0, 255, 255), TEXT_ALIGN_CENTER)
+			draw.DrawText("Type : "..stype.."  dPoints : "..#followpoint.."x2", "OSUBeatmapTitle", connectpoints[1].x, connectpoints[1].y + ScreenScale(32), Color(255, 0, 255, 255), TEXT_ALIGN_CENTER)
 		end
 		if(!area.Finished) then
 			if(OSU.HD) then
@@ -144,15 +152,20 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			if(OSU.ReplayMode) then
 				dis = math.Distance(OSU.FakeCursorPos.x, OSU.FakeCursorPos.y, x, y)
 			end
+			local __amo = math.abs(amount - _amount)
 			if(!dir) then
 				CurFollow = math.Clamp(CurFollow + OSU:GetFixedValue(incrate), 1, MaxFollow)
 				if(CurFollow >= MaxFollow) then
 					if(OSU.CurTime - area.lastHoldTime < _missoffs) then
-						OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(sound)])
+						if(__amo > 1) then
+							OSU:PlayHitSound_t(sound)
+						end
 						OSU:AddHealth(1)
 					else
 						if(OSU.AutoNotes) then
-							OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(sound)])
+							if(__amo > 1) then
+								OSU:PlayHitSound_t(sound)
+							end
 							OSU:AddHealth(1)
 						end
 					end
@@ -163,11 +176,15 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				CurFollow = math.Clamp(CurFollow - OSU:GetFixedValue(incrate), 1, MaxFollow)
 				if(CurFollow <= 1) then
 					if(OSU.CurTime - area.lastHoldTime < _missoffs) then
-						OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(sound)])
+						if(__amo > 1) then
+							OSU:PlayHitSound_t(sound)
+						end
 						OSU:AddHealth(1)
 					else
 						if(OSU.AutoNotes) then
-							OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(sound)])
+							if(__amo > 1) then
+								OSU:PlayHitSound_t(sound)
+							end
 							OSU:AddHealth(1)
 						end
 					end
@@ -248,8 +265,8 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 		end
 		if(hitoffs <= OSU:GetMissTime()) then
 			local type = OSU:GetHitType(hitoffs)
-			OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(sound)])
-			OSU:CreateClickEffect(radius, vec_2t, zp)
+			OSU:PlayHitSound_t(edgesd)
+			OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 			if(missed && type == 1) then
 				OSU:CreateHitScore(vec_2t, 2)
 			else

@@ -11,6 +11,19 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
+function OSU:PickComboColour()
+	if(#OSU.ComboColours <= 0) then
+		OSU.CurrentObjectColor = Color(255, 255, 255, 255)
+		return
+	end
+	if(OSU.CurrentColourIndex >= #OSU.ComboColours) then
+		OSU.CurrentColourIndex = 1
+	else
+		OSU.CurrentColourIndex = OSU.CurrentColourIndex + 1
+	end
+	OSU.CurrentObjectColor = OSU.ComboColours[OSU.CurrentColourIndex]
+end
+
 function OSU:PickScoreKi()
 	if(OSU.Health >= 67) then
 		return OSU.ScoreBarData["ki1"], OSU.ScoreBarData["kw1"], OSU.ScoreBarData["kh1"]
@@ -102,10 +115,16 @@ function OSU:RunTime()
 			table.remove(OSU.Objects, k)
 		else
 			if(v["time"] <= OSU.CurTime) then
+				if(v["newcombo"]) then
+					OSU:PickComboColour()
+					OSU.CurrentComboIndex = 1
+				end
 				if(v["type"] == 1) then
-					OSU:CreateCircle(v["vec_2"], v["sound"], OSU.CurrentZPos, nil, OSU.ObjectIndex)
+					OSU:CreateCircle(v["vec_2"], v["sound"], OSU.CurrentZPos, nil, OSU.ObjectIndex, OSU.CurrentComboIndex)
+					OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
 				elseif(v["type"] == 2) then
-					OSU:CreateSlider(v["vec_2"], v["followpoint"], v["realfollowpoint"], v["connectpoints"], v["length"], v["repeat"], v["sound"], OSU.CurrentZPos, v["stype"], OSU.ObjectIndex)
+					OSU:CreateSlider(v["vec_2"], v["followpoint"], v["realfollowpoint"], v["connectpoints"], v["length"], v["repeat"], v["sound"], OSU.CurrentZPos, v["stype"], OSU.ObjectIndex, v["edgesd"], OSU.CurrentComboIndex)
+					OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
 				else
 					OSU:CreateSpinner(v["vec_2"], v["sound"], OSU.CurrentZPos, v["killttime"])
 					if(k == #OSU.Objects) then

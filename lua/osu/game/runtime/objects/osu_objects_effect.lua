@@ -11,7 +11,7 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
-function OSU:CreateClickEffect(radius, vec_2t, zp)
+function OSU:CreateClickEffect(radius, vec_2t, zp, clr)
 	if(OSU.HD) then return end
 	if(zp >= 32767) then -- Maximum Z pos for panels is -32767 to 32767
 		zp = 32766
@@ -25,13 +25,14 @@ function OSU:CreateClickEffect(radius, vec_2t, zp)
 		circle:SetImage(OSU.CurrentSkin["hitcircleoverlay"])
 		circle:SetSize(radius, radius)
 		circle:SetPos(vec_2t.x - offs, vec_2t.y - offs)
+		circle:SetImageColor(clr)
 		circle.Think = function()
 			circle.iAlpha = math.Clamp(circle.iAlpha - OSU:GetFixedValue(25), 0, 255)
 			cext = math.Clamp(cext + OSU:GetFixedValue(math.abs(ext - cext) * 0.1), 0, ext)
 			circle:SetSize(radius + cext, radius + cext)
 			offs = (radius / 2) + cext / 2
 			circle:SetPos(vec_2t.x - offs, vec_2t.y - offs)
-			circle:SetImageColor(Color(255, 255, 255, circle.iAlpha))
+			circle:SetAlpha(circle.iAlpha)
 			if(circle.iAlpha <= 0) then
 				circle:Remove()
 			end

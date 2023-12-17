@@ -2,6 +2,12 @@ OSU.HITOBJECT_CIRCLE = 1
 OSU.HITOBJECT_SLIDER = 2
 OSU.HITOBJECT_NEWCOMBO = 4
 OSU.HITOBJECT_SPINNER = 8
+OSU.HITOBJECT_HOLD_MANIA = 7
+
+OSU.HITSOUND_NORMAL = 0
+OSU.HITSOUND_WHISTLE = 1
+OSU.HITSOUND_FINISH = 2
+OSU.HITSOUND_CLAP = 3
 
 function OSU:GetBeatmapDetails(ctx)
 	local details = {
@@ -28,6 +34,9 @@ function OSU:GetBeatmapDetails(ctx)
 	local obj_spinner = 0
 	local tps_start = 0
 	local tps_end = 0
+	local clr_start = 0
+	local colors = nil
+	local tmp = {}
 	for k,v in pairs(ctx) do
 		if(string.find(v, "TimingPoints")) then
 			bpm_processing = ctx[k + 1]
@@ -46,6 +55,9 @@ function OSU:GetBeatmapDetails(ctx)
 		end
 		if(string.find(v, "TimingPoints")) then
 			tps_start = k + 1
+		end
+		if(string.find(v, "Colours")) then
+			clr_start = k + 1
 		end
 		if(string.find(v, "HitObjects")) then
 			obj_start = k + 1
@@ -98,6 +110,20 @@ function OSU:GetBeatmapDetails(ctx)
 		end
 		details["Objects"] = obj_end - (obj_start - 1)
 	end
+	if(clr_start != 0) then
+		for i = clr_start, #ctx, 1 do
+			local line = ctx[i]
+			if(!string.find(line, "Combo")) then
+				break
+			end
+			local st, ed, str = string.find(line, " : ")
+			if(ed == nil) then break end
+			ed = ed + 1
+			local processStr = string.sub(line, ed)
+			local ex = string.Explode(",", processStr)
+			table.insert(tmp, Color(tonumber(ex[1]), tonumber(ex[2]), tonumber(ex[3]), 255))
+		end
+	end
 	if(bpm_processing != "") then
 		local ret = string.Explode(",", bpm_processing)
 		local output = tonumber(ret[2])
@@ -110,5 +136,10 @@ function OSU:GetBeatmapDetails(ctx)
 	details["Spinners"] = obj_spinner
 	details["Object Range"] = {obj_start, obj_end}
 	details["Timepoint Range"] = {tps_start, tps_end}
+	if(#tmp > 0) then
+		details["Colours"] = tmp
+	else
+		details["Colours"] = {Color(255, 255, 255, 255)}
+	end
 	return details
 end

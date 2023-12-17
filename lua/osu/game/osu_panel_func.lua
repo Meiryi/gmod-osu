@@ -924,12 +924,16 @@ function OSU:PrintBeatmapDetails(details)
 				end
 			end
 		end
+	local tx = "CS: "
+	if(details["mode"] == 3) then
+		tx = "Keys: "
+	end
 	local difficulty = vgui.Create("DLabel", OSU.BeatmapDetailsTab)
 		difficulty:SetPos(gap, spacing + _tit + _map + _det + _obj)
 		difficulty:SetSize(OSU.BeatmapDetailsTab:GetWide(), _tit)
 		difficulty:SetColor(Color(255, 255, 255))
 		difficulty:SetFont("OSUBeatmapDifficulty_TOP")
-		difficulty:SetText("CS: "..details["CS"].." AR: "..details["AR"].." OD: "..details["OD"].." HP: "..details["HP"].." Star Rating: "..details["Stars"])
+		difficulty:SetText(tx..details["CS"].." AR: "..details["AR"].." OD: "..details["OD"].." HP: "..details["HP"].." Star Rating: "..details["Stars"])
 		difficulty.iAlpha = 0
 		difficulty.Think = function()
 			difficulty:SetColor(Color(255 ,255, 255, difficulty.iAlpha))

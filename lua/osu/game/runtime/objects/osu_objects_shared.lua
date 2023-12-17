@@ -11,6 +11,21 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
+function OSU:PlayHitSound_t(t)
+	for k,v in next, t do
+		--[[
+		if(k != 0) then
+			continue 
+		else
+			v = true
+		end
+		]]
+		if(v) then
+			OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(k)])
+		end
+	end
+end
+
 function OSU:HitError(offs)
 	OSU.TotalHitObjects = OSU.TotalHitObjects + 1
 	OSU.TotalHitOffs = OSU.TotalHitOffs + offs
@@ -120,6 +135,17 @@ function OSU:GetMaterialSize(str)
 	return w * scl, h * scl
 end
 
+function OSU:PickDefaultMaterial(str)
+	local ret = OSU.DefaultMaterialTable[str]
+	if(ret == nil) then
+		ret = OSU.DefaultMaterialTable["1"]
+	end
+	local w = ret:GetInt("$realwidth")
+	local h = ret:GetInt("$realheight")
+	local scl = ScrW() / 1920
+	return ret, w * scl, h * scl
+end
+
 function OSU:PickMaterial(str)
 	local ret = OSU.ScoreMaterialTable[str]
 	if(ret == nil) then
@@ -129,6 +155,25 @@ function OSU:PickMaterial(str)
 	local h = ret:GetInt("$realheight")
 	local scl = ScrW() / 1920
 	return ret, w * scl, h * scl
+end
+
+function OSU:DrawDefaultNumber(str, x, y, size, alp)
+	str = tostring(str)
+	local len = string.len(str)
+	local w, h = 0, 0
+	for i = 1, len, 1 do
+		local _m, _w, _h = OSU:PickDefaultMaterial(string.sub(str, i, i))
+		w = w + _w
+		h = _h
+	end
+	surface.SetDrawColor(255, 255, 255, alp)
+	local offs = 0
+	for i = 1, len, 1 do
+		local m, _w, _h = OSU:PickDefaultMaterial(string.sub(str, i, i))
+		surface.SetMaterial(m)
+		surface.DrawTexturedRect((x + offs) - (w / 2), y - (_h / 2), _w, _h)
+		offs = offs + _w
+	end
 end
 
 function OSU:DrawStringAsMaterial(str, x, y, size, gap, alpha, rev, score)

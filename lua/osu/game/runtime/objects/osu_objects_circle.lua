@@ -11,7 +11,7 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
-function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
+function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	-- https://osu.ppy.sh/wiki/en/Beatmap/Circle_size
 	local radius = ScreenScale(54.4 - 1.5 * OSU.CS)
 	local offs = radius / 2
@@ -26,7 +26,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
 	local ptime = OSU.CurTime + ms
 	local misstime = OSU.CurTime + (OSU:GetMissTime() + ms)
 	local alptime = OSU.CurTime + OSU.AppearTime / 2
-	local alprate = 255 / (60 * (OSU.AppearTime / 4))
+	local alprate = 255 / (60 * (OSU.AppearTime / 3))
 	local alprate2 = alprate * 2
 	local _roffset = -64
 	if(OSU.ReplayMode) then
@@ -34,6 +34,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
 			_roffset = OSU.CurrentReplayData.HitData[__index]
 		end
 	end
+	local _clr = OSU.CurrentObjectColor
 	local hittime = ptime + _roffset
 		base:SetZPos(zp)
 		base:SetSize(radius, radius)
@@ -44,8 +45,19 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
 		circle.iAlpha = 0
 		circle:SetSize(radius, radius)
 		circle:SetImage(OSU.CurrentSkin["hitcircleoverlay"])
+		circle.oPaint = circle.Paint
+		local tx, ty = circle:GetWide() / 2, circle:GetTall() / 2
+		circle.Paint = function()
+			OSU:DrawDefaultNumber(comboidx, tx, ty, radius, circle.iAlpha)
+			circle.oPaint(circle)
+			--[[
+			surface.SetDrawColor(_clr.r, _clr.g, _clr.b, circle.iAlpha)
+			surface.SetMaterial(OSU.rHitCircleOverlay)
+			surface.DrawTexturedRect(0, 0, radius, radius)
+			]]
+		end
 		base.Think = function()
-			local clr = 195 + OSU.SliderBeat * 3
+			local clr = 255
 			if(OSU.HD) then
 				clr = 255
 				if(OSU.CurTime > alptime) then
@@ -54,11 +66,10 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
 					circle.iAlpha = math.Clamp(circle.iAlpha + OSU:GetFixedValue(alprate2), 0, 200)
 				end
 			else
-				circle.iAlpha = math.Clamp(circle.iAlpha + OSU:GetFixedValue(alprate2), 0, 255)
+				circle.iAlpha = math.Clamp(circle.iAlpha + OSU:GetFixedValue(alprate), 0, 255)
 			end
 			circle:SetImageColor(Color(clr, clr, clr, circle.iAlpha))
-			clr = clr / 3
-			hcircle:SetImageColor(Color(clr, clr, clr, circle.iAlpha))
+			hcircle:SetImageColor(Color(_clr.r, _clr.g, _clr.b, circle.iAlpha))
 			if(_roffset != -64) then
 				if(OSU.CurTime >= hittime) then
 					base.Click()
@@ -98,12 +109,15 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
 				OSU:RecordFrame({OSU.CurTime - OSU.BeatmapTime, OSU.CursorPos.x, OSU.CursorPos.y})
 			end
 			local hitoffs = math.abs(OSU.CurTime - ptime)
+			if(OSU.AutoNotes) then
+				hitoffs = 0
+			end
 			if(_roffset != -64) then
 				hitoffs = _roffset
 			end
-			OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(sound)])
+			OSU:PlayHitSound_t(sound)
 			if(noscore) then
-				OSU:CreateClickEffect(radius, vec_2t, zp)
+				OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 				OSU:AddHealth(OSU:GetHitType(hitoffs))
 				OSU.Score = OSU.Score + 50
 				OSU.Combo = OSU.Combo + 1
@@ -112,7 +126,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index)
 			else
 				if(hitoffs <= OSU:GetMissTime()) then
 					OSU:CreateHitScore(vec_2t, OSU:GetHitType(hitoffs))
-					OSU:CreateClickEffect(radius, vec_2t, zp)
+					OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 				else
 					OSU:CreateHitScore(vec_2t, 4)
 				end

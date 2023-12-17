@@ -11,6 +11,92 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
+function OSU:GetKeysAmount(ctx, datas)
+	local ctx_ = string.Explode("\n", ctx)
+	local k = {}
+	for i = 1, 10, 1 do
+		k[i] = false
+	end
+	for i = datas["Object Range"][1], datas["Object Range"][2], 1 do
+		local line = string.Explode(",", ctx_[i])[1]
+		if(line == "1344") then
+			k[10] = true
+		end
+		if(line == "1216") then
+			k[9] = true
+		end
+		if(line == "1088") then
+			k[8] = true
+		end
+		if(line == "960") then
+			k[7] = true
+		end
+		if(line == "832") then
+			k[6] = true
+		end
+		if(line == "704") then
+			k[5] = true
+		end
+		if(line == "448") then
+			k[4] = true
+		end
+		if(line == "320") then
+			k[3] = true
+		end
+		if(line == "192") then
+			k[2] = true
+		end
+		if(line == "64") then
+			k[1] = true
+		end
+	end
+	for i = 10, 1, -1 do
+		if(k[i]) then return i end
+	end
+	--[[
+		if(string.find(ctx, "1344,")) then
+			return 10
+		end
+		if(string.find(ctx, "1216,")) then
+			return 9
+		end
+		if(string.find(ctx, "1088,")) then
+			return 8
+		end
+		if(string.find(ctx, "960,")) then
+			return 7
+		end
+		if(string.find(ctx, "832,")) then
+			return 6
+		end
+		if(string.find(ctx, "704,")) then
+			return 5
+		end
+		if(string.find(ctx, "448,")) then
+			return 4
+		end
+		if(string.find(ctx, "320,")) then
+			return 3
+		end
+		if(string.find(ctx, "192,")) then
+			return 2
+		end
+		if(string.find(ctx, "64,")) then
+			return 1
+		end
+	]]
+end
+
+function OSU:PickModeIconMat()
+	local l = {
+		[0] = OSU.STDTx,
+		[1] = OSU.TKOTx,
+		[2] = OSU.CTBTx,
+		[3] = OSU.MNATx,
+	}
+	return l[OSU.CurrentMode]
+end
+
 function OSU:IsSupportedMode(mode)
 	local l = {
 		[0] = true,
@@ -312,9 +398,15 @@ function OSU:RefreshBeatmapList(keyWord)
 					Detail:SetText(name[OSU.BeatmapArtistType].." // "..name["Creator"])
 					Detail:SetSize(wide, ScreenScale(8))
 					Detail:SetPos(bgmat_w + gap2x + iconsx, sy)
+					local ext = ""
+					datas["mode"] = mode
+					if(mode == 3) then
+						datas["Keys"] = tonumber(datas["CS"])
+						ext = " ("..datas["Keys"].."K)"
+					end
 					local Version = vgui.Create("DLabel", vBase)
 					Version:SetFont("OSUBeatmapVersion")
-					Version:SetText(ver)
+					Version:SetText(ver..ext)
 					Version:SetSize(wide, ScreenScale(8))
 					local _sx, _sy = OSU:GetTextSize("OSUBeatmapVersion", "Dummy Text")
 					Version:SetPos(bgmat_w + gap2x + iconsx, sy + _sy)
@@ -359,6 +451,7 @@ function OSU:RefreshBeatmapList(keyWord)
 						if(OSU.NextClickTime > OSU.CurTime && at == nil) then return end
 						local aStr = "data/"..string.Left(name["AudioFilename"], string.len(name["AudioFilename"]) - 1)
 						if(keyCode != 107) then return end
+						OSU.CurrentMode = tonumber(mode)
 						if(!supported) then
 							OSU:CenteredMessage("This beatmap's mode is not supported!")
 							OSU:PlaySoundEffect(OSU.CurrentSkin["menu-multiplayer-click"])
@@ -588,7 +681,7 @@ function OSU:SetupBeatmapPanel()
 		end
 		OSU.PlayMenuLayer.IconAlpha = math.Clamp(OSU.PlayMenuLayer.IconAlpha - OSU:GetFixedValue(2), 0, 255)
 		if(!OSU.PlayMenuAnimStarted) then
-			surface.SetMaterial(OSU.PlayMenuLayer.IconMaterial)
+			surface.SetMaterial(OSU:PickModeIconMat())
 			surface.SetDrawColor(255 ,255, 255, OSU.PlayMenuLayer.IconAlpha)
 			surface.DrawTexturedRect((ScrW() / 2) - (iSX / 2), (ScrH() / 2) - (iSX / 2), iSX, iSX)
 			if(OSU.SoundChannel:GetState() == 0) then

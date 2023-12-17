@@ -87,3 +87,10 @@ function OSU:WriteLog(str)
 	end
 	file.Append("osu!/logs/log.txt", TimeString.." : -> "..str.."\n")
 end
+
+function OSU:BitFlag(int)
+	if(int <= 0) then return 0 end -- I don't really want to do shit like this, but whatever
+	for i = 1, int, 1 do
+		if(i * 2 >= int) then return i end
+	end
+end

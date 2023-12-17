@@ -59,6 +59,7 @@ OSU.ConfigTable = {
 	"MainBGDim",
 	"SmoothBG",
 	"MenuShow",
+	"NoEdgeSound",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -99,6 +100,7 @@ OSU.EdgeFlash = false
 OSU.MainBGDim = 255
 OSU.SmoothBG = true
 OSU.MenuSnow = true
+OSU.NoEdgeSound = true
 
 OSU.MainVersion = "1.1.0"
 OSU.AvatarVersion = "1.0.1"
@@ -777,6 +779,7 @@ function OSU:OpenOptionsMenu()
 		OSU.SettingsScrollPanel:SetWide(OSU.SettingsLayer.PaneliWide)
 		OSU.SettingsPanel.SidePanel.iAlpha = OSU.SettingsLayer.PaneliAlpha
 		OSU.SettingsScrollPanel.iAlpha = OSU.SettingsLayer.PaneliAlpha / 1.25
+		OSU.SettingsScrollPanel:SetAlpha(OSU.SettingsLayer.PaneliAlpha)
 	end
 	function OSU.SettingsLayer:OnMousePressed(keyCode)
 		if(keyCode == 107) then
@@ -918,6 +921,7 @@ function OSU:OpenOptionsMenu()
 	OSU:CreateSubTitle("Sounds")
 	OSU:Opt_CreateButton("Replace hitfinish to hitwhistle", "FinishToWhistle")
 	OSU:Opt_CreateButton("Disable combobreak sound", "NoBreakSound")
+	OSU:Opt_CreateButton("Disable slider edge sound (Recommneded)", "NoEdgeSound")
 	OSU:CreateSectionTitle("SKIN")
 	OSU:CreateSubTitle("Skins (Full skin support coming soon)")
 	OSU:Opt_CreateSlider("Cursor size", "CursorSize", 1, 48)

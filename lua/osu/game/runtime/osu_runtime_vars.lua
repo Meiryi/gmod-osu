@@ -21,6 +21,8 @@ OSU.ModesTMP = {
 	SD = false,
 	HD = false,
 }
+OSU.OriginalSize = ScreenScale(54.4)
+OSU.CurrentMode = 0
 OSU.CurrentDefBGPath = "osu/internal/bg_ch/"
 OSU.BeatmapCTX = ""
 OSU.BeatmapTime = 0
@@ -36,12 +38,16 @@ OSU.MenuTimingPoints = {}
 OSU.TimingPoints = {}
 OSU.Objects = {}
 OSU.Breaks = {}
+OSU.ComboColours = {}
 OSU.FakeCursorPos = {x = 0, y = 0}
 OSU.ShouldDrawFakeCursor = false
-OSU.CurrentReplayID = "15526206"
+OSU.CurrentReplayID = "00000000"
 OSU.CurrentReplayData = {}
 OSU.CurrentTableIndex = 1
 OSU.CurrentTableIndex_Read = 1
+OSU.CurrentObjectColor = Color(255, 255, 255, 255)
+OSU.CurrentColourIndex = 1
+OSU.CurrentComboIndex = 1
 
 OSU.TempData = {
 	["b"] = "",
@@ -104,6 +110,11 @@ OSU.Hit100Tx = Material(OSU.CurrentSkin["hit100"])
 OSU.Hit50Tx = Material(OSU.CurrentSkin["hit50"])
 OSU.Hit0Tx = Material(OSU.CurrentSkin["hit0"])
 OSU.SnowTexture = Material("osu/internal/standard.png")
+OSU.STDTx = Material("osu/internal/standard.png")
+OSU.CTBTx = Material("osu/internal/ctb.png")
+OSU.MNATx = Material("osu/internal/mania.png")
+OSU.TKOTx = Material("osu/internal/taiko.png")
+OSU.rHitCircleOverlay = Material("osu/internal/hitcircle.png", "smooth")
 OSU.UnrankedTx = {
 	["t"] = Material(OSU.CurrentSkin["play-unranked@2x"]),
 	["w"] = 0,
@@ -175,6 +186,21 @@ OSU.ScoreMaterialTable = {
 	["x"] = Material("data/osu!/skins/default/score-x.png"),
 	["p"] = Material("data/osu!/skins/default/score-percent.png"),
 	["."] = Material("data/osu!/skins/default/score-dot.png"),
+	sizes = {},
+}
+
+OSU.DefaultMaterialTable = {
+	["0"] = Material("data/osu!/skins/default/default-0.png"),
+	["1"] = Material("data/osu!/skins/default/default-1.png"),
+	["2"] = Material("data/osu!/skins/default/default-2.png"),
+	["3"] = Material("data/osu!/skins/default/default-3.png"),
+	["4"] = Material("data/osu!/skins/default/default-4.png"),
+	["5"] = Material("data/osu!/skins/default/default-5.png"),
+	["6"] = Material("data/osu!/skins/default/default-6.png"),
+	["7"] = Material("data/osu!/skins/default/default-7.png"),
+	["8"] = Material("data/osu!/skins/default/default-8.png"),
+	["9"] = Material("data/osu!/skins/default/default-9.png"),
+	sizes = {},
 }
 
 OSU.GameEnded = false
