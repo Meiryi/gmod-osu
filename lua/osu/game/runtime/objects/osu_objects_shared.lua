@@ -11,6 +11,17 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
+function OSU:TraceFollowPoint(from, to, angle, time, dst, _end)
+	if(!OSU.CircleFollowPoint) then return end
+	local fade = math.Clamp(255 / (60 * time), 1, 255)
+	local step = OSU.FollowPointsGap / dst
+	local tmp = {}
+	for i = 0, 1, step do
+		table.insert(tmp, {OSU:BezierCurve(i, {Vector(from.x, from.y, 0), Vector(to.x, to.y, 0)}), 0, (1.1 - i) * fade, _end, angle, false})
+	end
+	table.insert(OSU.FollowPointsTable, tmp)
+end
+
 function OSU:PlayHitSound_t(t)
 	for k,v in next, t do
 		--[[

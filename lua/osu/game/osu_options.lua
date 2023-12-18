@@ -60,6 +60,9 @@ OSU.ConfigTable = {
 	"SmoothBG",
 	"MenuShow",
 	"NoEdgeSound",
+	"CircleFollowPoint",
+	"SmoothHitCircle",
+	"AllowAllSounds",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -100,7 +103,10 @@ OSU.EdgeFlash = false
 OSU.MainBGDim = 255
 OSU.SmoothBG = true
 OSU.MenuSnow = true
-OSU.NoEdgeSound = true
+OSU.NoEdgeSound = false
+OSU.CircleFollowPoint = true
+OSU.SmoothHitCircle = true
+OSU.AllowAllSounds = true
 
 OSU.MainVersion = "1.1.0"
 OSU.AvatarVersion = "1.0.1"
@@ -917,11 +923,23 @@ function OSU:OpenOptionsMenu()
 	OSU:Opt_CreateButton("Disable beat flashing on hitobjects", "DisableBeatFlash")
 	OSU:Opt_CreateButton("Hit-error bar", "HitErrorBar")
 	OSU:Opt_CreateButton("Show perfect hits", "PerfectHit")
+	OSU:Opt_CreateButton("Followpoints", "CircleFollowPoint")
+	OSU:Opt_InsertGap(ScreenScale(5))
+	OSU:CreateSubTitle("Hit Objects")
+	OSU:Opt_CreateButton("Smoother hitcircles", "SmoothHitCircle", function()
+		if(OSU.SmoothHitCircle) then
+			OSU:CenteredMessage("Turn it off if it's causing lag", 0.33)
+		end
+	end)
 	OSU:Opt_InsertGap(ScreenScale(5))
 	OSU:CreateSubTitle("Sounds")
 	OSU:Opt_CreateButton("Replace hitfinish to hitwhistle", "FinishToWhistle")
 	OSU:Opt_CreateButton("Disable combobreak sound", "NoBreakSound")
-	OSU:Opt_CreateButton("Disable slider edge sound (Recommneded)", "NoEdgeSound")
+	OSU:Opt_CreateButton("Disable slider edge sound", "NoEdgeSound")
+	OSU:Opt_CreateButton("Allow all edge sounds (WIP)", "AllowAllSounds")
+	OSU:CreateString("*Enable this will make sliders play all possible sounds", Color(255, 255, 255, 255))
+	OSU:CreateString("Some sounds might be desynced, since my brain is", Color(255, 255, 255, 255))
+	OSU:CreateString("too small to figure out osu's sound system*", Color(255, 255, 255, 255))
 	OSU:CreateSectionTitle("SKIN")
 	OSU:CreateSubTitle("Skins (Full skin support coming soon)")
 	OSU:Opt_CreateSlider("Cursor size", "CursorSize", 1, 48)

@@ -44,6 +44,11 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local basetime = OSU.CurTime
 	local ctime = OSU.CurTime
 	local _clr = OSU.CurrentObjectColor
+	local clapped = false
+	local traced = false
+	local traceTime = OSU.CurTime + (ms / 4)
+	local target = OSU.Objects[2]
+	local sdtmp = edgesd
 	if(OSU.ReplayMode) then
 		if(OSU.CurrentReplayData.HitData[___index] != nil) then
 			_roffset = OSU.CurrentReplayData.HitData[___index]
@@ -81,6 +86,21 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local completeTime = len / (OSU.SliderMultiplier * 100 * OSU.SliderVelocity) * OSU.BeatLength -- ms
 	completeTime = (completeTime / 1000)
 	ctime = basetime + completeTime
+	if(traceTime < OSU.CurTime && !traced) then
+		if(target != nil) then
+			if(!target["newcombo"]) then
+				local time = target["time"]
+				local pos = target["vec_2"]
+				local ang = math.deg(math.atan2(followpoint[#followpoint].y - pos.y, pos.x - followpoint[#followpoint].x))
+				local dst = math.Distance(followpoint[#followpoint].x, followpoint[#followpoint].y, pos.x, pos.y)
+				local __end = time + (OSU.AppearTime / 4)
+				if(dst > radius * 1.5) then
+					OSU:TraceFollowPoint(followpoint[#followpoint], pos, ang, __end - OSU.CurTime, dst, __end)
+				end
+			end
+		end
+		traced = true
+	end
 	local incrate = #realfollowpoint / (60 * completeTime)
 		surface.SetMaterial(OSU.SliderBackground)
 		if(!OSU.SingleColorSlider) then
@@ -144,6 +164,20 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			if(OSU.AutoNotes) then
 				area.lastHoldTime = OSU.CurTime
 				OSU.Health = math.Clamp(OSU.Health + OSU:GetFixedValue(0.12 + (OSU.HP * 0.02)), 0, 100)
+			end
+			if(!clapped && ctime <= OSU.CurTime) then
+				if(area.lastHoldTime >= OSU.CurTime) then
+					if(OSU.AllowAllSounds) then
+						sdtmp[0] = false
+						OSU:PlayHitSound_t(sdtmp)
+						clapped = true
+					else
+						if(edgesd[3]) then
+							OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(3)])
+						end
+					end
+					clapped = true
+				end
 			end
 			local index = math.floor(CurFollow)
 			__index = index
@@ -226,6 +260,15 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			end
 		end
 			if(amount >= _amount) then
+				if(OSU.AllowAllSounds) then
+					edgesd[3] = false
+					edgesd[2] = false
+					edgesd[1] = false
+					edgesd[0] = true
+				else
+					edgesd[3] = false
+					edgesd[0] = true
+				end
 				area.DoCheckAcc(osu_vec2t(realfollowpoint[__index].x, realfollowpoint[__index].y), OSU.CurTime)
 				area.Finished = true
 			end
@@ -265,7 +308,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 		end
 		if(hitoffs <= OSU:GetMissTime()) then
 			local type = OSU:GetHitType(hitoffs)
-			OSU:PlayHitSound_t(edgesd)
+			OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(edgesd)])
 			OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 			if(missed && type == 1) then
 				OSU:CreateHitScore(vec_2t, 2)

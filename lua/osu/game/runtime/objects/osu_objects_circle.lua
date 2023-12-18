@@ -29,11 +29,18 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	local alprate = 255 / (60 * (OSU.AppearTime / 3))
 	local alprate2 = alprate * 2
 	local _roffset = -64
+	local traced = false
+	local traceTime = OSU.CurTime + (ms / 4)
+	local target = OSU.Objects[2]
+	if(noscore) then
+		target = nil
+	end
 	if(OSU.ReplayMode) then
 		if(OSU.CurrentReplayData.HitData[__index] != nil) then
 			_roffset = OSU.CurrentReplayData.HitData[__index]
 		end
 	end
+	local clr = 255
 	local _clr = OSU.CurrentObjectColor
 	local hittime = ptime + _roffset
 		base:SetZPos(zp)
@@ -49,15 +56,30 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 		local tx, ty = circle:GetWide() / 2, circle:GetTall() / 2
 		circle.Paint = function()
 			OSU:DrawDefaultNumber(comboidx, tx, ty, radius, circle.iAlpha)
-			circle.oPaint(circle)
-			--[[
-			surface.SetDrawColor(_clr.r, _clr.g, _clr.b, circle.iAlpha)
-			surface.SetMaterial(OSU.rHitCircleOverlay)
-			surface.DrawTexturedRect(0, 0, radius, radius)
-			]]
+			if(!OSU.SmoothHitCircle) then
+				circle.oPaint(circle)
+			else
+				surface.SetDrawColor(clr, clr, clr, circle.iAlpha)
+				surface.SetMaterial(OSU.rHitCircleOverlay)
+				surface.DrawTexturedRect(0, 0, radius, radius)
+			end
 		end
 		base.Think = function()
-			local clr = 255
+			if(traceTime < OSU.CurTime && !traced && !noscore) then
+				if(target != nil) then
+					if(!target["newcombo"]) then
+						local time = target["time"]
+						local pos = target["vec_2"]
+						local ang = math.deg(math.atan2(vec_2t.y - pos.y, pos.x - vec_2t.x))
+						local dst = math.Distance(vec_2t.x, vec_2t.y, pos.x, pos.y)
+						local __end = time + (OSU.AppearTime / 4)
+						if(dst > radius * 1.5) then
+							OSU:TraceFollowPoint(vec_2t, pos, ang, __end - OSU.CurTime, dst, ptime)
+						end
+					end
+				end
+				traced = true
+			end
 			if(OSU.HD) then
 				clr = 255
 				if(OSU.CurTime > alptime) then

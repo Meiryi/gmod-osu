@@ -198,6 +198,14 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.ScoreMaterialTable["p"] = Material(OSU.CurrentSkin["score-percent"])
 	OSU.ScoreMaterialTable["."] = Material(OSU.CurrentSkin["score-dot"])
 
+	local w, h = OSU:GetMaterialSize(OSU.CurrentSkin["followpoint"])
+	OSU.FollowPointTx = {
+		["t"] = Material(OSU.CurrentSkin["followpoint"], "smooth"),
+		["w"] = w,
+		["h"] = h,
+	}
+	OSU.FollowPointsGap = math.Round(math.Distance(0, 0, w, h))
+	OSU.FollowPointsTable = {}
 	OSU.SliderFollow = Material(OSU.CurrentSkin["sliderfollowcircle"])
 	local w, h = OSU:GetMaterialSize(OSU.CurrentSkin["play-unranked@2x"])
 	OSU.UnrankedTx = {
@@ -262,7 +270,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		OSU.AR = math.Clamp(OSU.AR * 1.35, 1, 10)
 		OSU.CS = math.Clamp(OSU.CS * 1.25, 0.1, 10)
 		OSU.HP = OSU.HP * 1.4
-		OSU.OD = OSU.OD * 1.4
+		OSU.OD = math.Clamp(OSU.OD * 1.3, 0.1, 10)
 	end
 	OSU.CurrentHitSound = "soft"
 	local apprTime = OSU:GetApprTime()
@@ -613,6 +621,23 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	if(!IsValid(OSU.PlayFieldLayer)) then return end
 	OSU.PlayFieldLayer.Paint = function()
 		if(OSU.CurrentMode == 0) then
+			surface.SetMaterial(OSU.FollowPointTx["t"])
+			for _, t in next, OSU.FollowPointsTable do
+				for k,v in next, t do
+				-- pos, alpha, alpha++, end time, angle
+				if(v[4] > OSU.CurTime) then
+					v[2] = math.Clamp(v[2] + OSU:GetFixedValue(v[3]), 0, 255)
+				else
+					v[2] = math.Clamp(v[2] - OSU:GetFixedValue(v[3] * 2), 0, 255)
+					if(v[2] <= 0) then
+						table.remove(OSU.FollowPointsTable[_], k)
+					end
+				end
+
+				surface.SetDrawColor(255, 255, 255, v[2])
+				surface.DrawTexturedRectRotated(v[1].x, v[1].y, OSU.FollowPointTx["w"], OSU.FollowPointTx["h"], v[5])
+				end
+			end
 			if(OSU.GlobalMatShadowSize > OSU.GlobalMatSize) then
 				OSU.GlobalMatShadowSize = math.Clamp(OSU.GlobalMatShadowSize - OSU:GetFixedValue(0.03), OSU.GlobalMatSize, 2)
 				OSU:DrawStringAsMaterial(OSU.Combo.."x", 0 + gap, ScrH() - gap, OSU.GlobalMatShadowSize, 2, 100, false, false)

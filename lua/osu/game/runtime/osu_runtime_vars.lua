@@ -114,6 +114,13 @@ OSU.STDTx = Material("osu/internal/standard.png")
 OSU.CTBTx = Material("osu/internal/ctb.png")
 OSU.MNATx = Material("osu/internal/mania.png")
 OSU.TKOTx = Material("osu/internal/taiko.png")
+OSU.FollowPointTx = {
+	["t"] = Material("osu/followpoint.png"),
+	["w"] = 16,
+	["h"] = 22,
+}
+OSU.FollowPointsTable = {}
+OSU.FollowPointsGap = math.Distance(0, 0, 16, 22)
 OSU.rHitCircleOverlay = Material("osu/internal/hitcircle.png", "smooth")
 OSU.UnrankedTx = {
 	["t"] = Material(OSU.CurrentSkin["play-unranked@2x"]),
