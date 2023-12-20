@@ -63,6 +63,7 @@ OSU.ConfigTable = {
 	"CircleFollowPoint",
 	"SmoothHitCircle",
 	"AllowAllSounds",
+	"LoadCards",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -107,6 +108,7 @@ OSU.NoEdgeSound = false
 OSU.CircleFollowPoint = true
 OSU.SmoothHitCircle = true
 OSU.AllowAllSounds = true
+OSU.LoadCards = true
 
 OSU.MainVersion = "1.1.0"
 OSU.AvatarVersion = "1.0.1"
@@ -913,6 +915,9 @@ function OSU:OpenOptionsMenu()
 	OSU:CreateSubTitle("Detail Settings")
 	OSU:Opt_CreateButton("Snaking sliders", "SnakingSliders")
 	OSU:Opt_CreateButton("Don't draw slider's outlines", "SingleColorSlider")
+	OSU:Opt_InsertGap(ScreenScale(5))
+	OSU:CreateSubTitle("Downloader")
+	OSU:Opt_CreateButton("Load beatmap cards", "LoadCards")
 	OSU:CreateSectionTitle("GAMEPLAY")
 	OSU:CreateSubTitle("General")
 	OSU:Opt_CreateSlider("Background dim", "BackgroundDim", 0, 255)

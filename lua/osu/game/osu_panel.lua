@@ -230,6 +230,17 @@ function OSU:Startup()
 		OSU.UserAvatar.BannedOverlay:SetVisible(OSU.UserBanned)
 		OSU.UserAvatar:SetAlpha(255 * OSU.MenuAlphaMul)
 	end
+	local w = ScreenScale(18)
+	OSU.WebDownloadButton = OSU:CreateImageButton(OSU.ObjectLayer, ScrW() - w / 2, ScrH() / 2, w, ScreenScale(147), "osu/internal/downloads.png", true, function()
+		OSU:PlaySoundEffect(OSU.CurrentSkin["menu-freeplay-click"])
+		OSU:ChangeScene(16)
+	end)
+	OSU.WebDownloadButton.Think = function()
+		OSU.WebDownloadButton:SetAlpha(255 * OSU.MenuAlphaMul)
+	end
+	OSU.WebDownloadButton.OnCursorEntered = function()
+		OSU:PlaySoundEffect(OSU.CurrentSkin["click-short"])
+	end
 	local h = ScreenScale(40)
 	local _th = ScreenScale(12)
 	local _w = ScreenScale(100)

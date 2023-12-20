@@ -12,11 +12,12 @@
 ]]
 
 function OSU:CreateApproachCircle(vec_2t, fadein, dec, radius)
-	if(OSU.HD && OSU.CurrentZPos < 32766) then return end
+	if(OSU.HD && OSU.CurrentZPos < 32767) then return end
 	local oradius = radius
-	radius = radius * 3
+	local mul = 3.5
+	radius = radius * mul
 	local offs = radius / 2
-	local circle = vgui.Create("DImage", OSU.PlayFieldLayer)
+	local circle = vgui.Create("DImage", OSU.PlayFieldLayer.UpperLayer)
 		circle.iAlpha = 0
 		circle:SetImage(OSU.CurrentSkin["approachcircle"])
 		circle:SetSize(radius, radius)
@@ -24,7 +25,8 @@ function OSU:CreateApproachCircle(vec_2t, fadein, dec, radius)
 		circle:SetPos(vec_2t.x - offs, vec_2t.y - offs)
 		circle:SetImageColor(OSU.CurrentObjectColor)
 		circle.Think = function()
-			radius = math.Clamp(radius - OSU:GetFixedValue(dec), oradius, oradius * 3)
+			fadein = math.Clamp(fadein + OSU:GetFixedValue(fadein * 0.2), 0, 255)
+			radius = math.Clamp(radius - OSU:GetFixedValue(dec), oradius, oradius * mul)
 			circle.iAlpha = math.Clamp(circle.iAlpha + OSU:GetFixedValue(fadein), 0, 255)
 			circle:SetAlpha(circle.iAlpha)
 			offs = radius / 2

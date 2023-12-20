@@ -16,7 +16,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	local radius = ScreenScale(54.4 - 1.5 * OSU.CS)
 	local offs = radius / 2
 	local dec, fadein, ms = OSU:GetApproachRate(radius)
-	local base = vgui.Create("DPanel", OSU.PlayFieldLayer)
+	local base = vgui.Create("DPanel", OSU.PlayFieldLayer.UpperLayer)
 	base.Paint = function() return end
 	local hcircle = vgui.Create("DImage", base)
 		hcircle:SetImage(OSU.CurrentSkin["hitcircle"])
@@ -30,7 +30,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	local alprate2 = alprate * 2
 	local _roffset = -64
 	local traced = false
-	local traceTime = OSU.CurTime + (ms / 4)
+	local traceTime = OSU.CurTime + (ms / 5)
 	local target = OSU.Objects[2]
 	if(noscore) then
 		target = nil
@@ -72,9 +72,10 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 						local pos = target["vec_2"]
 						local ang = math.deg(math.atan2(vec_2t.y - pos.y, pos.x - vec_2t.x))
 						local dst = math.Distance(vec_2t.x, vec_2t.y, pos.x, pos.y)
-						local __end = time + (OSU.AppearTime / 4)
-						if(dst > radius * 1.5) then
-							OSU:TraceFollowPoint(vec_2t, pos, ang, __end - OSU.CurTime, dst, ptime)
+						local __end = time + (OSU.AppearTime / 2)
+						local _trend = time
+						if(dst > radius) then
+							OSU:TraceFollowPoint(vec_2t, pos, ang, _trend - OSU.CurTime, dst, ptime)
 						end
 					end
 				end
@@ -99,6 +100,13 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 			end
 			if(OSU.CurTime >= misstime) then
 				if(noscore) then
+					if(OSU.LastInaccuracyTime < OSU.CurTime) then
+						OSU.LastInaccuracyTime = OSU.CurTime + (12 + OSU.HP)
+						OSU.HealObjectsHit = 8 + math.floor(OSU.HP / 2)
+					else
+						OSU.LastInaccuracyTime = OSU.LastInaccuracyTime + (OSU.HP / 2) + 6
+						OSU.HealObjectsHit = OSU.HealObjectsHit + math.floor(OSU.HP * 0.33)
+					end
 					base:Remove()
 					OSU:ComboBreak()
 				else
@@ -142,9 +150,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 				OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 				OSU:AddHealth(OSU:GetHitType(hitoffs))
 				OSU.Score = OSU.Score + 50
-				OSU.Combo = OSU.Combo + 1
-				OSU.GlobalMatSize = 1.07
-				OSU.GlobalMatShadowSize = OSU.GlobalMatSize * 1.3
+				OSU:AddCombo()
 			else
 				if(hitoffs <= OSU:GetMissTime()) then
 					OSU:CreateHitScore(vec_2t, OSU:GetHitType(hitoffs))

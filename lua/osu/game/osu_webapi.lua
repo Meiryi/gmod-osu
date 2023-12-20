@@ -381,7 +381,6 @@ function OSU:RequestLeaderboard(beatmapid)
 															OSU.MISS = tonumber(v["hmiss"])
 															OSU.HighestCombo = tonumber(v["combo"])
 															OSU:SetupResultPanel(v["name"], true, function()
-																if(IsValid(OSU.ResultLayer)) then
 																	OSU.Accuracy = 0
 																	OSU.HIT300 = 0
 																	OSU.HIT100 = 0
@@ -393,7 +392,7 @@ function OSU:RequestLeaderboard(beatmapid)
 																	OSU.HighestCombo = 0
 																	OSU.ResultLayer:Remove()
 																	OSU:CreateBackButton(OSU.PlayMenuLayer, OSU_MENU_STATE_MAIN)
-																end
+																print("o")
 															end, v["date"])
 															fade.Switch = true
 														end

@@ -143,7 +143,11 @@ function OSU:RunTime()
 		OSU.GlobalAlphaMult = math.Clamp(OSU.GlobalAlphaMult - OSU:GetFixedValue(0.035), 0, 1)
 	else
 		if(OSU.BeatmapStartTime < OSU.CurTime && #OSU.Objects > 0) then
-			OSU.Health = math.Clamp(OSU.Health - OSU:GetFixedValue(OSU.HP * 0.035), 0, 100)
+			local drain = OSU.HP * 0.02
+			if(OSU.Health <= 33) then
+				drain = drain * math.Clamp(OSU.Health / 100, 0.6, 1)
+			end
+			OSU.Health = math.Clamp(OSU.Health - OSU:GetFixedValue(drain), 0, 100)
 		end
 		if(OSU.Health <= 0 && OSU.PlayFieldYOffs <= 0 && !OSU.NF && !OSU.ReplayMode) then
 			OSU:SetupFailPanel()
@@ -177,7 +181,8 @@ function OSU:RunTime()
 					local oX, oY = OSU.FakeCursorPos.x, OSU.FakeCursorPos.y
 					local nX, nY = v[2] * scl, v[3] * scl
 					local offX, offY = oX - nX, oY - nY
-					OSU.FakeCursorPos = {x = math.Clamp(oX - OSU:GetFixedValue(offX ), 0, ScrW()), y = math.Clamp(oY - OSU:GetFixedValue(offY), 0, ScrH())}
+					local mul = 0.8
+					OSU.FakeCursorPos = {x = math.Clamp(oX - OSU:GetFixedValue(offX * mul), 0, ScrW()), y = math.Clamp(oY - OSU:GetFixedValue(offY * mul), 0, ScrH())}
 				end
 				continue
 			else

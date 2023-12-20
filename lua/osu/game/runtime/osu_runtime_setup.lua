@@ -157,8 +157,16 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		OSU.SoundChannel:SetTime(0)
 		OSU.CurrentZPos = 32767
 		OSU.PlayFieldLayer = OSU:CreateFrame(OSU.MainGameFrame, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), false)
+		if(details["Video"]) then
+			local path = details["Path"]..details["VideoFN"]
+			if(file.Exists(path, "DATA")) then
+
+				
+			end
+		end
+		OSU.PlayFieldLayer.UpperLayer = OSU:CreateFrame(OSU.PlayFieldLayer, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), false)
 		OSU.PlayFieldLayer.FollowPoints = {}
-		OSU.HealthBar = vgui.Create("DPanel", OSU.PlayFieldLayer)
+		OSU.HealthBar = vgui.Create("DPanel", OSU.PlayFieldLayer.UpperLayer)
 		OSU.HealthBar.Paint = function() return end
 		OSU.HealthBar.Bar = vgui.Create("DImage", OSU.HealthBar)
 		OSU.HealthBar:SetVisible(false)
@@ -187,6 +195,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.CurrentColourIndex = 1
 	OSU.CurrentComboIndex = 1
 	OSU.Health = 100
+	OSU.LastInaccuracyTime = 0
 
 	for i = 0, 9, 1 do
 		OSU.DefaultMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["default-"..i])
@@ -619,16 +628,20 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	local nextExecute = 0.1
 	local ExecuteTime = 0
 	if(!IsValid(OSU.PlayFieldLayer)) then return end
-	OSU.PlayFieldLayer.Paint = function()
+	OSU.PlayFieldLayer.UpperLayer.Paint = function()
 		if(OSU.CurrentMode == 0) then
 			surface.SetMaterial(OSU.FollowPointTx["t"])
 			for _, t in next, OSU.FollowPointsTable do
 				for k,v in next, t do
-				-- pos, alpha, alpha++, end time, angle
+				-- pos, alpha, alpha++, end time, angle, st time
 				if(v[4] > OSU.CurTime) then
-					v[2] = math.Clamp(v[2] + OSU:GetFixedValue(v[3]), 0, 255)
+					if(v[6] <= OSU.CurTime) then
+						v[2] = math.Clamp(v[2] + OSU:GetFixedValue(v[3]), 0, 255)
+					end
 				else
-					v[2] = math.Clamp(v[2] - OSU:GetFixedValue(v[3] * 2), 0, 255)
+					if(v[7] <= OSU.CurTime) then
+						v[2] = math.Clamp(v[2] - OSU:GetFixedValue(v[3]), 0, 255)
+					end
 					if(v[2] <= 0) then
 						table.remove(OSU.FollowPointsTable[_], k)
 					end

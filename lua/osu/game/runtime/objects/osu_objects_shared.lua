@@ -11,13 +11,20 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
+function OSU:AddCombo()
+	OSU.Combo = OSU.Combo + 1
+	OSU.GlobalMatSize = 1.07
+	OSU.GlobalMatShadowSize = OSU.GlobalMatSize * 1.3
+end
+
 function OSU:TraceFollowPoint(from, to, angle, time, dst, _end)
 	if(!OSU.CircleFollowPoint) then return end
-	local fade = math.Clamp(255 / (60 * time), 1, 255)
+	local fade = math.Clamp(255 / (60 * time), 5, 255)
 	local step = OSU.FollowPointsGap / dst
 	local tmp = {}
 	for i = 0, 1, step do
-		table.insert(tmp, {OSU:BezierCurve(i, {Vector(from.x, from.y, 0), Vector(to.x, to.y, 0)}), 0, (1.1 - i) * fade, _end, angle, false})
+		local _step = (time / (1.25 - math.max(i, 0.1)))
+		table.insert(tmp, {OSU:BezierCurve(i, {Vector(from.x, from.y, 0), Vector(to.x, to.y, 0)}), 0, fade, _end, angle, OSU.CurTime + _step, _end + _step})
 	end
 	table.insert(OSU.FollowPointsTable, tmp)
 end
@@ -99,15 +106,23 @@ function OSU:RunHitObjectsCheck(type)
 		if(type == 1) then
 			OSU.Score = math.Clamp(OSU.Score + ((300 + OSU.Combo * mul) * OSU.ScoreMul), 0, 2147000000)
 			OSU.TotalAccuracyRecorded = OSU.TotalAccuracyRecorded + 1
+			OSU.HealAccuracy = OSU.HealAccuracy + 1
 			OSU.HIT300 = OSU.HIT300 + 1
 		elseif(type == 2) then
 			OSU.Score = math.Clamp(OSU.Score + ((100 + OSU.Combo * mul) * OSU.ScoreMul), 0, 2147000000)
-			OSU.TotalAccuracyRecorded = OSU.TotalAccuracyRecorded + 0.33
+			OSU.TotalAccuracyRecorded = OSU.TotalAccuracyRecorded + 0.2
+			OSU.HealAccuracy = OSU.HealAccuracy + 0.33
 			OSU.HIT100 = OSU.HIT100 + 1
 		elseif(type == 3) then
 			OSU.Score = math.Clamp(OSU.Score + ((50 + OSU.Combo * mul) * OSU.ScoreMul), 0, 2147000000)
 			OSU.TotalAccuracyRecorded = OSU.TotalAccuracyRecorded + 0.16
+			OSU.HealAccuracy = OSU.HealAccuracy + 0.08
+			OSU.HealAccuracy = 0
+			OSU.HealObjectsHit = 5 + math.floor(OSU.HP / 2)
 			OSU.HIT50 = OSU.HIT50 + 1	
+			if(OSU.LastInaccuracyTime < OSU.CurTime) then
+				OSU.LastInaccuracyTime = OSU.CurTime + (OSU.HP * 0.3) + 3
+			end
 		end
 		OSU.Score = math.Clamp(math.floor(OSU.Score), 0, 2147000000)
 		OSU.Combo = OSU.Combo + 1
@@ -119,15 +134,30 @@ function OSU:RunHitObjectsCheck(type)
 		end
 		OSU:AddHealth(type)
 	else
+		if(OSU.LastInaccuracyTime < OSU.CurTime) then
+			OSU.LastInaccuracyTime = OSU.CurTime + (12 + OSU.HP)
+			OSU.HealObjectsHit = 8 + math.floor(OSU.HP / 2)
+		else
+			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime + (OSU.HP / 2) + 6
+			OSU.HealObjectsHit = OSU.HealObjectsHit + math.floor(OSU.HP * 0.33)
+		end
+		OSU.HealAccuracy = 1
+		OSU.HealRating = 0
 		if(OSU.SD) then -- insta death
 			OSU.Health = -1
 		end
-		OSU.Health = math.Clamp(OSU.Health - (OSU.HP + 15), 0, 100)
+		local drain = ((OSU.HP * 1.25) + 3.5)
+		if(OSU.Health <= 45) then
+			drain = drain * math.Clamp(OSU.Health / 100, 0.4, 1)
+		end
+		OSU.Health = math.Clamp(OSU.Health - drain, 0, 100)
 		OSU.MISS = OSU.MISS + 1
 		OSU:ComboBreak()
 		OSU.TotalObjectsRecorded = OSU.TotalObjectsRecorded + 1
 	end
 	OSU.Accuracy = math.Round(math.Clamp((OSU.TotalAccuracyRecorded / OSU.TotalObjectsRecorded) * 100, 0, 100), 2)
+	OSU.HealObjectsHit = OSU.HealObjectsHit + 1
+	OSU.HealRating = math.Clamp((OSU.HealAccuracy / OSU.HealObjectsHit), 0, 1)
 end
 
 function OSU:GetMaterialSizeMul(str, mul)
@@ -242,14 +272,30 @@ end
 function OSU:AddHealth(type)
 	local amount = 15
 	if(type == 1) then
-		amount = 15
+		amount = 12
 	elseif(type == 2) then
-		amount = 10
+		amount = 4.95
 	elseif(type == 3) then
-		amount = 5
+		amount = 2.5
 	else
-		amount = 5
+		amount = 2.5
 	end
-	OSU.Health = math.Clamp(OSU.Health + (amount - (OSU.HP * 0.5)), 0, 100)
+	local offs = OSU.LastInaccuracyTime - OSU.CurTime
+	if(offs > 0) then
+		if(type == 1) then
+			amount = (15 + OSU.HP) -- Make players survival much longer, least don't die instantly
+			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime - 0.45
+		elseif(type == 2) then
+			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime - 0.2
+			OSU.HealObjectsHit = OSU.HealObjectsHit + math.floor(OSU.HP * 0.11)
+		elseif(type == 3) then
+			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime - 0.12
+			OSU.HealObjectsHit = OSU.HealObjectsHit + math.floor(OSU.HP * 0.22)
+		else
+			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime + 0.2
+		end
+		amount = amount * OSU.HealRating
+	end
+	OSU.Health = math.Clamp(OSU.Health + (amount - (OSU.HP * 0.1)), 0, 100)
 	OSU.KiExt = ScreenScale(10)
 end

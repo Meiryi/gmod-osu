@@ -14,7 +14,7 @@
 function OSU:CreateSkipButton()
 	local w, h = ScreenScale(64), ScreenScale(49)
 	local x, y = ScrW(), ScrH()
-	local skip = vgui.Create("DImageButton", OSU.PlayFieldLayer)
+	local skip = vgui.Create("DImageButton", OSU.PlayFieldLayer.UpperLayer)
 		skip:SetSize(w, h)
 		skip:SetPos(x - w, y - h)
 		skip:SetImage(OSU.CurrentSkin["play-skip"])

@@ -21,7 +21,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local ptime = OSU.CurTime + ms
 	local misstime = OSU.CurTime + (OSU:GetMissTime() + ms)
 	local ptime = OSU.CurTime + ms
-	local area = vgui.Create("DImage", OSU.PlayFieldLayer)
+	local area = vgui.Create("DImage", OSU.PlayFieldLayer.UpperLayer)
 	local dir = false
 	local amount = 0
 	local CurFollow = 1
@@ -29,6 +29,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local fMaxFollow = #followpoint
 	local __index = 1
 	local missed = false
+	local pressed = false
 	local timeSet = false
 	local _missoffs = OSU:GetMissTime()
 	local _prevAngle = math.atan2(
@@ -38,7 +39,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local deg = math.deg(_prevAngle)
 	local rw, rh = OSU:GetMaterialSize(OSU.CurrentSkin["reversearrow"])
 	local alptime = OSU.CurTime + OSU.AppearTime / 2
-	local alprate = 255 / (60 * (OSU.AppearTime / 4))
+	local alprate = 255 / (60 * (OSU.AppearTime / 2))
 	local alprate2 = alprate * 2
 	local _roffset = -64
 	local basetime = OSU.CurTime
@@ -46,7 +47,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local _clr = OSU.CurrentObjectColor
 	local clapped = false
 	local traced = false
-	local traceTime = OSU.CurTime + (ms / 4)
+	local traceTime = OSU.CurTime + (ms / 5)
 	local target = OSU.Objects[2]
 	local sdtmp = edgesd
 	if(OSU.ReplayMode) then
@@ -77,7 +78,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 		area.MaxDrawIndex = #followpoint
 	end
 	local apprTime = OSU:GetApprTime()
-	local snakingRate = #followpoint / (10 * apprTime)
+	local snakingRate = #followpoint / (15 * apprTime)
 	area.Paint = function()
 	if(OSU.SnakingSliders) then
 		area.MaxDrawIndex = math.Clamp(area.MaxDrawIndex + OSU:GetFixedValue(snakingRate), 1, #followpoint)
@@ -91,11 +92,16 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			if(!target["newcombo"]) then
 				local time = target["time"]
 				local pos = target["vec_2"]
-				local ang = math.deg(math.atan2(followpoint[#followpoint].y - pos.y, pos.x - followpoint[#followpoint].x))
-				local dst = math.Distance(followpoint[#followpoint].x, followpoint[#followpoint].y, pos.x, pos.y)
-				local __end = time + (OSU.AppearTime / 4)
-				if(dst > radius * 1.5) then
-					OSU:TraceFollowPoint(followpoint[#followpoint], pos, ang, __end - OSU.CurTime, dst, __end)
+				local idx = #followpoint
+				if(math.mod(_amount, 2) == 0) then
+					idx = 2
+				end
+				local ang = math.deg(math.atan2(followpoint[idx].y - pos.y, pos.x - followpoint[idx].x))
+				local dst = math.Distance(followpoint[idx].x, followpoint[idx].y, pos.x, pos.y)
+				local __end = time + (OSU.AppearTime / 2)
+				local _trend = time
+				if(dst > radius) then
+					OSU:TraceFollowPoint(followpoint[#followpoint], pos, ang, _trend - OSU.CurTime, dst, ctime)
 				end
 			end
 		end
@@ -163,7 +169,6 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			end
 			if(OSU.AutoNotes) then
 				area.lastHoldTime = OSU.CurTime
-				OSU.Health = math.Clamp(OSU.Health + OSU:GetFixedValue(0.12 + (OSU.HP * 0.02)), 0, 100)
 			end
 			if(!clapped && ctime <= OSU.CurTime) then
 				if(area.lastHoldTime >= OSU.CurTime) then
@@ -194,13 +199,15 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 						if(__amo > 1) then
 							OSU:PlayHitSound_t(sound)
 						end
-						OSU:AddHealth(1)
+						OSU:AddHealth(2)
+						OSU:AddCombo()
 					else
 						if(OSU.AutoNotes) then
 							if(__amo > 1) then
 								OSU:PlayHitSound_t(sound)
 							end
-							OSU:AddHealth(1)
+							OSU:AddHealth(2)
+							OSU:AddCombo()
 						end
 					end
 					amount = amount + 1
@@ -213,13 +220,15 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 						if(__amo > 1) then
 							OSU:PlayHitSound_t(sound)
 						end
-						OSU:AddHealth(1)
+						OSU:AddHealth(2)
+						OSU:AddCombo()
 					else
 						if(OSU.AutoNotes) then
 							if(__amo > 1) then
 								OSU:PlayHitSound_t(sound)
 							end
-							OSU:AddHealth(1)
+							OSU:AddHealth(2)
+							OSU:AddCombo()
 						end
 					end
 					amount = amount + 1
@@ -235,8 +244,8 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			surface.DrawTexturedRect(x - sx / 2, y - sx / 2, sx, sx)
 			local lMiss = math.abs(area.lastHoldTime - OSU.CurTime)
 			if(OSU.KeyDown && dis <= radius) then
+				pressed = true
 				area.lastHoldTime = OSU.CurTime
-				OSU.Health = math.Clamp(OSU.Health + OSU:GetFixedValue(0.085 + (OSU.HP * 0.01)), 0, 100)
 			end
 			if(lMiss > _missoffs) then
 				if(!missed) then
@@ -246,6 +255,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				area.iFollowAlpha = math.Clamp(area.iFollowAlpha - OSU:GetFixedValue(20), 0, 255)
 				area.iFollowSize = math.Clamp(area.iFollowSize - OSU:GetFixedValue(5), radius, 1024)
 			else
+				OSU.Health = math.Clamp(OSU.Health + OSU:GetFixedValue(0.05 + (OSU.HP * 0.01)), 0, 100)
 				area.iFollowAlpha = math.Clamp(area.iFollowAlpha + OSU:GetFixedValue(20), 0, 255)
 				area.iFollowSize = math.Clamp(area.iFollowSize + OSU:GetFixedValue(5), radius, radius * 1.5)
 			end
@@ -303,6 +313,9 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			table.insert(OSU.ReplayData.MouseData, {OSU.CurTime - OSU.BeatmapTime, OSU.CursorPos.x, OSU.CursorPos.y})
 		end
 		local hitoffs = math.abs(checkTime - area.lastHoldTime)
+		if(!pressed && !OSU.AutoNotes) then
+			hitoffs = OSU.HITMISSTIME + 0.2
+		end
 		if(_roffset != -64) then
 			hitoffs = _roffset
 		end

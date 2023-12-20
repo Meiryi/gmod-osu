@@ -135,6 +135,8 @@ function OSU:ChangeScene(state)
 				if(tmp["combo"] < 0) then tmp["combo"] = 1 end
 				if(tmp["score"] < 0) then tmp["score"] = 1 end
 				OSU:SubmitScore(tmp)
+			elseif(state == 16) then
+				OSU:SetupBeatmapDownloadPanel()
 			end
 			exec = true
 			OSU.MENU_STATE = state

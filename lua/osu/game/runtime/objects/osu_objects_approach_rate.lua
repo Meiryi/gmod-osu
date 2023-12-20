@@ -24,7 +24,7 @@ function OSU:GetApprTime()
 end
 
 function OSU:GetApproachRate(size)
-	local _to = size * 2
+	local _to = size * 2.5
 	local ms = 1800
 	local fade = 800
 	local _mul = 1
@@ -39,6 +39,6 @@ function OSU:GetApproachRate(size)
 	local _ms = ms
 	fade = fade / 1000
 	local appr = _to / (60 * ms)
-	local fade = 255 / (60 * fade)
+	local fade = 255 / (1000 * fade)
 	return appr, fade, _ms
 end

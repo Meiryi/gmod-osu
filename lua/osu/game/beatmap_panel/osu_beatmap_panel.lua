@@ -324,6 +324,7 @@ function OSU:RefreshBeatmapList(keyWord)
 					end
 					local ver, id, preview, mode = OSU:GetBeatmapVersion(_data, _path)
 					local datas = OSU:GetBeatmapDetails(_data)
+					datas["Path"] = _path
 					datas["ID"] = id
 					datas["Title"] = name[OSU.BeatmapArtistType].." - "..name[OSU.BeatmapNameType].." ["..ver.."]"
 					datas["Mapper"] = name["Creator"]

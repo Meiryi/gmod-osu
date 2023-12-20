@@ -23,6 +23,9 @@ function OSU:GetBeatmapDetails(ctx)
 		["HP"] = -1,
 		["Stars"] = -1,
 		["Length"] = 1,
+		["Video"] = false,
+		["VideoFN"] = "NULL",
+		["VideoOffset"] = "0",
 	}
 	local ctx = string.Explode("\n", ctx)
 	local bpm_processing = ""
@@ -61,6 +64,14 @@ function OSU:GetBeatmapDetails(ctx)
 		end
 		if(string.find(v, "HitObjects")) then
 			obj_start = k + 1
+		end
+		if(string.find(v, "Video,")) then
+			details["Video"] = true
+			local _v = string.Explode(",", v)
+			local f = string.Replace(_v[3], '"', "")
+			f = string.Replace(f, "\r", "")
+			details["VideoFN"] = f
+			details["VideoOffset"] = _v[2]
 		end
 	end
 	if(tps_start != 0) then

@@ -37,6 +37,8 @@ if(CLIENT) then
 	include("osu/game/replay/osu_replay_recorder.lua")
 	include("osu/game/replay/osu_replay_importer.lua")
 
+	include("osu/game/beatmap_downloader/osu_beatmap_web_panel.lua")
+
 	include("osu/game/beatmap_panel/osu_beatmap_panel.lua")
 
 	include("osu/game/beatmap_reader/osu_beatmap_reader.lua")
@@ -95,6 +97,8 @@ if(SERVER) then
 	AddCSLuaFile("osu/game/replay/osu_replay_recorder.lua")
 	AddCSLuaFile("osu/game/replay/osu_replay_importer.lua")
 
+	AddCSLuaFile("osu/game/beatmap_downloader/osu_beatmap_web_panel.lua")
+
 	AddCSLuaFile("osu/game/beatmap_panel/osu_beatmap_panel.lua")
 
 	AddCSLuaFile("osu/game/beatmap_reader/osu_beatmap_reader.lua")
@@ -134,4 +138,6 @@ file.CreateDir("osu!/cache/hitobjects")
 file.CreateDir("osu!/ret")
 file.CreateDir("osu!/avatars")
 file.CreateDir("osu!/avatars/frames")
+file.CreateDir("osu!/download")
+file.CreateDir("osu!/cards")
 file.Write("osu!/skins/do not edit default skin.txt", "Although you can, but don't modify default skins, it'll cause unexpected result.")

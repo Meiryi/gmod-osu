@@ -154,6 +154,16 @@ function OSU:InitFonts()
 		size = ScreenScale(8),
 		antialias = true,
 	})
+	surface.CreateFont("OSUWebTitle", {
+		font = "Aller",
+		size = ScreenScale(12),
+		antialias = true,
+	})
+	surface.CreateFont("OSUWebDetails", {
+		font = "Aller",
+		size = ScreenScale(8),
+		antialias = true,
+	})
 end
 
 function OSU:CreateFrameScroll(parent, w, h, color)
@@ -729,6 +739,10 @@ function OSU:CreateBackButton(parent, toState, fBack, func, offs)
 		else
 			OSU:FakeChangeScene(func)
 		end
+		OSU.BackButton.Clicked = true
+		if(IsValid(OSU.PreviewChannel)) then
+			OSU.PreviewChannel:Pause()
+		end
 	end
 	OSU.BackButton.Think = function()
 		if(OSU.BackButton:IsHovered()) then
@@ -742,6 +756,7 @@ function OSU:CreateBackButton(parent, toState, fBack, func, offs)
 		if(OSU.BackButton.Clicked) then
 			OSU.BackButton.iAlpha = math.Clamp(OSU.BackButton.iAlpha - OSU:GetFixedValue(40), 0, 255)
 			if(OSU.BackButton.iAlpha <= 0) then
+				parent:Remove()
 				OSU.BackButton:Remove()
 			end
 		end
@@ -946,6 +961,27 @@ function OSU:PrintBeatmapDetails(details)
 		end
 end
 
+function OSU:CreateImageButton(parent, x, y, w, h, img, cent, func)
+	local tx = Material(img, "smooth")
+	local img = parent:Add("DImageButton")
+		img:SetSize(w, h)
+		if(cent) then
+			img:SetPos(x - w / 2, y - h / 2)
+		else
+			img:SetPos(x, y)
+		end
+		img.Paint = function()
+			surface.SetDrawColor(255, 255, 255, 255)
+			surface.SetMaterial(tx)
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+		function img:OnCursorEntered()
+			OSU:PlaySoundEffect(OSU.CurrentSkin["click-short"])
+		end
+		img.DoClick = func
+		return img
+end
+
 function OSU:CreateModsButton(parent, texture, x, y, w, h, opt, opt_off, func)
 	if(!IsValid(parent) || OSU[opt] == nil) then return end
 	local _w, _h = w * 1.5, h * 1.5
@@ -993,7 +1029,7 @@ function OSU:CreateModsButton(parent, texture, x, y, w, h, opt, opt_off, func)
 		end
 end
 
-function OSU:CreateClickableButton(parent, x, y, w, h, cent, text, func)
+function OSU:CreateClickableButton(parent, x, y, w, h, cent, text, func, outcolor, innercolor, font, textcolor)
 	if(!IsValid(parent)) then return end
 	local btn = parent:Add("DButton")
 	btn:SetSize(w, h)
@@ -1005,11 +1041,28 @@ function OSU:CreateClickableButton(parent, x, y, w, h, cent, text, func)
 	local gap = ScreenScale(1)
 	local gap2x = gap * 2
 	local _w, _h = w - gap2x, h - gap2x
-	btn:SetFont("OSUBeatmapTitle")
+	local inclr = OSU.OptBlue
+	local ouclr = Color(0, 0, 0, 200)
+	if(innercolor != nil) then
+		inclr = innercolor
+	end
+	if(outcolor != nil) then
+		ouclr = outcolor
+	end
+	local ft = "OSUBeatmapTitle"
+	if(font != nil) then
+		ft = font
+	end
+	local tclr = Color(100 ,100, 100, 255)
+	if(textcolor != nil) then
+		tclr = textcolor
+	end
+	btn:SetFont(ft)
 	btn:SetText(text)
+	btn:SetTextColor(tclr)
 	btn.Paint = function()
-		draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 200))
-		draw.RoundedBox(0, gap, gap, _w, _h, OSU.OptBlue)
+		draw.RoundedBox(0, 0, 0, w, h, ouclr)
+		draw.RoundedBox(0, gap, gap, _w, _h, inclr)
 	end
 	btn.DoClick = func
 	function btn:OnCursorEntered()
@@ -1038,6 +1091,18 @@ function OSU:CreateTextEntryPanel(parent, x, y, w, h, cent)
 	base.Paint = function()
 		draw.RoundedBox(0, 0, 0, w, h, Color(255, 255, 255, 255))
 		draw.RoundedBox(0, gap, gap, w - gap2x, h - gap2x, Color(50, 50, 50, 255))
+	end
+	function btn:OnKeyCodeTyped(keyCode)
+		if(keyCode == 66) then
+			OSU:PlaySoundEffect(OSU.CurrentSkin["key-delete"])
+		else
+			if(keyCode != 64) then
+				OSU:PlaySoundEffect(OSU.CurrentSkin["key-press-"..math.random(1, 4)])
+			end
+		end
+	end
+	function btn:OnEnter(value)
+		OSU:PlaySoundEffect(OSU.CurrentSkin["key-confirm"])
 	end
 	return btn
 end
@@ -1129,7 +1194,7 @@ hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 		surface.DrawTexturedRect(v[1].x - (v[4] / 2), v[1].y - (v[4] / 2), v[4], v[4])
 	end
 	if(OSU.ShouldDrawFakeCursor) then
-		surface.SetDrawColor(155, 155, 255, 255)
+		surface.SetDrawColor(55, 55, 255, 255)
 		surface.SetMaterial(OSU.CursorTexture)
 		surface.DrawTexturedRectRotated(OSU.FakeCursorPos.x, OSU.FakeCursorPos.y, cSize, cSize, rotate_deg)
 		surface.SetMaterial(OSU.CursorMiddleTexture)

@@ -31,6 +31,8 @@ OSU.TotalBeatmapSets = 0
 OSU.TotalRequests = 0
 
 OSU.MainGameFrame = nil
+OSU.WebDownloadPanel = nil
+OSU.WebDownloadButton = nil
 OSU.FakeCursor = nil
 OSU.AuthPanel = nil
 OSU.LoginPanel = nil

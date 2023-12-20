@@ -24,7 +24,7 @@ function OSU:CreateSpinner(vec_2t, sound, zp, killtime)
 	local minScore = (absTime * 0.5) * 360
 	local nextScore = 0
 	local cleared = false
-	local base = vgui.Create("DPanel", OSU.PlayFieldLayer)
+	local base = vgui.Create("DPanel", OSU.PlayFieldLayer.UpperLayer)
 	local scoreMul = 0
 	local clearmat = Material(OSU.CurrentSkin["spinner-clear"])
 	local spinmat = Material(OSU.CurrentSkin["spinner-spin"])
