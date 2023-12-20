@@ -11,6 +11,37 @@ OSU.PreviewLoading = false
 OSU.NextEnterSearchTime = 0
 OSU.WebCardTemp = {}
 
+function OSU:IsBeatmapInstalled(_SetID)
+	if(file.Exists("osu!/download/".._SetID..".dat", "DATA")) then
+		return true
+	else
+		local f, d = file.Find("osu!/beatmaps/".._SetID.."*", "DATA")
+		if(#d > 0) then
+			return true
+		end
+	end
+	return false
+end
+
+function OSU:DownloadBeatmapSet(_SetID)
+	HTTP({
+		failed = function(reason)
+			OSU.WebDownloadingTable[_SetID] = nil
+		end,
+		success = function(code, body, headers)
+			OSU.WebDownloadingTable[_SetID] = nil
+			if(string.find(body, "server_error")) then
+
+			else
+				file.Write("osu!/download/".._SetID..".dat", body)
+			end
+			-- do some unzip shit wihtout modules
+		end,
+		method = "GET",
+		url = "api.chimu.moe/v1/download/".._SetID
+	})
+end
+
 function OSU:FetchBeatmapCard(_SetID)
 	http.Fetch("https://assets.ppy.sh/beatmaps/".._SetID.."/covers/card.jpg",
 		function(body, length, headers, code)
@@ -190,11 +221,44 @@ function OSU:RequestBeatmapList(keyword, page)
 								end
 								local sx = ScreenScale(16)
 								local download = base:Add("DImageButton")
+								local installed = false
+								local nextthink = 0
 									download:SetPos(width - sx - padding1_5x, padding1_5x)
 									download:SetSize(sx, sx)
 									download:SetImage("osu/internal/webdownload.png")
 									download.DoClick = function()
-										--do something
+										if(OSU.WebDownloadingTable[v["SetID"]] || installed) then return end
+										if(OSU:IsBeatmapInstalled(v["SetID"])) then
+											return
+										end
+										OSU:DownloadBeatmapSet(v["SetID"])
+										OSU.WebDownloadingTable[v["SetID"]] = true
+										OSU:PlaySoundEffect(OSU.CurrentSkin["click-short-confirm"])
+									end
+									download.Think = function()
+										if(nextthink > OSU.CurTime) then return end
+										if(OSU:IsBeatmapInstalled(v["SetID"])) then
+											download:SetImage("osu/internal/check.png")
+											download.Think = nil
+										end
+										nextthink = OSU.CurTime + 1
+									end
+									download.Paint = function()
+										if(OSU.WebDownloadingTable[v["SetID"]]) then
+											rotate = math.Clamp(rotate + OSU:GetFixedValue(1), 0, 360)
+											if(rotate >= 360) then
+												rotate = 0
+											end
+											surface.SetDrawColor(255, 255, 255, 255)
+											surface.SetMaterial(OSU.LoadingTx)
+											surface.DrawTexturedRectRotated(pheight / 2, pheight / 2, pheight, pheight, rotate)
+											download:SetColor(Color(255, 255, 255, 0))
+										else
+											download:SetColor(Color(255, 255, 255, 255))
+										end
+									end
+									function download:OnCursorEntered()
+										OSU:PlaySoundEffect(OSU.CurrentSkin["click-short"])
 									end
 									local icons = {
 										[0] = false,
@@ -279,8 +343,15 @@ function OSU:SetupBeatmapDownloadPanel()
 	local upperGap = ScreenScale(32)
 	local sideGap = ScreenScale(48)
 	local searchHeight = ScreenScale(18)
-	local labelpadding = ScreenScale(10)
 	local elementsgap = ScreenScale(4)
+	local breathgap = ScreenScale(8)
+	local dlheight = ScreenScale(15)
+	local dockpad = ScreenScale(2)
+	local tgap = ScreenScale(1)
+	local labelpadding = ScreenScale(10)
+	local breathingAlpha = 0
+	local breathingAlphaSwitch = false
+	local mul = 0.05
 	OSU.WebDownloadPanel.Paint = function()
 		draw.RoundedBox(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, OSU.WebDownloadPanel.iAlpha))
 		draw.DrawText("Type to search!", "OSUBeatmapTitle", upperGap, labelpadding, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
@@ -347,6 +418,7 @@ function OSU:SetupBeatmapDownloadPanel()
 		if(string.len(key) <= 0) then
 			key = ""
 		end
+		OSU:PlaySoundEffect(OSU.CurrentSkin["click-short-confirm"])
 		OSU:RequestBeatmapList(key, true)
 		nextclicktime = OSU.CurTime + 0.33
 	end)
@@ -358,6 +430,7 @@ function OSU:SetupBeatmapDownloadPanel()
 		if(string.len(key) <= 0) then
 			key = ""
 		end
+		OSU:PlaySoundEffect(OSU.CurrentSkin["click-short-confirm"])
 		OSU:RequestBeatmapList(key, true)
 		nextclicktime = OSU.CurTime + 0.33
 	end)

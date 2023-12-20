@@ -164,6 +164,11 @@ function OSU:InitFonts()
 		size = ScreenScale(8),
 		antialias = true,
 	})
+	surface.CreateFont("OSUWebDownload", {
+		font = "Aller",
+		size = ScreenScale(10),
+		antialias = true,
+	})
 end
 
 function OSU:CreateFrameScroll(parent, w, h, color)
@@ -1128,6 +1133,15 @@ local min = ScrW() * 7
 local snowTable = {}
 local snowInterval = 0
 local mouseoffs = 0
+local elementsgap = ScreenScale(4)
+local breathgap = ScreenScale(8)
+local dlheight = ScreenScale(15)
+local dockpad = ScreenScale(2)
+local tgap = ScreenScale(1)
+local labelpadding = ScreenScale(10)
+local breathingAlpha = 0
+local breathingAlphaSwitch = false
+local mul = 0.05
 hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 	local cx, cy = input.GetCursorPos()
 	OSU.CursorPos = osu_vec2t(cx, cy)
@@ -1243,6 +1257,23 @@ hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 			end
 			surface.SetDrawColor(255, 255, 255, v[5])
 			surface.DrawTexturedRectRotated(v[2], v[3], v[1], v[1], v[4])
+		end
+	end
+	local count = table.Count(OSU.WebDownloadingTable)
+	if(count > 0) then
+		draw.RoundedBox(0, ScrW() * 0.25, ScrH() - dlheight, ScrW() * 0.5, dlheight, Color(30, 30, 30, 150))
+		draw.DrawText("Downloading beatmap(s).. ("..count.." remianing)", "OSUBeatmapDetails", ScrW() / 2, ScrH() - (dlheight - dockpad), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+		draw.RoundedBox(0, (ScrW() * 0.25) + (labelpadding / 2), ScrH() - elementsgap, (ScrW() * 0.5) - (labelpadding), dockpad, Color(255, 255, 255, breathingAlpha))
+		if(breathingAlphaSwitch) then
+			breathingAlpha = math.Clamp(breathingAlpha - OSU:GetFixedValue(math.max(breathingAlpha * 0.05, 0.05)), 0, 255)
+			if(breathingAlpha <= 30) then
+				breathingAlphaSwitch = false
+			end
+		else
+			breathingAlpha = math.Clamp(breathingAlpha + OSU:GetFixedValue(math.max((255 - breathingAlpha) * 0.05, 0.2)), 0, 255)
+			if(breathingAlpha >= 255) then
+				breathingAlphaSwitch = true
+			end
 		end
 	end
 	lastCursorPos = OSU.CursorPos

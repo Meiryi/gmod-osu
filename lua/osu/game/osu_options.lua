@@ -64,6 +64,7 @@ OSU.ConfigTable = {
 	"SmoothHitCircle",
 	"AllowAllSounds",
 	"LoadCards",
+	"DisableMouse",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -109,6 +110,7 @@ OSU.CircleFollowPoint = true
 OSU.SmoothHitCircle = true
 OSU.AllowAllSounds = true
 OSU.LoadCards = true
+OSU.DisableMouse = false
 
 OSU.MainVersion = "1.1.0"
 OSU.AvatarVersion = "1.0.1"
@@ -945,17 +947,20 @@ function OSU:OpenOptionsMenu()
 	OSU:CreateString("*Enable this will make sliders play all possible sounds", Color(255, 255, 255, 255))
 	OSU:CreateString("Some sounds might be desynced, since my brain is", Color(255, 255, 255, 255))
 	OSU:CreateString("too small to figure out osu's sound system*", Color(255, 255, 255, 255))
+	OSU:CreateSectionTitle("AUDIO")
+	OSU:CreateSubTitle("Volume")
+	OSU:Opt_CreateSlider("Music volume", "MusicVolume", 0, 2)
+	OSU:Opt_CreateSlider("Hitsound volume", "HitSoundVolume", 0, 2)
+	OSU:Opt_CreateSlider("Sound effect volume", "EffectVolume", 0, 2)
 	OSU:CreateSectionTitle("SKIN")
 	OSU:CreateSubTitle("Skins (Full skin support coming soon)")
 	OSU:Opt_CreateSlider("Cursor size", "CursorSize", 1, 48)
 	OSU:Opt_CreateButton("Cursor trail (Low performance)", "CursorTrail")
 	OSU:Opt_CreateButton("Fill gap between cursor position", "FillCursorGap")
 	OSU:Opt_CreateSlider("Trail lifetime", "CursorTrailLife", 0.02, 0.3)
-	OSU:CreateSectionTitle("AUDIO")
-	OSU:CreateSubTitle("Volume")
-	OSU:Opt_CreateSlider("Music volume", "MusicVolume", 0, 2)
-	OSU:Opt_CreateSlider("Hitsound volume", "HitSoundVolume", 0, 2)
-	OSU:Opt_CreateSlider("Sound effect volume", "EffectVolume", 0, 2)
+	OSU:CreateSectionTitle("INPUT")
+	OSU:CreateSubTitle("Mouse")
+	OSU:Opt_CreateButton("Disable mouse buttons", "DisableMouse")
 	OSU:CreateSectionTitle("CACHE")
 	OSU:CreateSubTitle("Cached Datas")
 	OSU:Opt_CreateClickButton("Clear all cached datas", function()

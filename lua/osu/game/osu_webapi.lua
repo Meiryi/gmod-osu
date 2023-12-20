@@ -392,7 +392,6 @@ function OSU:RequestLeaderboard(beatmapid)
 																	OSU.HighestCombo = 0
 																	OSU.ResultLayer:Remove()
 																	OSU:CreateBackButton(OSU.PlayMenuLayer, OSU_MENU_STATE_MAIN)
-																print("o")
 															end, v["date"])
 															fade.Switch = true
 														end

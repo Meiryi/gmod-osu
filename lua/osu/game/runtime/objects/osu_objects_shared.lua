@@ -148,7 +148,7 @@ function OSU:RunHitObjectsCheck(type)
 		end
 		local drain = ((OSU.HP * 1.25) + 3.5)
 		if(OSU.Health <= 45) then
-			drain = drain * math.Clamp(OSU.Health / 100, 0.4, 1)
+			drain = drain * math.Clamp(OSU.Health / 100, 0.65, 1)
 		end
 		OSU.Health = math.Clamp(OSU.Health - drain, 0, 100)
 		OSU.MISS = OSU.MISS + 1

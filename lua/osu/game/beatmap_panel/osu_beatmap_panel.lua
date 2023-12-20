@@ -670,7 +670,7 @@ function OSU:SetupBeatmapPanel()
 		draw.RoundedBox(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 100))
 		draw.RoundedBox(0, 0, ScrH() - (h - OSU.PlayMenuObjectOffset), ScrW(), h, OSU.MenuBackgroundColor)
 		if(OSU.BeatmapDifficultiesProcessing) then
-			draw.DrawText("Beatmap difficulties are being processing!  ("..OSU.TotalRequests.."/"..OSU.TotalRequests - table.Count(OSU.PendingRequests)..", Total : "..table.Count(OSU.MapDifficulties)..")", "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+			draw.DrawText("Processing difficulties.. ("..OSU.TotalRequests.."/"..OSU.TotalRequests - table.Count(OSU.PendingRequests)..", Total : "..table.Count(OSU.MapDifficulties)..")", "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
 		end
 		draw.RoundedBox(0, 0, ScrH() - (h - OSU.PlayMenuObjectOffset), ScrW(), o, OSU.MenuOutlineColor)
 		surface.SetMaterial(OSU.PlayMenuLayer.UpperMaterial)

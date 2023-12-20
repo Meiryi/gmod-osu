@@ -145,7 +145,7 @@ function OSU:RunTime()
 		if(OSU.BeatmapStartTime < OSU.CurTime && #OSU.Objects > 0) then
 			local drain = OSU.HP * 0.02
 			if(OSU.Health <= 33) then
-				drain = drain * math.Clamp(OSU.Health / 100, 0.6, 1)
+				drain = drain * math.Clamp(OSU.Health / 100, 0.7, 1)
 			end
 			OSU.Health = math.Clamp(OSU.Health - OSU:GetFixedValue(drain), 0, 100)
 		end
@@ -177,17 +177,19 @@ function OSU:RunTime()
 			if(time > OSU.CurTime) then
 				local offs = time - OSU.CurTime
 				if(offs < 0.033 && offs > 0) then
-					local scl = OSU.CurrentReplayData.Specs.w / ScrW()
+					local sclX = ScrW() / OSU.CurrentReplayData.Specs.w
+					local sclY = ScrH() / OSU.CurrentReplayData.Specs.h
 					local oX, oY = OSU.FakeCursorPos.x, OSU.FakeCursorPos.y
-					local nX, nY = v[2] * scl, v[3] * scl
+					local nX, nY = v[2] * sclX, v[3] * sclY
 					local offX, offY = oX - nX, oY - nY
 					local mul = 0.8
 					OSU.FakeCursorPos = {x = math.Clamp(oX - OSU:GetFixedValue(offX * mul), 0, ScrW()), y = math.Clamp(oY - OSU:GetFixedValue(offY * mul), 0, ScrH())}
 				end
 				continue
 			else
-				local scl = OSU.CurrentReplayData.Specs.w / ScrW()
-				OSU.FakeCursorPos = {x = v[2] * scl, y = v[3] * scl}
+				local sclX =  ScrW() / OSU.CurrentReplayData.Specs.w
+				local sclY =  ScrH() / OSU.CurrentReplayData.Specs.h
+				OSU.FakeCursorPos = {x = v[2] * sclX, y = v[3] * sclY}
 				table.remove(OSU.CurrentReplayData.MouseData["bnk_"..OSU.CurrentTableIndex_Read], k)
 			end
 		end
@@ -246,27 +248,29 @@ hook.Add("Think", "OSU_RunTime", function()
 	if(!IsValid(vPanel)) then return end
 	if(!vPanel.IsHitObject) then return end
 	if(OSU.ReplayMode) then return end
-	if(input.IsMouseDown(MOUSE_LEFT)) then
-		OSU.KeyDown = true
-		if(!LeftDown) then
-			if(vPanel.Click != nil) then
-				vPanel.Click()
+	if(!OSU.DisableMouse) then
+		if(input.IsMouseDown(MOUSE_LEFT)) then
+			OSU.KeyDown = true
+			if(!LeftDown) then
+				if(vPanel.Click != nil) then
+					vPanel.Click()
+				end
+				LeftDown = true
 			end
-			LeftDown = true
+		else
+			LeftDown = false
 		end
-	else
-		LeftDown = false
-	end
-	if(input.IsMouseDown(MOUSE_RIGHT)) then
-		OSU.KeyDown = true
-		if(!RightDown) then
-			if(vPanel.Click != nil) then
-				vPanel.Click()
+		if(input.IsMouseDown(MOUSE_RIGHT)) then
+			OSU.KeyDown = true
+			if(!RightDown) then
+				if(vPanel.Click != nil) then
+					vPanel.Click()
+				end
+				RightDown = true
 			end
-			RightDown = true
+		else
+			RightDown = false
 		end
-	else
-		RightDown = false
 	end
 	if(input.IsKeyDown(OSU.Key1Code)) then
 		OSU.KeyDown = true
