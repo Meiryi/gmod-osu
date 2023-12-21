@@ -21,6 +21,8 @@ OSU.CachePath = "osu!/cache/"
 OSU.HitObjectsCachePath = "osu!/cache/hitobjects/"
 OSU.RetPath = "osu!/ret/"
 
+OSU.NotifyIndex = 0
+OSU.NotifyTable = {}
 OSU.Samples = {}
 OSU.KickAvg = 0 
 OSU.DrumAvg = 0

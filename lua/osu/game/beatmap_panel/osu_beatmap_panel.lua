@@ -253,7 +253,12 @@ function OSU:RefreshBeatmapList(keyWord)
 	for k,v in next, dirs do
 		local _path = OSU.BeatmapPath..v.."/"
 		local _fosu = file.Find(_path.."*.osu", "DATA")
-		if(#_fosu <= 0) then continue end
+		if(#_fosu <= 0) then
+			_fosu = file.Find(_path.."*.dem", "DATA")
+			if(#_fosu <= 0) then
+				continue
+			end
+		end
 		if(!OSU:ValidateBeatmapPath(_fosu, _path)) then
 			OSU:WriteLog("Found invalid beatmap(s), folder -> "..v)
 			hasinvalidmap = true

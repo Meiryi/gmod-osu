@@ -116,6 +116,7 @@ function OSU:Startup()
 	OSU.MainGameFrame.iAlpha__R = 0
 	OSU.MainGameFrame.BlurTime = SysTime()
 	OSU.MainGameFrame.Think = function()
+		OSU:ProcessNotify()
 		OSU:RunTime()
 		OSU.SliderBeat = math.Clamp(OSU.SliderBeat - OSU:GetFixedValue(1.5), 0, 255)
 		for k,v in next, OSU.MenuTimingPoints do
@@ -235,8 +236,19 @@ function OSU:Startup()
 		OSU:PlaySoundEffect(OSU.CurrentSkin["menu-freeplay-click"])
 		OSU:ChangeScene(16)
 	end)
+	OSU.WebDownloadButton.hAlpha = 0
+
+	OSU.WebDownloadButton.Overlay = OSU.WebDownloadButton:Add("DImage")
+	OSU.WebDownloadButton.Overlay:SetSize(OSU.WebDownloadButton:GetWide(), OSU.WebDownloadButton:GetTall())
+	OSU.WebDownloadButton.Overlay:SetImage("osu/internal/downloads-hover.png")
 	OSU.WebDownloadButton.Think = function()
 		OSU.WebDownloadButton:SetAlpha(255 * OSU.MenuAlphaMul)
+		if(OSU.WebDownloadButton:IsHovered()) then
+			OSU.WebDownloadButton.hAlpha = math.Clamp(OSU.WebDownloadButton.hAlpha + OSU:GetFixedValue(30), 0, 255)
+		else
+			OSU.WebDownloadButton.hAlpha = math.Clamp(OSU.WebDownloadButton.hAlpha - OSU:GetFixedValue(30), 0, 255)
+		end
+		OSU.WebDownloadButton.Overlay:SetAlpha(OSU.WebDownloadButton.hAlpha)
 	end
 	OSU.WebDownloadButton.OnCursorEntered = function()
 		OSU:PlaySoundEffect(OSU.CurrentSkin["click-short"])

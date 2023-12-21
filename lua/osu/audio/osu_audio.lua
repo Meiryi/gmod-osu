@@ -29,10 +29,44 @@ end
 function OSU:GetAudioFromFile(ctx)
 	if(ctx == nil) then return false end
 	local data = string.Explode("\n", ctx)
+	local Title = "Unknown"
+	local TitleUnicode = "Unknown"
+	local Artist = "Unknown"
+	local ArtistUnicode = "Unknown"
+	local fn = ""
 	for k,v in pairs(data) do
-		if(!string.find(v, "AudioFilename")) then continue end
-		return string.Replace(v, "AudioFilename: ", "")
+		if(string.find(v, "AudioFilename")) then
+			fn = string.Replace(v, "AudioFilename: ", "")
+		end
+		if(string.find(v, "Title:")) then
+			Title = string.Replace(v, "Title:", "")
+		end
+		if(string.find(v, "TitleUnicode:")) then
+			TitleUnicode = string.Replace(v, "TitleUnicode:", "")
+		end
+		if(string.find(v, "Artist:")) then
+			Artist = string.Replace(v, "Artist:", "")
+		end
+		if(string.find(v, "ArtistUnicode:")) then
+			ArtistUnicode = string.Replace(v, "ArtistUnicode:", "")
+		end
 	end
+	local ret = ""
+	if(OSU.ArtistUnicode) then
+		if(ArtistUnicode != "Unknown") then
+			Artist = ArtistUnicode
+		end
+	else
+		ret = ret..Artist
+	end
+	if(OSU.TitleUnicode) then
+		if(TitleUnicode != "Unknown") then
+			Title = TitleUnicode
+		end
+	else
+		ret = ret.." - "..TitleUnicode
+	end
+	return fn, ret
 end
 
 function OSU:GetAudioNameFromDir(ctx)
@@ -51,11 +85,10 @@ function OSU:CacheAudios()
 		local _dir = OSU.BeatmapPath..v.."/"
 		local _files =  file.Find(_dir.."*", "DATA")
 		for x,y in next, _files do
-			if(string.Right(y, 4) != ".osu") then continue end
+			if(string.Right(y, 4) != ".osu" && string.Right(y, 4) != ".dem") then continue end
 			local ctx = file.Read(_dir..y, "DATA")
-			local audio = OSU:GetAudioFromFile(ctx)
+			local audio, _name = OSU:GetAudioFromFile(ctx)
 			if(!audio) then break 	end
-			local _name = OSU:GetAudioNameFromDir(v)
 			local timingPoints = {}
 			table.insert(OSU.MusicLists, {_name, _dir..audio, timingPoints})
 			break
@@ -133,6 +166,9 @@ function OSU:PickRandomMusic(readBPM)
 		end
 		local _path = string.sub(musicPath, 1, _end)
 		local fosu = file.Find(_path.."*.osu", "DATA")
+		if(#fosu <= 0) then
+			fosu = file.Find(_path.."*.dem", "DATA")
+		end
 		for k,v in next, fosu do
 			if(!file.Exists(_path..v, "DATA")) then
 				continue

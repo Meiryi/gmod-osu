@@ -11,6 +11,23 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
+function OSU:ProcessNotify()
+	for k,v in next, OSU.NotifyTable do
+		-- panel, pindex, baseX, baseY, heightgap
+		if(!IsValid(v[1])) then
+			table.remove(OSU.NotifyTable, k)
+			for x,y in next, OSU.NotifyTable do
+				y[2] = y[2] - 1
+			end
+			break
+		end
+		v[1]:SetX(math.Clamp(v[1]:GetX() - OSU:GetFixedValue(15), v[1].TargetX, ScrW() + 32))
+		v[1].TargetY = v[4] - ((v[2] - 1) * v[5])
+		local inc = (v[1]:GetY() - v[1].TargetY) * 0.8
+		v[1]:SetY(math.Clamp(v[1]:GetY() - OSU:GetFixedValue(inc), 0, v[1].TargetY))
+	end
+end
+
 function OSU:PickComboColour()
 	if(#OSU.ComboColours <= 0) then
 		OSU.CurrentObjectColor = Color(255, 255, 255, 255)

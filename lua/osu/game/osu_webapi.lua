@@ -575,10 +575,14 @@ function OSU:CheckServerStatus()
 		function(body, length, headers, code)
 			if(body == "SRV_ONLINE") then
 				if(!OSU.ServerStatus) then
+					OSU:SideNotify("Connected to server!", 2)
 					OSU:FetchUserData()
 				end
 				OSU.ServerStatus = true
 			else
+				if(OSU.ServerStatus) then
+					OSU:SideNotify("Disconnected to server", 3)
+				end
 				OSU.ServerStatus = false
 			end
 			OSU.FetchingStatus = false

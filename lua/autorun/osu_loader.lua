@@ -37,7 +37,11 @@ if(CLIENT) then
 	include("osu/game/replay/osu_replay_recorder.lua")
 	include("osu/game/replay/osu_replay_importer.lua")
 
+	include("osu/game/zzlib/inflate-bit32.lua")
+	include("osu/game/zzlib/zzlib.lua")
+
 	include("osu/game/beatmap_downloader/osu_beatmap_web_panel.lua")
+	include("osu/game/beatmap_downloader/osu_unpacker.lua")
 
 	include("osu/game/beatmap_panel/osu_beatmap_panel.lua")
 
@@ -97,7 +101,11 @@ if(SERVER) then
 	AddCSLuaFile("osu/game/replay/osu_replay_recorder.lua")
 	AddCSLuaFile("osu/game/replay/osu_replay_importer.lua")
 
+	AddCSLuaFile("osu/game/zzlib/inflate-bit32.lua")
+	AddCSLuaFile("osu/game/zzlib/zzlib.lua")
+
 	AddCSLuaFile("osu/game/beatmap_downloader/osu_beatmap_web_panel.lua")
+	AddCSLuaFile("osu/game/beatmap_downloader/osu_unpacker.lua")
 
 	AddCSLuaFile("osu/game/beatmap_panel/osu_beatmap_panel.lua")
 

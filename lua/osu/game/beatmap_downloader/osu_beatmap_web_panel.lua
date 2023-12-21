@@ -10,6 +10,7 @@ OSU.PreviewSetID = "?"
 OSU.PreviewLoading = false
 OSU.NextEnterSearchTime = 0
 OSU.WebCardTemp = {}
+OSU.NothingFound = false
 
 function OSU:IsBeatmapInstalled(_SetID)
 	if(file.Exists("osu!/download/".._SetID..".dat", "DATA")) then
@@ -34,8 +35,9 @@ function OSU:DownloadBeatmapSet(_SetID)
 
 			else
 				file.Write("osu!/download/".._SetID..".dat", body)
+				OSU:SideNotify("Beatmap set ".._SetID.."\nDownload finished!", 2)
+				OSU:InsertUnpackQuery(_SetID) -- Don't unpack everything at once, game'll crash
 			end
-			-- do some unzip shit wihtout modules
 		end,
 		method = "GET",
 		url = "api.chimu.moe/v1/download/".._SetID
@@ -90,7 +92,45 @@ function OSU:FetchPreviewMusic(_SetID)
 	end)
 end
 
+function OSU:GetStarColor(stars)
+	if(stars >= 10) then
+		return Color(0, 0, 0, 255)
+	end
+	if(stars >= 9) then
+		return Color(15, 5, 60, 255)
+	end
+	if(stars >= 8) then
+		return Color(25, 5, 110, 255)
+	end
+	if(stars >= 7) then
+		return Color(85, 70, 195, 255)
+	end
+	if(stars >= 6) then
+		return Color(160, 80, 190, 255)
+	end
+	if(stars >= 5) then
+		return Color(220, 90, 120, 255)
+	end
+	if(stars >= 4) then
+		return Color(230, 160, 105, 255)
+	end
+	if(stars >= 3) then
+		return Color(210, 250, 100, 255)
+	end
+	if(stars >= 2) then
+		return Color(150, 250, 210, 255)
+	end
+	if(stars >= 1) then
+		return Color(120, 180, 250, 255)
+	end
+	if(stars >= 0) then
+		return Color(100, 140, 250, 255)
+	end
+	return Color(100, 140, 250, 255)
+end
+
 function OSU:RequestBeatmapList(keyword, page)
+	OSU.NothingFound = false
 	if(keyword == nil) then
 		keyword = ""
 	end
@@ -117,6 +157,11 @@ function OSU:RequestBeatmapList(keyword, page)
 			else
 				OSU.WebFailed = false
 				if(pg != OSU.CurrentPage) then return end
+				if(#ret <= 0) then
+					OSU.WebFetching = false
+					OSU.NothingFound = true
+					return
+				end
 				--[[
 					Keys :
 						Title
@@ -136,6 +181,7 @@ function OSU:RequestBeatmapList(keyword, page)
 				local dockpad = ScreenScale(2)
 				local w = ScreenScale(85)
 				for k,v in next, ret do
+					if(v["HasVideo"]) then continue end
 					if(string.len(v["Title"]) > 24) then
 						v["Title"] = string.Left(v["Title"], 24)..".."
 					end
@@ -266,9 +312,12 @@ function OSU:RequestBeatmapList(keyword, page)
 										[2] = false,
 										[3] = false,
 									}
+									local stars = {}
 									for x,y in next, v["ChildrenBeatmaps"] do
 										icons[tonumber(y["Mode"])] = true
+										table.insert(stars, tonumber(y["DifficultyRating"]))
 									end
+									table.sort(stars, function(a, b) return b > a end)
 									local nextX = 0
 									local hasData = false
 									local sx = ScreenScale(12)
@@ -276,12 +325,27 @@ function OSU:RequestBeatmapList(keyword, page)
 									local baseY = height - sx - padding
 									for x,y in next, icons do
 										if(!y) then continue end
-										local ico = base:Add("DImageButton")
+										local ico = base:Add("DImage")
 											ico:SetPos(baseX - nextX, baseY)
 											ico:SetSize(sx, sx)
 											ico:SetImage(OSU:PickModeIcon(x))
 											nextX = sx + dockpad
 										hasData = true
+									end
+									local nX = 0
+									local w, h = ScreenScale(8), ScreenScale(8)
+									local gap = ScreenScale(1)
+									local hpad = ScreenScale(5)
+									local npad = ScreenScale(7)
+									for x,y in next, stars do
+										local clr = OSU:GetStarColor(y)
+										local rect = base:Add("DImage")
+											rect:SetPos(baseX - (nX + nextX + gap + sx), height - (h + hpad))
+											rect:SetSize(w, h)
+											rect.Paint = function()
+												draw.RoundedBox(ScreenScale(3), 0, 0, rect:GetWide() / 2, rect:GetTall(), clr)
+											end
+											nX = nX + npad
 									end
 									if(!hasData) then
 										local ico = base:Add("DImageButton")
@@ -336,6 +400,7 @@ function OSU:SetupBeatmapDownloadPanel()
 	OSU.WebFetchTime = 0
 	OSU.WebFailed = false
 	OSU.WebFetching = false
+	OSU.NothingFound = false
 	OSU.WebDownloadPanel = OSU:CreateFrame(OSU.MainGameFrame, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
 	OSU.WebDownloadPanel.Think = function()
 		OSU.WebDownloadPanel.iAlpha = math.Clamp(OSU.WebDownloadPanel.iAlpha + OSU:GetFixedValue(50), 0, 210)
@@ -352,11 +417,7 @@ function OSU:SetupBeatmapDownloadPanel()
 	local breathingAlpha = 0
 	local breathingAlphaSwitch = false
 	local mul = 0.05
-	OSU.WebDownloadPanel.Paint = function()
-		draw.RoundedBox(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, OSU.WebDownloadPanel.iAlpha))
-		draw.DrawText("Type to search!", "OSUBeatmapTitle", upperGap, labelpadding, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
-		draw.DrawText("Current page : "..(OSU.CurrentPage + 1), "OSUBeatmapDetails", ScrW() / 2, sideGap + labelpadding, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
-	end
+	local textcent = ((ScrW() * 0.8) - upperGap) / 2
 
 	local searchtext = OSU:CreateTextEntryPanel(OSU.WebDownloadPanel, upperGap, upperGap, ScrW() * 0.4, searchHeight, false)
 	searchtext:SetPlaceholderText("Search beatmap name | mapper")
@@ -393,10 +454,13 @@ function OSU:SetupBeatmapDownloadPanel()
 		OSU:RequestBeatmapList()
 	end, Color(106, 255, 106, 255), Color(0, 0, 0, 255), "OSUBeatmapDetails", Color(200, 200, 200, 255))
 	local btnsx = ScreenScale(14)
-	OSU.WebDownloadPanel.FetchList = OSU:CreateScrollPanel(OSU.WebDownloadPanel, upperGap, upperGap + elementsgap + searchHeight + btnsx, ScrW() - upperGap * 2, ScrH() * 0.75, Color(0, 0, 0, 150))
+	OSU.WebDownloadPanel.FetchList = OSU:CreateScrollPanel(OSU.WebDownloadPanel, upperGap, upperGap + elementsgap + searchHeight + btnsx, (ScrW() * 0.8) - upperGap * 2, ScrH() * 0.75, Color(0, 0, 0, 150))
 	local sx = ScreenScale(32)
 	local rotate = 0
 	OSU.WebDownloadPanel.FetchList.Paint = function()
+		if(OSU.NothingFound) then
+			draw.DrawText("No Result", "OSUBeatmapTitle", OSU.WebDownloadPanel.FetchList:GetWide() / 2, OSU.WebDownloadPanel.FetchList:GetTall() / 2, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+		end
 		if(OSU.WebFetching) then
 			rotate = math.Clamp(rotate + OSU:GetFixedValue(1.5), 0, 360)
 			if(rotate >= 360) then
@@ -410,6 +474,7 @@ function OSU:SetupBeatmapDownloadPanel()
 
 	local nextclicktime = 0
 	local bsx = ScreenScale(10)
+	local bsx01 = ScreenScale(9)
 	local bx, by = OSU.WebDownloadPanel.FetchList:GetX(), OSU.WebDownloadPanel.FetchList:GetY() - (btnsx)
 	local prevpg = OSU:CreateImageButton(OSU.WebDownloadPanel, bx, by, bsx, bsx, "osu/internal/musicprev.png", false, function()
 		if(OSU.CurrentPage <= 0 || nextclicktime > OSU.CurTime) then return end
@@ -464,6 +529,57 @@ function OSU:SetupBeatmapDownloadPanel()
 			end
 		end
 	end
+
+	local w = ScreenScale(120)
+	local textpad = ScreenScale(4)
+	local scrollpad = ScreenScale(16)
+	OSU.WebDownloadPanel.ImportList = OSU:CreateFrame(OSU.WebDownloadPanel, ScrW() - w, OSU.WebDownloadPanel.FetchList:GetY(), w, ScrH() * 0.65, Color(0, 0, 0, 200))
+	OSU.WebDownloadPanel.ImportList.Paint = function()
+		draw.RoundedBox(0, 0, 0, OSU.WebDownloadPanel.ImportList:GetWide(), OSU.WebDownloadPanel.ImportList:GetTall(), Color(0, 0, 0, 200))
+		draw.DrawText("Downloads", "OSUBeatmapDetails", OSU.WebDownloadPanel.ImportList:GetWide() / 2, textpad, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+	end
+	OSU.WebDownloadPanel.ImportList.Scroll = OSU:CreateScrollPanel(OSU.WebDownloadPanel.ImportList, 0, scrollpad, OSU.WebDownloadPanel.ImportList:GetWide(), OSU.WebDownloadPanel.ImportList:GetTall() * 0.8, Color(0, 0, 0, 0))
+	local interval = 0
+	local pList = {}
+	local height = ScreenScale(16)
+	OSU.WebDownloadPanel.ImportList.Scroll.Think = function()
+		if(interval > OSU.CurTime) then return end
+		OSU.WebDownloadPanel.ImportList.Scroll:Clear()
+		local f = file.Find("osu!/download/*.dat", "DATA")
+		for k,v in next, f do
+			local str = "Set ID : "..string.Replace(v, ".dat", "")
+			local size = "Size : "..math.Round((file.Size("osu!/download/"..v, "DATA") / (1024 ^ 2)), 2).." MB"
+			local base = OSU.WebDownloadPanel.ImportList.Scroll:Add("DFrame")
+				base:Dock(TOP)
+				base:DockMargin(0, 0, 0, tgap)
+				base:SetTall(height)
+				base:SetWide(OSU.WebDownloadPanel.ImportList.Scroll:GetWide())
+				base:ShowCloseButton(false)
+				base:SetDraggable(false)
+				base:SetTitle("")
+				base.Paint = function()
+					draw.RoundedBox(0, 0, 0, base:GetWide(), base:GetTall(), Color(30, 30, 30, 200))
+					draw.DrawText(str, "OSUWebDetails", tgap, tgap, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+					draw.DrawText(size, "OSUDetails", tgap, bsx01, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				end
+		end
+		interval = OSU.CurTime + 1
+	end
+
+	OSU.WebDownloadPanel.Paint = function()
+		draw.RoundedBox(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, OSU.WebDownloadPanel.iAlpha))
+		draw.DrawText("Type to search!", "OSUBeatmapTitle", upperGap, labelpadding, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+		draw.DrawText("Current page : "..(OSU.CurrentPage + 1), "OSUBeatmapDetails", textcent, sideGap + labelpadding, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+		draw.DrawText("Importing maps will cause\ntemporary lag", "OSUBeatmapDetails", OSU.WebDownloadPanel.ImportList:GetX() + OSU.WebDownloadPanel.ImportList:GetWide() / 2, OSU.WebDownloadPanel.ImportList:GetY() + OSU.WebDownloadPanel.ImportList:GetTall() + textpad, Color(200, 255, 200, 255), TEXT_ALIGN_CENTER)
+	end
+
+	local w, h = ScreenScale(110), ScreenScale(10)
+	local importall = OSU:CreateClickableButton(OSU.WebDownloadPanel.ImportList, OSU.WebDownloadPanel.ImportList:GetWide() / 2, OSU.WebDownloadPanel.ImportList:GetTall() - (h + textpad / 2), w, h, true, "Import All", function()
+		if(table.Count(OSU.UnpackingQuery) <= 0) then return end
+		OSU.Unpacking = true
+	end, Color(20, 20, 20, 255), OSU.OptBlue, "OSUBeatmapDetails", Color(20, 20, 20, 255))
+
+
 
 	OSU:RequestBeatmapList()
 	OSU:CreateBackButton(OSU.WebDownloadPanel, OSU_MENU_STATE_MAIN)

@@ -1112,6 +1112,55 @@ function OSU:CreateTextEntryPanel(parent, x, y, w, h, cent)
 	return btn
 end
 
+function OSU:GetNotifyLevelColor(level)
+	local l = {
+		[0] = Color(255, 255, 255, 255),
+		[1] = Color(255, 101, 41, 255),
+		[2] = Color(56, 255, 103, 255),
+		[3] = Color(255, 33, 33, 255),
+		[4] = Color(155, 33, 255, 255),
+	}
+	local ret = l[level]
+	if(ret == nil) then ret = l[0] end
+	return ret
+end
+
+function OSU:SideNotify(message, level)
+	local clr = OSU:GetNotifyLevelColor(level)
+	local gap = ScreenScale(1)
+	local gap2x = gap * 2
+	local gap3x = gap * 3
+	local baseY = ScrH() * 0.8
+	local height = ScreenScale(16)
+	local heightgap = ScreenScale(18)
+	local pindex = #OSU.NotifyTable + 1
+	local panel = OSU.MainGameFrame:Add("DImage")
+		panel.iAlpha = 0
+		panel.iKillTime = OSU.CurTime + 5
+		panel:SetSize(ScreenScale(76), height)
+		panel:SetDrawOnTop(true)
+		panel:SetPos(ScrW() + 32, baseY)
+		panel.TargetX = ScrW() - (panel:GetWide() + ScreenScale(3))
+		panel.Paint = function()
+			draw.RoundedBox(0, 0, 0, panel:GetWide(), panel:GetTall(), Color(clr.r, clr.g, clr.b, panel.iAlpha))
+			draw.RoundedBox(0, gap, gap, panel:GetWide() - gap2x, panel:GetTall() - gap2x, Color(0, 0, 0, panel.iAlpha))
+			draw.DrawText(message, "OSUDetails", gap2x, gap2x, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+		end
+		panel.Think = function()
+			panel:SetZPos(32767)
+			if(panel.iKillTime < OSU.CurTime) then
+				panel.iAlpha = math.Clamp(panel.iAlpha - OSU:GetFixedValue(25), 0, 255)
+				if(panel.iAlpha <= 0) then
+					panel:Remove()
+				end
+			else
+				panel.iAlpha = math.Clamp(panel.iAlpha + OSU:GetFixedValue(25), 0, 255)
+			end
+		end
+		panel.TargetY = (baseY - ((pindex - 1) * heightgap))
+	table.insert(OSU.NotifyTable, {panel, pindex, baseX, baseY, heightgap})
+end
+
 function OSU:GetFixedValue(input)
 	local target = 0.01666666666
 	local cur = FrameTime()
