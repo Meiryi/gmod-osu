@@ -87,7 +87,6 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local completeTime = len / (OSU.SliderMultiplier * 100 * OSU.SliderVelocity) * OSU.BeatLength -- ms
 	completeTime = (completeTime / 1000)
 	ctime = basetime + completeTime
-	area.lastHoldTime = OSU.CurTime
 	if(traceTime < OSU.CurTime && !traced) then
 		if(target != nil) then
 			if(!target["newcombo"]) then
