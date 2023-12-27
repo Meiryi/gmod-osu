@@ -11,10 +11,13 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
-function OSU:AddCombo()
+function OSU:AddCombo(noins)
 	OSU.Combo = OSU.Combo + 1
 	OSU.GlobalMatSize = 1.07
 	OSU.GlobalMatShadowSize = OSU.GlobalMatSize * 1.3
+	if(noins == nil) then
+		OSU:InsertHitDetails(6)
+	end
 end
 
 function OSU:TraceFollowPoint(from, to, angle, time, dst, _end)
@@ -98,6 +101,7 @@ function OSU:ComboBreak()
 		OSU:PlaySoundEffect(OSU.CurrentSkin["combobreak"])
 	end
 	OSU.Combo = 0
+	OSU:InsertHitDetails(4)
 end
 
 function OSU:RunHitObjectsCheck(type)
@@ -133,6 +137,7 @@ function OSU:RunHitObjectsCheck(type)
 			OSU.HighestCombo = OSU.Combo
 		end
 		OSU:AddHealth(type)
+		OSU:InsertHitDetails(type)
 	else
 		if(OSU.LastInaccuracyTime < OSU.CurTime) then
 			OSU.LastInaccuracyTime = OSU.CurTime + (12 + OSU.HP)
@@ -196,6 +201,13 @@ function OSU:PickMaterial(str)
 	local h = ret:GetInt("$realheight")
 	local scl = ScrW() / 1920
 	return ret, w * scl, h * scl
+end
+
+function OSU:PickMaterialSize(mat)
+	local w = mat:GetInt("$realwidth")
+	local h = mat:GetInt("$realheight")
+	local scl = ScrW() / 1920
+	return w * scl, h * scl
 end
 
 function OSU:DrawDefaultNumber(str, x, y, size, alp)

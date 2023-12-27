@@ -65,6 +65,7 @@ OSU.ConfigTable = {
 	"AllowAllSounds",
 	"LoadCards",
 	"DisableMouse",
+	"UploadToLeaderboard",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -101,8 +102,8 @@ OSU.LoadFrame = true
 OSU.FlashLoginArea = false
 OSU.NoBreakSound = false
 OSU.BlurShader = false
-OSU.EdgeFlash = false
-OSU.MainBGDim = 255
+OSU.EdgeFlash = true
+OSU.MainBGDim = 200
 OSU.SmoothBG = true
 OSU.MenuSnow = true
 OSU.NoEdgeSound = false
@@ -111,6 +112,19 @@ OSU.SmoothHitCircle = true
 OSU.AllowAllSounds = true
 OSU.LoadCards = true
 OSU.DisableMouse = false
+OSU.UploadToLeaderboard = true
+OSU.ManiaKeys = {
+	[1] = 29,	
+	[2] = 14,	
+	[3] = 16,	
+	[4] = 17,	
+	[5] = 18,	
+	[6] = 20,	
+	[7] = 20,	
+	[8] = 20,	
+	[9] = 20,	
+	[10] = 20,	
+}
 
 OSU.MainVersion = "1.1.0"
 OSU.AvatarVersion = "1.0.1"
@@ -286,6 +300,8 @@ function OSU:CreateStatusString()
 		local w, h = OSU:GetTextSize("OSUOptionDesc", "DummyText")
 		text:SetSize(OSU.SettingsScrollPanel:GetWide(), h)
 		text:SetPos(nextpos, (base:GetTall() - h) / 2)
+		text:SetText("Status : Logged in")
+		--[[
 		base.Think = function()
 			if(OSU.LoggedIn) then
 				text:SetText("Status : Logged in")
@@ -293,6 +309,7 @@ function OSU:CreateStatusString()
 				text:SetText("Status : Not logged in")
 			end
 		end
+		]]
 end
 
 function OSU:CreateCustomString(str, func)
@@ -831,6 +848,7 @@ function OSU:OpenOptionsMenu()
 	OSU:CreateSubTitle("Sign in")
 	OSU:CreateStatusString()
 	OSU:CreateFlashObject()
+	--[[
 	OSU:Opt_CreateClickButton("Login with steam", function()
 		OSU:AuthorizeToken()
 	end, function(self)
@@ -860,20 +878,11 @@ function OSU:OpenOptionsMenu()
 			self:Remove()
 		end
 	end)
+	]]
 	OSU:CreateCustomString("Current User : ", function(self)
 		if(!IsValid(self.text)) then return end
-		if(OSU.LoggedIn) then
-			if(OSU.UserBanned) then
-				self.text:SetText("Cheating fuck")
-				self.text:SetTextColor(Color(255, 50, 50))
-			else
-				self.text:SetText("Welcome, "..LocalPlayer():Nick())
-				self.text:SetTextColor(Color(200, 255, 200))
-			end
-		else
-			self.text:SetText("Playing as : Guest")
-			self.text:SetTextColor(Color(255, 200, 200))
-		end
+		self.text:SetText("Welcome, "..LocalPlayer():Nick())
+		self.text:SetTextColor(Color(200, 255, 200))
 	end)
 	OSU:CreateSectionTitle("Leaderboard")
 	OSU:CreateSubTitle("Name & Leaderboard")
@@ -881,7 +890,8 @@ function OSU:OpenOptionsMenu()
 	OSU:CreateTextEntry("Name for leaderboard", "UserName", "SteamName")
 	OSU:Opt_CreateButton("Disable avatars on leaderboard", "NoAvatar")
 	OSU:Opt_CreateButton("Load avatar frames", "LoadFrame")
-	OSU:CreateString("*Leaderboard is not available unless you logged in!*", Color(255, 150, 150, 255))
+	OSU:Opt_CreateButton("Submit score to leaderboard", "UploadToLeaderboard")
+	--OSU:CreateString("*Leaderboard is not available unless you logged in!*", Color(255, 150, 150, 255))
 	OSU:CreateSectionTitle("GENERAL")
 	OSU:CreateSubTitle("Language")
 	OSU:Opt_CreateBNameButton("Prefer metadata in original language (Map Name)")

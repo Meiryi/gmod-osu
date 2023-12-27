@@ -53,6 +53,11 @@ if(CLIENT) then
 	include("osu/game/runtime/osu_runtime_vars.lua")
 	include("osu/game/runtime/osu_runtime_setup.lua")
 
+	include("osu/game/runtime/mania/osu_mania_ui.lua")
+	include("osu/game/runtime/mania/osu_mania_note.lua")
+	include("osu/game/runtime/mania/osu_mania_holdnote.lua")
+	include("osu/game/runtime/mania/osu_mania_shared.lua")
+
 	include("osu/game/runtime/objects/osu_objects_approach_rate.lua")
 	include("osu/game/runtime/objects/osu_objects_approach_circle.lua")
 	include("osu/game/runtime/objects/osu_objects_skip.lua")
@@ -116,6 +121,11 @@ if(SERVER) then
 	AddCSLuaFile("osu/game/runtime/osu_runtime.lua")
 	AddCSLuaFile("osu/game/runtime/osu_runtime_vars.lua")
 	AddCSLuaFile("osu/game/runtime/osu_runtime_setup.lua")
+
+	AddCSLuaFile("osu/game/runtime/mania/osu_mania_ui.lua")
+	AddCSLuaFile("osu/game/runtime/mania/osu_mania_note.lua")
+	AddCSLuaFile("osu/game/runtime/mania/osu_mania_holdnote.lua")
+	AddCSLuaFile("osu/game/runtime/mania/osu_mania_shared.lua")
 
 	AddCSLuaFile("osu/game/runtime/objects/osu_objects_approach_rate.lua")
 	AddCSLuaFile("osu/game/runtime/objects/osu_objects_approach_circle.lua")

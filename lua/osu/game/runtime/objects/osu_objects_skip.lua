@@ -14,7 +14,7 @@
 function OSU:CreateSkipButton()
 	local w, h = ScreenScale(64), ScreenScale(49)
 	local x, y = ScrW(), ScrH()
-	local skip = vgui.Create("DImageButton", OSU.PlayFieldLayer.UpperLayer)
+	local skip = vgui.Create("DImageButton", OSU.PlayFieldLayer)
 		skip:SetSize(w, h)
 		skip:SetPos(x - w, y - h)
 		skip:SetImage(OSU.CurrentSkin["play-skip"])
@@ -62,6 +62,11 @@ function OSU:CreateSkipButton()
 				if(v["type"] == 3) then
 					v["killttime"] = v["killttime"] - offs
 				end
+				if(OSU.CurrentMode == 3) then
+					if(v["type"] != 1) then
+						v["endtime"] = v["endtime"] - offs
+					end
+				end
 			end
 			for k,v in next, OSU.Breaks do
 				v[1] = v[1] - offs
@@ -84,6 +89,11 @@ function OSU:CreateSkipButton()
 				v["time"] = v["time"] - offs
 				if(v["type"] == 3) then
 					v["killttime"] = v["killttime"] - offs
+				end
+				if(OSU.CurrentMode == 3) then
+					if(v["type"] != 1) then
+						v["endtime"] = v["endtime"] - offs
+					end
 				end
 			end
 			for k,v in next, OSU.Breaks do

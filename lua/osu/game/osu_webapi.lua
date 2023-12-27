@@ -162,18 +162,19 @@ end
 
 function OSU:RequestLeaderboard(beatmapid)
 	if(OSU.CurrentBeatmapID < 0) then return end
+	--[[
 	if(!OSU.LoggedIn) then
 		OSU.InvalidToken = false
 		OSU.ResultFetched = true
 		return
 	end
+	]]
 	OSU.InvalidToken = false
 	OSU.ResultFetched = false
 	OSU.NoRecords = false
 	local curID = OSU.CurrentBeatmapID
-	http.Post("https://osu.gmaniaserv.xyz/api/osuRequestHandler.php", {
+	http.Post("https://osu.gmaniaserv.xyz/apiv2/osuRequestHandler.php", {
 		    beatmapid = tostring(OSU.CurrentBeatmapID),
-		    token = OSU.ClientToken,
 		},
 
 		function(body, length, headers, code)
@@ -363,6 +364,9 @@ function OSU:RequestLeaderboard(beatmapid)
 														HR = OSU:ConvertStringBool(v["hr"]),
 														SD = OSU:ConvertStringBool(v["sd"]),
 														HD = OSU:ConvertStringBool(v["hd"]),
+														HT = OSU:ConvertStringBool(v["ht"]),
+														DT = OSU:ConvertStringBool(v["dt"]),
+														FL = OSU:ConvertStringBool(v["fl"]),
 													}
 												end
 												OSU:PlaySoundEffect(OSU.CurrentSkin["click-short-confirm"])
@@ -373,6 +377,7 @@ function OSU:RequestLeaderboard(beatmapid)
 													if(!fade.Switch) then
 														fade.iAlpha = math.Clamp(fade.iAlpha + OSU:GetFixedValue(20), 0, 255)
 														if(fade.iAlpha >= 255) then
+															OSU.ReplayModeUserNick = v["name"]
 															OSU.Score = tonumber(v["score"])
 															OSU.Accuracy = tonumber(v["accuracy"])
 															OSU.HIT300 = tonumber(v["h300"])
@@ -419,6 +424,15 @@ function OSU:RequestLeaderboard(beatmapid)
 											if(v["hd"] == "true") then
 												text = text.." HD"
 											end
+											if(v["ht"] == "true") then
+												text = text.." HT"
+											end
+											if(v["dt"] == "true") then
+												text = text.." DT"
+											end
+											if(v["fl"] == "true") then
+												text = text.." FL"
+											end
 											local nw, nh = OSU:GetTextSize("OSULeaderboardDesc", text)
 											local mods = vbase:Add("DLabel")
 												mods:SetFont("OSULeaderboardDesc")
@@ -437,30 +451,18 @@ function OSU:RequestLeaderboard(beatmapid)
 end
 
 function OSU:FetchUserData()
-	if(!OSU.LoggedIn) then
-		OSU.UserMapsPlayed = "Not logged in"
-		OSU.UserRanking = "Guest"
-		OSU.UserRankingScore = "Not logged in"
-		OSU.UserDataInvalid = true
-		OSU.UserScoreFetching = false
-		return
-	end
-	if(OSU.UserBanned) then
-		OSU.UserMapsPlayed = "Banned"
-		OSU.UserRanking = "Banned"
-		OSU.UserRankingScore = "Banned"
-		OSU.UserDataInvalid = true
-		OSU.UserScoreFetching = false
-		return
-	end
 	OSU.UserScoreFetching = true
-	http.Post("https://osu.gmaniaserv.xyz/api/osuUserDataHandler.php", {
-			token = OSU.ClientToken
+	OSU.UserDataInvalid = false
+	http.Post("https://osu.gmaniaserv.xyz/apiv2/osuUserDataHandler.php", {
+			steamid = LocalPlayer():SteamID64(),
 		},
 		function(body, length, headers, code)
 			local ret = util.JSONToTable(body)
 			if(ret == nil) then
-				OSU.UserDataInvalid = true
+				OSU.UserMapsPlayed = "No records"
+				OSU.UserRanking = "No records"
+				OSU.UserRankingScore = "No records"
+				OSU.UserAccuracy = "No records"
 			else
 				OSU.UserDataInvalid = false
 				local acc, topl = tonumber(ret[1]["accuracy"]), tonumber(ret[1]["totalplays"])
@@ -512,7 +514,43 @@ function OSU:SubmitScore(tmp)
 	if(!OSU.SteamName) then
 		name = OSU:RemoveillegalChar(OSU.UserName)
 	end
-	http.Post("https://osu.gmaniaserv.xyz/api/osuScoreHandler.php", {
+	OSU.ReplayData.ResultDetails = {
+		score = tostring(tmp["score"]),
+		combo = tostring(tmp["combo"]),
+		accuracy = tostring(tmp["accuracy"]),
+		beatmapid = tostring(tmp["ID"]),
+		h3 = tostring(tmp["3"]),
+		h1 = tostring(tmp["1"]),
+		h5 = tostring(tmp["5"]),
+		hm = tostring(tmp["m"]),
+		name = name, 
+		steamid = LocalPlayer():SteamID64(),
+		ez = OSU:BoolenToString("EZ"),
+		nf = OSU:BoolenToString("NF"),
+		hr = OSU:BoolenToString("HR"),
+		sd = OSU:BoolenToString("SD"),
+		hd = OSU:BoolenToString("HD"),
+		ht = OSU:BoolenToString("HT"),
+		dt = OSU:BoolenToString("DT"),
+		fl = OSU:BoolenToString("FL"),
+		rid = tostring(tmp["rID"])
+	}
+	HTTP({
+		failed = function(reason)
+			OSU:CenteredMessage("Server is offline!", 1)
+		end,
+		success = function(code, body, headers)
+			if(string.len(body) > 1) then
+				OSU:CenteredMessage(body, 1)
+			end
+			OSU:FetchUserData()
+		end,
+		method = "POST",
+		body =  util.TableToJSON(OSU.ReplayData),
+		url = "https://osu.gmaniaserv.xyz/apiv2/LD/osuScoreHandlerv2.php"
+	})
+	--[[
+	http.Post("https://osu.gmaniaserv.xyz/apiv2/osuScoreHandlerv2.php", {
 			score = tostring(tmp["score"]),
 			combo = tostring(tmp["combo"]),
 			accuracy = tostring(tmp["accuracy"]),
@@ -528,6 +566,9 @@ function OSU:SubmitScore(tmp)
 			hr = OSU:BoolenToString("HR"),
 			sd = OSU:BoolenToString("SD"),
 			hd = OSU:BoolenToString("HD"),
+			ht = OSU:BoolenToString("HT"),
+			dt = OSU:BoolenToString("DT"),
+			fl = OSU:BoolenToString("FL"),
 			rid = tostring(tmp["rID"])
 		},
 
@@ -537,9 +578,6 @@ function OSU:SubmitScore(tmp)
 					OSU.UserBanned = true
 				end
 				if(body == "PASS_REPLAY") then
-					local data = file.Read("osu!/replay/"..tostring(tmp["ID"]).."/"..tostring(tmp["rID"])..".dem", "DATA")
-					if(data == nil) then return end
-					data = util.Compress(data)
 					HTTP({
 						failed = function(reason)
 						end,
@@ -550,7 +588,6 @@ function OSU:SubmitScore(tmp)
 						body = data,
 						url = "https://osu.gmaniaserv.xyz/api/osuReplayReceiver.php?rID="..tostring(tmp["rID"]).."&uID="..tostring(tmp["ID"]).."&token="..OSU.ClientToken
 					})
-					OSU:CenteredMessage("Uploading Replay", 1)
 				else
 					OSU:CenteredMessage(body, 1)
 				end
@@ -561,6 +598,7 @@ function OSU:SubmitScore(tmp)
 
 		end
 	)
+	]]
 end
 
 function OSU:CheckUserStatus()
@@ -568,6 +606,7 @@ function OSU:CheckUserStatus()
 end
 
 function OSU:CheckServerStatus()
+	local _st = OSU.CurTime
 	if(!OSU.ServerStatus) then
 		OSU.FetchingStatus = true
 	end
@@ -575,7 +614,7 @@ function OSU:CheckServerStatus()
 		function(body, length, headers, code)
 			if(body == "SRV_ONLINE") then
 				if(!OSU.ServerStatus) then
-					OSU:SideNotify("Connected to server!", 2)
+					OSU:SideNotify("Connected to server!\nFetch time : "..math.Round(math.abs(OSU.CurTime - _st), 2).." seconds", 2)
 					OSU:FetchUserData()
 				end
 				OSU.ServerStatus = true

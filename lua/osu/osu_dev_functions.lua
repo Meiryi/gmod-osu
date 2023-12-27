@@ -88,9 +88,35 @@ function OSU:WriteLog(str)
 	file.Append("osu!/logs/log.txt", TimeString.." : -> "..str.."\n")
 end
 
-function OSU:BitFlag(int)
-	if(int <= 0) then return 0 end -- I don't really want to do shit like this, but whatever
-	for i = 1, int, 1 do
-		if(i * 2 >= int) then return i end
+function OSU:RestoreScore()
+	local ssc = OSU.ReplayData.Details.ssc
+	local mul = OSU.ReplayData.Details.mul
+	local c = 0
+	local s = ssc
+	local hc = 0
+	for k,v in next, OSU.ReplayData.HitDetails do
+		local mul_ = (10 + math.floor((c + 1) / 40))
+		if(v == 1) then
+			s = math.Clamp(s + ((300 + c * mul_) * mul), 0, 2147000000)
+			c = c + 1
+		elseif(v == 2)  then
+			s = math.Clamp(s + ((100 + c * mul_) * mul), 0, 2147000000)
+			c = c + 1
+		elseif(v == 3)  then
+			s = math.Clamp(s + ((50 + c * mul_) * mul), 0, 2147000000)
+			c = c + 1
+		elseif(v == 4)  then
+			c = 0
+		elseif(v == 5) then
+			s = math.Clamp(s + 50, 0, 2147000000)
+			c = c + 1
+		elseif(v == 6) then
+			c = c + 1
+		end
+		if(c > hc) then
+			hc = c
+		end
+		s = math.floor(s)
 	end
+	print(s)
 end

@@ -9,6 +9,12 @@ OSU.ReplayData.Specs = {
 	h = ScrH(),
 	skip = -1,
 }
+
+function OSU:InsertHitDetails(type)
+	if(OSU.AutoNotes || OSU.ReplayMode) then return end
+	table.insert(OSU.ReplayData.HitDetails, type)
+end
+
 function OSU:ResetReplayData()
 	OSU.ReplayData = {}
 	OSU.ReplayData.HitData = {}
@@ -21,6 +27,12 @@ function OSU:ResetReplayData()
 		h = ScrH(),
 		skip = -1,
 	}
+	OSU.ReplayData.Details = {
+		t = -1,
+		mul = 1,
+		ssc = 0,
+	}
+	OSU.ReplayData.HitDetails = {}
 end
 
 function OSU:InsertSkipTime(time)
@@ -28,7 +40,7 @@ function OSU:InsertSkipTime(time)
 end
 
 function OSU:RecordFrame(data)
-	if(OSU.AutoNotes) then return end
+	if(OSU.AutoNotes || OSU.ReplayMode) then return end
 	if(#OSU.ReplayData.MouseData["bnk_"..OSU.CurrentTableIndex] < 4096) then
 		table.insert(OSU.ReplayData.MouseData["bnk_"..OSU.CurrentTableIndex], data)
 	else

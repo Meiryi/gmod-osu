@@ -20,9 +20,19 @@ OSU.ModesTMP = {
 	HR = false,
 	SD = false,
 	HD = false,
+	HT = false,
+	DT = false,
+	FL = false,
 }
 OSU.OriginalSize = ScreenScale(54.4)
 OSU.CurrentMode = 0
+OSU.ManiaFieldHeight = 0
+OSU.ManiaFallSpeed = 12
+OSU.ManiaNoteTextures = {
+	["note1"] = Material("osu/mania-note1.png"),
+	["note1h"] = Material("osu/mania-note1l-0.png"),
+}
+OSU.ManiaFallTime = 1
 OSU.CurrentDefBGPath = "osu/internal/bg_ch/"
 OSU.BeatmapCTX = ""
 OSU.BeatmapTime = 0
@@ -53,6 +63,7 @@ OSU.CurrentTableIndex_Read = 1
 OSU.CurrentObjectColor = Color(255, 255, 255, 255)
 OSU.CurrentColourIndex = 1
 OSU.CurrentComboIndex = 1
+OSU.ReplayModeUserNick = "Unknown"
 
 OSU.TempData = {
 	["b"] = "",
@@ -77,6 +88,8 @@ OSU.NF = false
 OSU.HR = false
 OSU.SD = false
 OSU.HD = false
+OSU.HT = false
+OSU.DT = false
 OSU.FL = false
 OSU.RLAC = false
 OSU.RLAM = false

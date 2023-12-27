@@ -232,6 +232,7 @@ end
 function OSU:PlayMusic(sd, sdn, ostr, time)
 	sound.PlayFile(sd, "noplay", function(station, errCode, errStr)
 		if(IsValid(station)) then
+			OSU.MenuKiaiTime = false
 			if(IsValid(OSU.SoundChannel)) then
 				OSU.SoundChannel:Stop()
 			end

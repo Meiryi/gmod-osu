@@ -17,7 +17,7 @@ function OSU:CreateApproachCircle(vec_2t, fadein, dec, radius)
 	local mul = 3.5
 	radius = radius * mul
 	local offs = radius / 2
-	local circle = vgui.Create("DImage", OSU.PlayFieldLayer.UpperLayer)
+	local circle = vgui.Create("DImage", OSU.PlayFieldLayer)
 		circle.iAlpha = 0
 		circle:SetImage(OSU.CurrentSkin["approachcircle"])
 		circle:SetSize(radius, radius)

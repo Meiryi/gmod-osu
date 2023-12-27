@@ -265,11 +265,11 @@ function OSU:RequestBeatmapList(keyword, page)
 										checkinterval = OSU.CurTime + 1
 									end
 								end
-								local sx = ScreenScale(16)
+								local sx = ScreenScale(12)
 								local download = base:Add("DImageButton")
 								local installed = false
 								local nextthink = 0
-									download:SetPos(width - sx - padding1_5x, padding1_5x)
+									download:SetPos(width - sx - ScreenScale(5), ScreenScale(2))
 									download:SetSize(sx, sx)
 									download:SetImage("osu/internal/webdownload.png")
 									download.DoClick = function()
@@ -297,7 +297,7 @@ function OSU:RequestBeatmapList(keyword, page)
 											end
 											surface.SetDrawColor(255, 255, 255, 255)
 											surface.SetMaterial(OSU.LoadingTx)
-											surface.DrawTexturedRectRotated(pheight / 2, pheight / 2, pheight, pheight, rotate)
+											surface.DrawTexturedRectRotated(sx / 2, sx / 2, sx, sx, rotate)
 											download:SetColor(Color(255, 255, 255, 0))
 										else
 											download:SetColor(Color(255, 255, 255, 255))
@@ -318,11 +318,12 @@ function OSU:RequestBeatmapList(keyword, page)
 										table.insert(stars, tonumber(y["DifficultyRating"]))
 									end
 									table.sort(stars, function(a, b) return b > a end)
+									local pad2 = ScreenScale(2)
 									local nextX = 0
 									local hasData = false
-									local sx = ScreenScale(12)
-									local baseX = download:GetX() - padding2x - sx
-									local baseY = height - sx - padding
+									local sx = ScreenScale(10)
+									local baseX = width - sx - padding1_5x
+									local baseY = height - sx - pad2
 									for x,y in next, icons do
 										if(!y) then continue end
 										local ico = base:Add("DImage")
@@ -340,7 +341,7 @@ function OSU:RequestBeatmapList(keyword, page)
 									for x,y in next, stars do
 										local clr = OSU:GetStarColor(y)
 										local rect = base:Add("DImage")
-											rect:SetPos(baseX - (nX + nextX + gap + sx), height - (h + hpad))
+											rect:SetPos(baseX - (nX + nextX + gap + (sx / 2)), height - (h + pad2))
 											rect:SetSize(w, h)
 											rect.Paint = function()
 												draw.RoundedBox(ScreenScale(3), 0, 0, rect:GetWide() / 2, rect:GetTall(), clr)

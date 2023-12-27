@@ -78,6 +78,12 @@ function OSU:RunTime()
 	OSU.Background:SetImageColor(Color(cv, cv, cv, 255))
 	if(OSU.BeatmapTime - OSU.AppearTime > OSU.CurTime) then return end
 	if(!OSU.MusicStarted && OSU.BeatmapTime < OSU.CurTime) then
+		if(OSU.HT) then
+			OSU.SoundChannel:SetPlaybackRate(0.5)
+		end
+		if(OSU.DT) then
+			OSU.SoundChannel:SetPlaybackRate(1.5)
+		end
 		OSU.SoundChannel:Play()
 		if(OSU.BeatmapStartTime - OSU.BeatmapTime >= 3) then 
 			OSU.SkipButton = OSU:CreateSkipButton()
@@ -132,24 +138,44 @@ function OSU:RunTime()
 			table.remove(OSU.Objects, k)
 		else
 			if(v["time"] <= OSU.CurTime) then
-				if(v["newcombo"]) then
-					OSU:PickComboColour()
-					OSU.CurrentComboIndex = 1
-				end
-				if(v["type"] == 1) then
-					OSU:CreateCircle(v["vec_2"], v["sound"], OSU.CurrentZPos, nil, OSU.ObjectIndex, OSU.CurrentComboIndex)
-					OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
-				elseif(v["type"] == 2) then
-					OSU:CreateSlider(v["vec_2"], v["followpoint"], v["realfollowpoint"], v["connectpoints"], v["length"], v["repeat"], v["sound"], OSU.CurrentZPos, v["stype"], OSU.ObjectIndex, v["edgesd"], OSU.CurrentComboIndex)
-					OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
-				else
-					OSU:CreateSpinner(v["vec_2"], v["sound"], OSU.CurrentZPos, v["killttime"])
-					if(k == #OSU.Objects) then
-						OSU.BeatmapEndTime = v["killttime"] + 2
+				if(OSU.CurrentMode == 0) then
+					if(v["newcombo"]) then
+						OSU:PickComboColour()
+						OSU.CurrentComboIndex = 1
+					end
+					if(v["type"] == 1) then
+						OSU:CreateCircle(v["vec_2"], v["sound"], OSU.CurrentZPos, nil, OSU.ObjectIndex, OSU.CurrentComboIndex)
+						OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
+					elseif(v["type"] == 2) then
+						OSU:CreateSlider(v["vec_2"], v["followpoint"], v["realfollowpoint"], v["connectpoints"], v["length"], v["repeat"], v["sound"], OSU.CurrentZPos, v["stype"], OSU.ObjectIndex, v["edgesd"], OSU.CurrentComboIndex)
+						OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
+					else
+						OSU:CreateSpinner(v["vec_2"], v["sound"], OSU.CurrentZPos, v["killttime"])
+						if(k == #OSU.Objects) then
+							OSU.BeatmapEndTime = v["killttime"] + 2
+						end
+					end
+					OSU.ObjectIndex = OSU.ObjectIndex + 1
+					OSU.CurrentZPos = OSU.CurrentZPos - 1
+				elseif(OSU.CurrentMode == 3) then
+					--[[
+						["time"] = time / 1000,
+						["column"] = column,
+						["type"] = type,
+						["sound"] = hittype,
+						["time"] = time / 1000,
+
+						["column"] = column,
+						["type"] = type,
+						["sound"] = hittype,
+						["endtime"] = tonumber(param_[1]) / 1000,
+					]]
+					if(v["type"] == 1) then
+						OSU:CreateManiaNote(v["column"], v["sound"])
+					else
+
 					end
 				end
-				OSU.ObjectIndex = OSU.ObjectIndex + 1
-				OSU.CurrentZPos = OSU.CurrentZPos - 1
 				v["spawned"] = true
 			end
 		end
@@ -181,6 +207,7 @@ function OSU:RunTime()
 		OSU.ShouldDrawFakeCursor = false
 	else
 		if(input.IsKeyDown(70) && !OSU.GameEnded) then
+			OSU.SoundChannel:SetPlaybackRate(1)
 			OSU.GlobalAlphaMult = 1
 			OSU:ChangeScene(OSU_MENU_STATE_MAIN)
 			OSU.GameEnded = true
@@ -229,7 +256,7 @@ function OSU:RunTime()
 		end
 	end
 
-	if(OSU.RecordInterval < OSU.CurTime && !OSU.ReplayMode && !OSU.AutoNotes) then
+	if(OSU.RecordInterval < OSU.CurTime && !OSU.AutoNotes && !OSU.ReplayMode) then
 		local time = OSU.CurTime - OSU.BeatmapTime
 		--table.insert(OSU.ReplayData.MouseData, {time, OSU.CursorPos.x, OSU.CursorPos.y})
 		OSU:RecordFrame({time, OSU.CursorPos.x, OSU.CursorPos.y})

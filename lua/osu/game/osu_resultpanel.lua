@@ -173,19 +173,21 @@ function OSU:SetupResultPanel(name, fBack, func, date)
 		OSU.FetchingReplay = true
 		local bid, rid = OSU.CurrentBeatmapID, OSU.CurrentReplayID
 		OSU.CurrentReplayData = data
-			http.Fetch("https://osu.gmaniaserv.xyz/api/Replay/"..bid.."/"..rid..".gosr",
+			http.Fetch("https://osu.gmaniaserv.xyz/apiv2/LD/Replay/"..bid.."/"..rid..".gosr",
 				function(body, length, headers, code)
 					if(IsValid(OSU.PlayFieldLayer)) then return end
-					local data = util.JSONToTable(util.Decompress(body))
+					local data = util.JSONToTable(body)
 					if(data == nil) then
 						OSU:CenteredMessage("Replay file not found!")
 					else
 						if(bid == OSU.CurrentBeatmapID) then
+							OSU.AutoNotes = false
 							OSU.EZ = OSU.ModesTMP.EZ
 							OSU.NF = OSU.ModesTMP.NF
 							OSU.HR = OSU.ModesTMP.HR
 							OSU.SD = OSU.ModesTMP.SD
 							OSU.HD = OSU.ModesTMP.HD
+							OSU.FL = OSU.ModesTMP.FL
 							OSU.CurrentReplayData = data
 							OSU:StartBeatmap(OSU.BeatmapCTX, OSU.BeatmapDetails, OSU.CurrentBeatmapID, true)
 							OSU.ResultLayer:Remove()

@@ -102,7 +102,7 @@ function OSU:IsSupportedMode(mode)
 		[0] = true,
 		[1] = false,
 		[2] = false,
-		[3] = true,
+		[3] = false,
 	}
 	return l[mode]
 end
@@ -459,7 +459,7 @@ function OSU:RefreshBeatmapList(keyWord)
 						if(keyCode != 107) then return end
 						OSU.CurrentMode = tonumber(mode)
 						if(!supported) then
-							OSU:CenteredMessage("This beatmap's mode is not supported!")
+							OSU:CenteredMessage("Due to limitations, this mode cannot be implemented.", 0.33)
 							OSU:PlaySoundEffect(OSU.CurrentSkin["menu-multiplayer-click"])
 							OSU:ChangeBackground(bg)
 							OSU.BPM = datas["BPM"]
@@ -616,6 +616,7 @@ function OSU:RefreshBeatmapList(keyWord)
 				function btn_n:OnCursorEntered()
 					OSU:PlaySoundEffect(OSU.CurrentSkin["menuclick"])
 				end
+				--gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
 				btn_n.DoClick = function()
 					if(base.tutPage >= 4) then
 						base:Remove()
@@ -726,6 +727,22 @@ function OSU:SetupBeatmapPanel()
 			Rotate = 0
 		end
 		draw.RoundedBox(0, 0, 0, OSU.LeaderboardScrollPanel:GetWide(), OSU.LeaderboardScrollPanel:GetTall(), Color(0, 0, 0, 0))
+				if(!OSU.ResultFetched) then
+					iAlpha = math.Clamp(iAlpha + OSU:GetFixedValue(5), 0, 100)
+					surface.SetDrawColor(255, 255, 255, iAlpha)
+					surface.SetMaterial(OSU.LoadingTx)
+					surface.DrawTexturedRectRotated(OSU.LeaderboardScrollPanel:GetWide() / 2, OSU.LeaderboardScrollPanel:GetTall() / 2, sx, sx, Rotate)
+				end
+				if(OSU.NoRecords) then
+					iAlpha2 = math.Clamp(iAlpha2 + OSU:GetFixedValue(30), 0, 255)
+				else
+					iAlpha2 = math.Clamp(iAlpha2 - OSU:GetFixedValue(30), 0, 255)
+				end
+				surface.SetDrawColor(255, 255, 255, iAlpha2)
+				surface.SetMaterial(OSU.NoRecordTx)
+				local __h = OSU.LeaderboardScrollPanel:GetWide() * 0.747
+				surface.DrawTexturedRect(0, (OSU.LeaderboardScrollPanel:GetTall() / 2) - (__h / 2), OSU.LeaderboardScrollPanel:GetWide(), __h)
+		--[[
 		if(!OSU.UserBanned) then
 			if(OSU.LoggedIn) then
 				if(!OSU.ResultFetched) then
@@ -761,6 +778,7 @@ function OSU:SetupBeatmapPanel()
 			surface.SetMaterial(OSU.CheaterTx)
 			surface.DrawTexturedRect((OSU.LeaderboardScrollPanel:GetWide() / 2) - cSx / 2, (OSU.LeaderboardScrollPanel:GetTall() / 2) - cSx / 2, cSx, cSx)
 		end
+		]]
 	end
 	function OSU.BeatmapScrollPanel:OnMouseWheeled(scrollDelta)
 		if(OSU.MaxScroll == 0) then return end
@@ -821,7 +839,7 @@ function OSU:SetupBeatmapPanel()
 	end
 	local sx = ScreenScale(96)
 	OSU.PlayMenuLayer.Logo = OSU:CreateImageBeat(OSU.PlayMenuLayer, ScrW() - (sx * 0.3), ScrH() - (sx * 0.3), sx, sx, OSU.CurrentSkin["logo"], true, true)
-
+	--[[
 	if(!OSU.UserBanned && !OSU.LoggedIn) then
 		if(IsValid(OSU.LoginButton)) then OSU.LoginButton:Remove() end
 		local w = OSU.LeaderboardScrollPanel:GetWide()
@@ -846,6 +864,7 @@ function OSU:SetupBeatmapPanel()
 			OSU:AuthorizeToken(OSU_MENU_STATE_BEATMAP)
 		end
 	end
+	]]
 	local _h = h
 	local w, h = ScreenScale(150), ScreenScale(15)
 	local gap, padding = ScreenScale(2), (h - ScreenScale(10)) / 2

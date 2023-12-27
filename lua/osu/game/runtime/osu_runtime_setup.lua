@@ -115,10 +115,12 @@ function OSU:GetObjectType(bitindex)
 end
 
 function OSU:GetManiaObjectType(bitindex)
-	if(bit.band(bitindex, OSU.HITOBJECT_CIRCLE) > 0) then
-		return 1
-	else
+	local bit = math.IntToBin(bitindex)
+	local bitfield = string.reverse(bit)
+	if(bitfield[8] == "1") then
 		return 2
+	else
+		return 1
 	end
 end
 
@@ -139,14 +141,48 @@ function OSU:GetColumn(ctx, k)
 	return math.floor((xAxis * k) / 512) + 1
 end
 
+function OSU:ConstrustPlayField(field)
+	OSU.ManiaNoteTextures = {
+		["note1"] = Material(OSU.CurrentSkin["mania-note1"]),
+		["note1h"] = Material(OSU.CurrentSkin["mania-note1L-0"]),
+	}
+	local lw, lh = OSU:GetMaterialSize(OSU.CurrentSkin["mania-stage-left"])
+	local rw, rh = OSU:GetMaterialSize(OSU.CurrentSkin["mania-stage-right"])
+	OSU:CreateImage(field, 0, 0, lw, ScrH(), OSU.CurrentSkin["mania-stage-left"], false)
+	local next = lw
+	local pad = ScreenScale(1)
+	local w, h = OSU:GetMaterialSize(OSU.CurrentSkin["mania-key1"])
+	for i = 1, OSU.CS, 1 do
+		OSU:CreateGrid(field, next)
+		next = next + pad
+		field.Keys[i] = OSU:CreateKey(field, next, w, i)
+		next = next + w
+		if(i == OSU.CS) then
+			OSU:CreateGrid(field, next)
+			next = next + pad
+		end
+	end
+	local hw, hh = OSU:GetMaterialSize(OSU.CurrentSkin["mania-stage-hint"])
+	next = next - lw
+	field:SetWide(field:GetWide() + lw + rw + next)
+	OSU:CreateImage(field, lw, ScrH() - (h + hh), field:GetWide() - (lw + rw), hh, OSU.CurrentSkin["mania-stage-hint"], false)
+	OSU:CreateImage(field, field:GetWide() - rw, 0, rw, ScrH(), OSU.CurrentSkin["mania-stage-right"], false)
+	field:SetX((OSU.PlayFieldLayer:GetWide() / 2) - (field:GetWide() / 2))
+end
+
 local _stop = false
 function OSU:StartBeatmap(beatmap, details, id, replay)
+	if(OSU.CurrentMode != 0) then
+		return
+	end
 	if(IsValid(OSU.HealthBar)) then OSU.HealthBar:Remove() end
 	if(IsValid(OSU.FailPanel)) then OSU.FailPanel:Remove() end
 	if(replay == nil) then replay = false end
 	OSU.ReplayMode = replay
 	OSU.ShouldDrawFakeCursor = replay
 	OSU:ResetReplayData()
+	OSU.ReplayData.Details.t = math.floor(OSU.CurTime)
+	OSU.ReplayData.Details.mul = OSU.ScoreMul
 	
 	if(!_stop) then
 		OSU.GameEnded = false
@@ -164,7 +200,9 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				
 			end
 		end
-		OSU.PlayFieldLayer.UpperLayer = OSU:CreateFrame(OSU.PlayFieldLayer, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), false)
+		OSU.PlayFieldLayer.UpperLayer = OSU.PlayFieldLayer:Add("DImage")
+		OSU.PlayFieldLayer.UpperLayer:SetSize(ScrW(), ScrH())
+		OSU.PlayFieldLayer.UpperLayer:SetDrawOnTop(true)
 		OSU.PlayFieldLayer.FollowPoints = {}
 		OSU.HealthBar = vgui.Create("DPanel", OSU.PlayFieldLayer.UpperLayer)
 		OSU.HealthBar.Paint = function() return end
@@ -196,6 +234,8 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.CurrentComboIndex = 1
 	OSU.Health = 100
 	OSU.LastInaccuracyTime = 0
+
+
 
 	for i = 0, 9, 1 do
 		OSU.DefaultMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["default-"..i])
@@ -287,7 +327,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	local cached = file.Exists(OSU.HitObjectsCachePath..id..".dat", "DATA")
 	local obj_start, obj_end = details["Object Range"][1], details["Object Range"][2]
 	local tps_start, tps_end = details["Timepoint Range"][1], details["Timepoint Range"][2]
-	if(OSU.CurrentMode == 0) then
+
 		if(cached) then
 			local _sTime = SysTime()
 			local ctx = file.Read(OSU.HitObjectsCachePath..id..".dat", "DATA")
@@ -299,7 +339,14 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			OSU:CenteredMessage("Loading beatmap temp ("..id..".dat, "..math.Round(_processTime, 3).."s)")
 			OSU.BeatmapTime = OSU.CurTime + 2 + _processTime
 			for k,v in next, OSU.TimingPoints do
-				v[1] = v[1] + OSU.BeatmapTime
+				local mul = 1
+				if(OSU.HT) then
+					mul = 1.5
+				end
+				if(OSU.DT) then
+					mul = 0.5
+				end
+				v[1] = (v[1] * mul) + OSU.BeatmapTime
 			end
 			for k,v in next, OSU.Objects do
 				v["time"] = OSU.BeatmapTime + v["time"] - apprTime
@@ -337,6 +384,12 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				local ret = string.Explode(",", _ctx)
 				if(i == tps_start) then
 					OSU.BeatLength = tonumber(ret[2])
+					if(OSU.HT) then
+						OSU.BeatLength = OSU.BeatLength * 1.5
+					end
+					if(OSU.DT) then
+						OSU.BeatLength = OSU.BeatLength * 0.5
+					end
 				end
 				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
 				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
@@ -503,6 +556,12 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				local ret = string.Explode(",", _ctx)
 				if(i == tps_start) then
 					OSU.BeatLength = tonumber(ret[2])
+					if(OSU.HT) then
+						OSU.BeatLength = OSU.BeatLength * 1.5
+					end
+					if(OSU.DT) then
+						OSU.BeatLength = OSU.BeatLength * 0.5
+					end
 				end
 				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
 				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
@@ -519,7 +578,14 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				--OSU:CenteredMessage("Map loaded ("..math.Round(_processTime, 3).."s)", _processTime)
 			end
 			for k,v in next, OSU.TimingPoints do
-				v[1] = v[1] + OSU.BeatmapTime
+				local mul = 1
+				if(OSU.HT) then
+					mul = 1.5
+				end
+				if(OSU.DT) then
+					mul = 0.5
+				end
+				v[1] = (v[1] * mul) + OSU.BeatmapTime
 			end
 			for k,v in next, OSU.Objects do
 				v["time"] = OSU.BeatmapTime + v["time"] - apprTime
@@ -587,23 +653,23 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				end
 			end
 		end
-	elseif(OSU.CurrentMode == 3) then
-		local ctx = string.Explode("\n", beatmap)
-		for i = obj_start, obj_end, 1 do
-			local object = string.Explode(",", ctx[i])
-			local column = OSU:GetColumn(object[1], details["Keys"])
-			local time = tonumber(object[3])
-			local type = tonumber(object[4])
-			local hittype = OSU:GetHitsoundTable(tonumber(object[5]))
-			local param = object[6]
-			local _sTime = SysTime()
-			if(OSU:GetManiaObjectType(type) == 1) then -- Normal note
-				print("Normal note", column, time / 1000, type, hittype)
-			else -- Hold note
-				local param_ = string.Explode(":", param)
-				print("Hold note", column, time / 1000, type, hittype, tonumber(param_[1]) / 1000)
-			end
-			local _eTime = SysTime()
+	local mul = 1
+	if(OSU.HT) then
+		mul = 1.5
+	end
+	if(OSU.DT) then
+		mul = 0.5
+	end
+	for k,v in next, OSU.Objects do
+		v["time"] = OSU.BeatmapTime + (v["otime"] * mul) - apprTime
+		if(v["type"] == 3) then
+			v["killttime"] = OSU.BeatmapTime + (v["okilltime"] * mul)
+		end
+		if(k == 1) then
+			OSU.BeatmapStartTime = v["time"]
+		end
+		if(k == #OSU.Objects) then
+			OSU.BeatmapEndTime = v["time"] + 2.5
 		end
 	end
 	OSU.OffsList = {}
@@ -627,29 +693,52 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	local _x, _y = ScreenScale(4), ScreenScale(4)
 	local nextExecute = 0.1
 	local ExecuteTime = 0
+	local srate = ScrW() * 0.5
+	local smin = ScrW() * 6
+	local smax = ScrW() * 24
+	local sx = smax
+	local falpha = 255
+	if(OSU.ReplayMode) then
+		falpha = 200
+	end
 	if(!IsValid(OSU.PlayFieldLayer)) then return end
-	OSU.PlayFieldLayer.UpperLayer.Paint = function()
-		if(OSU.CurrentMode == 0) then
-			surface.SetMaterial(OSU.FollowPointTx["t"])
-			for _, t in next, OSU.FollowPointsTable do
-				for k,v in next, t do
-				-- pos, alpha, alpha++, end time, angle, st time
-				if(v[4] > OSU.CurTime) then
-					if(v[6] <= OSU.CurTime) then
-						v[2] = math.Clamp(v[2] + OSU:GetFixedValue(v[3]), 0, 255)
-					end
-				else
-					if(v[7] <= OSU.CurTime) then
-						v[2] = math.Clamp(v[2] - OSU:GetFixedValue(v[3]), 0, 255)
-					end
-					if(v[2] <= 0) then
-						table.remove(OSU.FollowPointsTable[_], k)
-					end
+	OSU.PlayFieldLayer.Paint = function()
+		surface.SetMaterial(OSU.FollowPointTx["t"])
+		for _, t in next, OSU.FollowPointsTable do
+			for k,v in next, t do
+			-- pos, alpha, alpha++, end time, angle, st time
+			if(v[4] > OSU.CurTime) then
+				if(v[6] <= OSU.CurTime) then
+					v[2] = math.Clamp(v[2] + OSU:GetFixedValue(v[3]), 0, 255)
 				end
+			else
+				if(v[7] <= OSU.CurTime) then
+					v[2] = math.Clamp(v[2] - OSU:GetFixedValue(v[3]), 0, 255)
+				end
+				if(v[2] <= 0) then
+					table.remove(OSU.FollowPointsTable[_], k)
+				end
+			end
 
-				surface.SetDrawColor(255, 255, 255, v[2])
-				surface.DrawTexturedRectRotated(v[1].x, v[1].y, OSU.FollowPointTx["w"], OSU.FollowPointTx["h"], v[5])
+			surface.SetDrawColor(255, 255, 255, v[2])
+			surface.DrawTexturedRectRotated(v[1].x, v[1].y, OSU.FollowPointTx["w"], OSU.FollowPointTx["h"], v[5])
+			end
+		end
+	end
+	OSU.PlayFieldLayer.UpperLayer.Paint = function()
+			if(OSU.FL) then
+				local x, y = input.GetCursorPos()
+				if(OSU.ReplayMode) then
+					x, y = OSU.FakeCursorPos.x, OSU.FakeCursorPos.y
 				end
+				if(OSU.BreakTime > OSU.CurTime || OSU.BeatmapStartTime > OSU.CurTime) then
+					sx = math.Clamp(sx + OSU:GetFixedValue((smax - smin) * 0.1), smin, smax)
+				else
+					sx = math.Clamp(sx - OSU:GetFixedValue((sx - smin) * 0.1), smin, smax)
+				end
+				surface.SetDrawColor(0, 0, 0, falpha)
+				surface.SetMaterial(OSU.FlashLight)
+				surface.DrawTexturedRectRotated(x, y, sx, sx, 0)
 			end
 			if(OSU.GlobalMatShadowSize > OSU.GlobalMatSize) then
 				OSU.GlobalMatShadowSize = math.Clamp(OSU.GlobalMatShadowSize - OSU:GetFixedValue(0.03), OSU.GlobalMatSize, 2)
@@ -686,6 +775,15 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				surface.SetDrawColor(255, 255, 255, alp)
 				surface.DrawTexturedRect((ScrW() / 2) - OSU.UnrankedTx["w"] / 2, (ScrH() * 0.125) - OSU.UnrankedTx["h"] / 2, OSU.UnrankedTx["w"], OSU.UnrankedTx["h"])
 				local t = "Watching osu! playing   "..OSU.BeatmapDetails["Title"]
+				local xh = OSU:GetTextSize("OSUBeatmapResultMapper", t)
+				if(OSU.AutoplayTextOffs <= 0) then
+					OSU.AutoplayTextOffs = ScrW() + (xh * 1.25)
+				end
+				draw.DrawText(t, "OSUBeatmapResultMapper", OSU.AutoplayTextOffs, ScrH() * 0.175, Color(255, 255, 255, alp), TEXT_ALIGN_RIGHT)
+				OSU.AutoplayTextOffs = OSU.AutoplayTextOffs - OSU:GetFixedValue(2)
+			end
+			if(OSU.ReplayMode) then
+				local t = "REPLAY MODE - Watching "..OSU.ReplayModeUserNick.." play "..OSU.BeatmapDetails["Title"]
 				local xh = OSU:GetTextSize("OSUBeatmapResultMapper", t)
 				if(OSU.AutoplayTextOffs <= 0) then
 					OSU.AutoplayTextOffs = ScrW() + (xh * 1.25)
@@ -738,6 +836,5 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				end
 			end
 			OSU.KiExt = math.Clamp(OSU.KiExt - OSU:GetFixedValue(5), 0, 1024)
-		end
 	end
 end

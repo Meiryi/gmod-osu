@@ -26,12 +26,15 @@ function OSU:SetupRankingPanel(toState, parent)
 		topbg:SetY((-ScrH() / 2) + topPadding / 2)
 	local topbgDraw = OSU.RankingPanel:Add("DImage")
 		topbgDraw:SetSize(ScrW(), topPadding)
+		--[[
 		topbgDraw.Paint = function()
 			if(OSU.UserBanned || OSU.LoggedIn) then return end
 			draw.DrawText("Want your name on leaderboard?", "OSULeaderboardRankingTitle", topbgDraw:GetWide() / 2, topbgDraw:GetTall() / 2, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
 		end
+		]]
 		local gap = ScreenScale(1)
 		local gap2x = gap * 2
+		--[[
 		local LoginBtn  = OSU.RankingPanel:Add("DButton")
 			LoginBtn:SetSize(ScrW() * 0.4, ScreenScale(16))
 			LoginBtn:SetPos((ScrW() / 2) - LoginBtn:GetWide() / 2, (topPadding / 1.3) - LoginBtn:GetTall() / 2)
@@ -48,6 +51,7 @@ function OSU:SetupRankingPanel(toState, parent)
 		LoginBtn.DoClick = function()
 			OSU:AuthorizeToken(-1)
 		end
+		]]
 	local topfade = OSU.RankingPanel:Add("DImage")
 		topfade:SetSize(ScrW(), ScreenScale(30))
 		topfade:SetImage("osu/internal/fade_down.png")

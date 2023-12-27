@@ -126,12 +126,14 @@ function OSU:CreateSpinner(vec_2t, sound, zp, killtime)
 			scoreMul = 1000 * OSU.ScoreMul
 			OSU.Score = math.Clamp(OSU.Score + (1000 * OSU.ScoreMul), 0, 2147000000)
 			nextScore = OSU.DegAdd + 180
+			OSU.ReplayData.Details.ssc = OSU.ReplayData.Details.ssc + (1000 * OSU.ScoreMul)
 		else
 			if(OSU.DegAdd > nextScore) then
 				OSU:PlayHitSound(OSU.CurrentSkin["spinnerbonus"])
 				scoreMul = scoreMul + (1000 * OSU.ScoreMul)
 				OSU.Score = math.Clamp(OSU.Score + (1000 * OSU.ScoreMul), 0, 2147000000)
 				nextScore = OSU.DegAdd + 180
+				OSU.ReplayData.Details.ssc = OSU.ReplayData.Details.ssc + (1000 * OSU.ScoreMul)
 			end
 		end
 	end

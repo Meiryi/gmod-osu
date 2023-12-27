@@ -14,6 +14,13 @@ function OSU:CalcScoreMul()
 			mul = mul - 0.5
 		end
 	end
+	if(OSU.HT) then
+		if(mul < 1) then
+			mul = mul / 2
+		else
+			mul = mul - 0.5
+		end
+	end
 	if(OSU.HR) then
 		mul = mul + 0.06
 	end
@@ -22,6 +29,9 @@ function OSU:CalcScoreMul()
 	end
 	if(OSU.HD) then
 		mul = mul + 0.08
+	end
+	if(OSU.DT) then
+		mul = mul + 0.12
 	end
 	if(OSU.FL) then
 		mul = mul + 0.12
@@ -72,6 +82,12 @@ function OSU:SetupModsPanel()
 	cX1 = cX1 + nextX
 	local texture = Material(OSU.CurrentSkin["selection-mod-nofail"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, decX + cX1, decY, w, h, "NF", {"SD"}, nil)
+	cX1 = cX1 + nextX
+	local texture = Material(OSU.CurrentSkin["selection-mod-halftime"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, decX + cX1, decY, w, h, "HT", {"DT"}, function()
+		OSU:PlaySoundEffect(OSU.CurrentSkin["check-off"])
+		OSU:CenteredMessage("This mod is still WIP!")
+	end)
 
 	local texture = Material(OSU.CurrentSkin["selection-mod-hardrock"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "HR", {"EZ"}, nil)
@@ -79,11 +95,17 @@ function OSU:SetupModsPanel()
 	local texture = Material(OSU.CurrentSkin["selection-mod-suddendeath"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "SD", {"NF"}, nil)
 	cX2 = cX2 + nextX
+	local texture = Material(OSU.CurrentSkin["selection-mod-doubletime"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "DT", {"HT"}, function()
+		OSU:PlaySoundEffect(OSU.CurrentSkin["check-off"])
+		OSU:CenteredMessage("This mod is still WIP!")
+	end)
+	cX2 = cX2 + nextX
 	local texture = Material(OSU.CurrentSkin["selection-mod-hidden"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "HD", {}, nil)
-	--cX2 = cX2 + nextX
-	--local texture = Material(OSU.CurrentSkin["selection-mod-flashlight"], "noclamp smooth")
-	--OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "FL", {}, nil)
+	cX2 = cX2 + nextX
+	local texture = Material(OSU.CurrentSkin["selection-mod-flashlight"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "FL", {}, nil)
 
 	local texture = Material(OSU.CurrentSkin["selection-mod-autoplay"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, speX + cX3, speY, w, h, "AutoNotes", {}, nil)

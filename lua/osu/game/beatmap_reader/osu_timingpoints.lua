@@ -10,7 +10,12 @@ function OSU:GetTimingPoints(ctx, details)
 		local line = v[i]
 		local ret = string.Explode(",", line)
 		if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
-		if(tonumber(ret[2]) > 0) then continue end
-		table.insert(OSU.MenuTimingPoints, {tonumber(ret[1]) / 1000, tonumber(ret[8]), false})
+		local bpm = false
+		local _bpm = 0
+		if(tonumber(ret[2]) > 0) then
+			bpm = true
+			_bpm = 1 / tonumber(ret[2]) * 1000 * 60
+		end
+		table.insert(OSU.MenuTimingPoints, {tonumber(ret[1]) / 1000, tonumber(ret[8]), false, _bpm, bpm})
 	end
 end

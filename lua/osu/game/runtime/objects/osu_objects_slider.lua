@@ -21,7 +21,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local ptime = OSU.CurTime + ms
 	local misstime = OSU.CurTime + (OSU:GetMissTime() + ms)
 	local ptime = OSU.CurTime + ms
-	local area = vgui.Create("DImage", OSU.PlayFieldLayer.UpperLayer)
+	local area = vgui.Create("DImage", OSU.PlayFieldLayer)
 	local dir = false
 	local amount = 0
 	local CurFollow = 1
@@ -87,6 +87,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local completeTime = len / (OSU.SliderMultiplier * 100 * OSU.SliderVelocity) * OSU.BeatLength -- ms
 	completeTime = (completeTime / 1000)
 	ctime = basetime + completeTime
+	area.lastHoldTime = OSU.CurTime
 	if(traceTime < OSU.CurTime && !traced) then
 		if(target != nil) then
 			if(!target["newcombo"]) then
@@ -101,7 +102,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				local __end = time + (OSU.AppearTime / 2)
 				local _trend = time
 				if(dst > radius) then
-					OSU:TraceFollowPoint(followpoint[#followpoint], pos, ang, _trend - OSU.CurTime, dst, ctime)
+					OSU:TraceFollowPoint(followpoint[idx], pos, ang, (target["time"] - (ms / 5)) - OSU.CurTime, dst, target["time"] + ms / 2)
 				end
 			end
 		end
@@ -198,16 +199,16 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 					if(OSU.CurTime - area.lastHoldTime < _missoffs) then
 						if(__amo > 1) then
 							OSU:PlayHitSound_t(sound)
+							OSU:AddCombo()
+							OSU:AddHealth(2)
 						end
-						OSU:AddHealth(2)
-						OSU:AddCombo()
 					else
 						if(OSU.AutoNotes) then
 							if(__amo > 1) then
 								OSU:PlayHitSound_t(sound)
+								OSU:AddCombo()
+								OSU:AddHealth(2)
 							end
-							OSU:AddHealth(2)
-							OSU:AddCombo()
 						end
 					end
 					amount = amount + 1
@@ -270,13 +271,13 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			end
 		end
 			if(amount >= _amount) then
-				if(OSU.AllowAllSounds) then
+				if(!OSU.AllowAllSounds) then
 					edgesd[3] = false
-					edgesd[2] = false
-					edgesd[1] = false
 					edgesd[0] = true
 				else
 					edgesd[3] = false
+					edgesd[2] = false
+					edgesd[1] = false
 					edgesd[0] = true
 				end
 				area.DoCheckAcc(osu_vec2t(realfollowpoint[__index].x, realfollowpoint[__index].y), OSU.CurTime)

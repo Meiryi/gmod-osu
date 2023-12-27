@@ -1,0 +1,3 @@
+function OSU:CreateManiaHold()
+
+end

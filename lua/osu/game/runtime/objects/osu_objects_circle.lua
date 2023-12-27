@@ -16,7 +16,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	local radius = ScreenScale(54.4 - 1.5 * OSU.CS)
 	local offs = radius / 2
 	local dec, fadein, ms = OSU:GetApproachRate(radius)
-	local base = vgui.Create("DPanel", OSU.PlayFieldLayer.UpperLayer)
+	local base = vgui.Create("DPanel", OSU.PlayFieldLayer)
 	base.Paint = function() return end
 	local hcircle = vgui.Create("DImage", base)
 		hcircle:SetImage(OSU.CurrentSkin["hitcircle"])
@@ -122,10 +122,26 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 						OSU.CurrentTarget = base
 						if(OSU.CurrentTarget == base) then
 							local x, y = input.GetCursorPos()
-							local scl = math.max((1 - ((ptime - OSU.CurTime) / ms)) * 0.55, 0.1)
-							local incX = OSU:GetFixedValue((x - vec_2t.x) * scl)
-							local incY = OSU:GetFixedValue((y - vec_2t.y) * scl)
-							input.SetCursorPos(x - incX, y - incY)
+							local dstX = x - vec_2t.x
+							local dstY = y - vec_2t.y
+							local time = ptime - OSU.CurTime
+							dstX = dstX / (60 * time)
+							dstY = dstY / (60 * time)
+							local incX = OSU:GetFixedValue(dstX)
+							local incY = OSU:GetFixedValue(dstY)
+							local nposX = 0
+							local nposY = 0
+							if(vec_2t.x > x) then
+								nposX = math.Clamp(x - incX, x, vec_2t.x)
+							else
+								nposX = math.Clamp(x - incX, vec_2t.x, x)
+							end
+							if(vec_2t.y > y) then
+								nposY = math.Clamp(y - incY, y, vec_2t.y)
+							else
+								nposY = math.Clamp(y - incY, vec_2t.y, y)
+							end
+							input.SetCursorPos(nposX, nposY)
 						end
 					end
 				end
@@ -149,8 +165,9 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 			if(noscore) then
 				OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 				OSU:AddHealth(OSU:GetHitType(hitoffs))
-				OSU.Score = OSU.Score + 50
-				OSU:AddCombo()
+				OSU.Score = math.Clamp(OSU.Score + 50, 0, 2147000000)
+				OSU:AddCombo(true)
+				OSU:InsertHitDetails(5)
 			else
 				if(hitoffs <= OSU:GetMissTime()) then
 					OSU:CreateHitScore(vec_2t, OSU:GetHitType(hitoffs))

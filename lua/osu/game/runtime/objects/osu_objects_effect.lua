@@ -19,7 +19,7 @@ function OSU:CreateClickEffect(radius, vec_2t, zp, clr)
 	local offs = radius / 2
 	local ext = radius * 0.45
 	local cext = 0
-	local circle = vgui.Create("DImage", OSU.PlayFieldLayer.UpperLayer)
+	local circle = vgui.Create("DImage", OSU.PlayFieldLayer)
 		circle.iAlpha = 255
 		circle:SetZPos(zp + 1)
 		circle:SetImage(OSU.CurrentSkin["hitcircleoverlay"])

@@ -21,7 +21,7 @@ hook.Add("Osu_Beat", "Osu_RunBeat", function()
 	end
 	if(IsValid(OSU.PlayMenuLayer)) then
 		if(IsValid(OSU.PlayMenuLayer.Logo)) then
-			OSU.PlayMenuLayer.Beat = true
+			OSU.PlayMenuLayer.Beat = true 
 			OSU.PlayMenuLayer.Logo.Beat = true
 		end
 	end
@@ -43,8 +43,7 @@ function OSU:StartupAnimation()
 	OSU.StartupAnim.Paint = function()
 		draw.RoundedBox(0, 0, 0, OSU.StartupAnim:GetWide(), OSU.StartupAnim:GetTall(), Color(0, 0, 0, OSU.StartupAnim.iAlpha))
 		if(UnPredictedCurTime() > OSU.StartupTimer) then
-			local smooth = Lerp(0.2, OSU.StartupAnim.iAlpha, 0)
-			OSU.StartupAnim.iAlpha = Lerp(0.1, OSU.StartupAnim.iAlpha, smooth)
+			OSU.StartupAnim.iAlpha = math.Clamp(OSU.StartupAnim.iAlpha - OSU:GetFixedValue(OSU.StartupAnim.iAlpha * 0.07), 0, 255)
 			if(OSU.StartupAnim.iAlpha <= 40) then
 				OSU.StartupAnim:Close()
 			end
@@ -127,6 +126,9 @@ function OSU:Startup()
 				else
 					OSU.MenuKiaiTime = false
 				end
+				if(v[5]) then
+					OSU.BPM = v[4]
+				end
 				v[3] = true
 			end
 		end
@@ -181,41 +183,9 @@ function OSU:Startup()
 		else
 			OSU:PickRandomMusic()
 		end
-		if(OSU:IsFirstLogin() && !OSU:GetTokenFile()) then
-			local fade = OSU:CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
-			fade.iAlpha = 0
-			fade.Switch = false
-			fade.Think = function()
-				if(!fade.Switch) then
-					fade.iAlpha = math.Clamp(fade.iAlpha + OSU:GetFixedValue(20), 0, 255)
-					if(fade.iAlpha >= 255) then
-						OSU:SetupLoginPage()
-						fade.Switch = true
-					end
-				else
-					fade.iAlpha = math.Clamp(fade.iAlpha - OSU:GetFixedValue(20), 0, 255)
-					if(fade.iAlpha <= 0) then
-						fade:Remove()
-					end
-				end
-			end
-			file.Write("osu!/cache/login.dat", "")
-		else
-			OSU.UserScoreFetching = true
-			OSU.ServerStatus = false
-			OSU:CheckServerStatus()
-			if(!OSU.LoggedIn && !OSU.CheckingToken) then
-				OSU.FlashLoginArea = true
-				timer.Simple(0.5, function()
-					OSU.FlashLoginArea = false
-				end)
-				OSU:OpenOptionsMenu()
-				OSU:CenteredMessage("Please login to access leaderboard", 0.5)
-			end
-			if(OSU.UserBanned) then
-				OSU:CenteredMessage("You are banned, appeal your ban in discord server!", 1)
-			end
-		end
+		OSU.UserScoreFetching = true
+		OSU.ServerStatus = false
+		OSU:CheckServerStatus()
 	end)
 	OSU.ObjectLayer = OSU:CreateFrame(OSU.MainGameFrame, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
 	local _pos = ScreenScale(3)
@@ -339,9 +309,11 @@ function OSU:Startup()
 				surface.SetTextColor(255, 255, 255, fa)
 				surface.SetFont("OSUName")
 				local t = LocalPlayer():Nick()
+				--[[
 				if(OSU.UserBanned) then
 					t = t.." [BANNED]"
 				end
+				]]
 				surface.DrawText(t)
 				surface.SetTextPos(_npos, _pos + sy)
 				surface.SetFont("OSUDetails")
