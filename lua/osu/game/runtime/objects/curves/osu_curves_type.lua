@@ -48,7 +48,22 @@ function OSU:GetCurves(type, curvePoints, length)
 	elseif(type == "L") then
 		followPoint = OSU:LinearCurves(curvePoints)
 	elseif(type == "P") then
-		followPoint = OSU:LinearCurves(curvePoints)
+		if(#curvePoints == 3) then
+			local connect = {}
+			local _dst = 0
+			for x,y in next, curvePoints do
+				if(x == #curvePoints) then continue end
+				local n = curvePoints[x + 1]
+				_dst = _dst + math.Distance(y.x, y.y, n.x, n.y)
+			end
+			local _step = 1 / _dst
+			for _ = 0, 1, _step do
+				table.insert(connect, math.QuadraticBezier(_, curvePoints[1], curvePoints[2], curvePoints[3]))
+			end
+			followPoint = connect
+		else
+			followPoint = OSU:LinearCurves(curvePoints)
+		end
 	end
 
 	local start = followPoint[1]

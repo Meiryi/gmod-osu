@@ -299,12 +299,14 @@ function OSU:RequestLeaderboard(beatmapid)
 								nick:SetText(v["name"])
 								nick:SetSize(nw, nh)
 								nick:SetPos(nextX, centered)
+								nick:SetTextColor(Color(255, 255, 255, 255))
 								local nw, nh = OSU:GetTextSize("OSULeaderboardCombo", "DummyText")
 								local score = vbase:Add("DLabel")
 									score:SetFont("OSULeaderboardCombo")
-									score:SetText("Combo: "..v["score"].." ("..v["combo"].."x)")
+									score:SetText("Score: "..v["score"].." ("..v["combo"].."x)")
 									score:SetSize(OSU.LeaderboardScrollPanel:GetWide(), nh)
 									score:SetPos(nextX, centered + lasth)
+									score:SetTextColor(Color(255, 255, 255, 255))
 									local text = v["accuracy"].."%"
 									local nw, nh = OSU:GetTextSize("OSULeaderboardDesc", text)
 									local gap2 = ScreenScale(2)
@@ -313,6 +315,7 @@ function OSU:RequestLeaderboard(beatmapid)
 										accuracy:SetText(text)
 										accuracy:SetSize(nw, nh)
 										accuracy:SetPos(OSU.LeaderboardScrollPanel:GetWide() - (nw + gap2), h - ((nh * 2) + gap2))
+										accuracy:SetTextColor(Color(255, 255, 255, 255))
 										local text = "+"..vPts
 										local nw, nh = OSU:GetTextSize("OSULeaderboardDesc", text)
 										local gap2 = ScreenScale(2)
@@ -321,6 +324,7 @@ function OSU:RequestLeaderboard(beatmapid)
 											pts:SetText(text)
 											pts:SetSize(nw, nh)
 											pts:SetPos(OSU.LeaderboardScrollPanel:GetWide() - (nw + gap2), h - (nh + gap2))
+											pts:SetTextColor(Color(255, 255, 255, 255))
 											local tx = "##"..k
 											local nw, nh = OSU:GetTextSize("OSUName", tx)
 											local rankingText = vbase:Add("DLabel")
@@ -330,6 +334,7 @@ function OSU:RequestLeaderboard(beatmapid)
 												rankingText:SetTextColor(Color(255, 255, 255, 255))
 												rankingText:SetPos(tps - nw / 5, tps - nh / 4)
 												rankingText:SetZPos(5)
+												rankingText:SetTextColor(Color(255, 255, 255, 255))
 											vbase.Think = function()
 												if(vbase.UpdateAlphaTime < OSU.CurTime) then
 													vbase.DockLeft = math.Clamp(vbase.DockLeft + OSU:GetFixedValue(math.abs(vbase.DockLeft) * 0.2), vbase.oDockLeft, 0)
@@ -614,13 +619,13 @@ function OSU:CheckServerStatus()
 		function(body, length, headers, code)
 			if(body == "SRV_ONLINE") then
 				if(!OSU.ServerStatus) then
-					OSU:SideNotify("Connected to server!\nFetch time : "..math.Round(math.abs(OSU.CurTime - _st), 2).." seconds", 2)
+					OSU:SideNotify(OSU:LookupTranslate("#ConnServer").."\nPing : "..math.Round(math.abs(OSU.CurTime - _st), 2).." s", 2)
 					OSU:FetchUserData()
 				end
 				OSU.ServerStatus = true
 			else
 				if(OSU.ServerStatus) then
-					OSU:SideNotify("Disconnected to server", 3)
+					OSU:SideNotify(OSU:LookupTranslate("#DiscServer"), 3)
 				end
 				OSU.ServerStatus = false
 			end

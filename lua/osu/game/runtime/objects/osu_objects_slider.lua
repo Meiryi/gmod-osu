@@ -108,7 +108,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 		traced = true
 	end
 	local incrate = #realfollowpoint / (60 * completeTime)
-		surface.SetMaterial(OSU.SliderBackground)
+		surface.SetMaterial(OSU.SliderInnerTexture)
 		if(!OSU.SingleColorSlider) then
 			surface.SetDrawColor(Color(255, 255, 255, area.iAlpha))
 			for i = 1, area.MaxDrawIndex, 1 do

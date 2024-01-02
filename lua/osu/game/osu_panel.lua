@@ -77,20 +77,24 @@ end
 
 local ppy = Material("osu/internal/ppy.png")
 local mat = Material("osu/internal/visualizer.png")
-function OSU:Startup()
+function OSU:Startup(pskip)
 	if(IsValid(OSU.MainGameFrame)) then return end
-
 	OSU.ClientToken = "nil"
 	OSU.MENU_STATE = OSU_MENU_STATE_MAIN
 	OSU.StartTime = OSU.CurTime
 	OSU.UserName = LocalPlayer():Nick()
 	OSU.LoggedIn = false
 	if(OSU:GetTokenFile()) then
-		OSU:CheckToken()
+		--OSU:CheckToken()
 	end
 	OSU.CheckVersion()
 	OSU:GetUserConfig()
 	OSU:InitFonts()
+	if(game.SinglePlayer()) then
+		print("[osu] Play this addon on multiplayer mode instead of singleplayer mode!")
+		print("[osu] Change playercount to atleast 2 on 'Start new game' -> Top right -> Change singleplayer to 2 Players")
+		return
+	end
 	OSU:CacheAudios()
 	OSU:LoadMusicLengthCache()
 	OSU:CheckDefaultSkins()
@@ -99,8 +103,6 @@ function OSU:Startup()
 	local maximumfade = 70
 	local fademul = 0.6
 	local oldtime = 0
-	OSU.BPM = 184
-	OSU.BPMTimeGap = 0.75
 	OSU.AlphaIncrease = 255 / (60 * (1 / (OSU.BPM / 60)))
 	OSU.BeatDivisor = 4
 	OSU.CurrentZPos = 32767
@@ -177,16 +179,20 @@ function OSU:Startup()
 		end
 	end
 	OSU:CreateBackground()
-	timer.Simple(introTime, function()
-		if(OSU.ThemeMusic) then
-			OSU:PlayMusic(OSU.CurrentSkin["theme"], "Nekodex - Circles")
-		else
-			OSU:PickRandomMusic()
-		end
-		OSU.UserScoreFetching = true
-		OSU.ServerStatus = false
-		OSU:CheckServerStatus()
-	end)
+	if(!pskip) then
+		OSU.BPM = 184
+		OSU.BPMTimeGap = 0.75
+		timer.Simple(introTime, function()
+			if(OSU.ThemeMusic) then
+				OSU:PlayMusic(OSU.CurrentSkin["theme"], "Nekodex - Circles")
+			else
+				OSU:PickRandomMusic()
+			end
+			OSU.UserScoreFetching = true
+			OSU.ServerStatus = false
+			OSU:CheckServerStatus()
+		end)
+	end
 	OSU.ObjectLayer = OSU:CreateFrame(OSU.MainGameFrame, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
 	local _pos = ScreenScale(3)
 	local _xs = ScreenScale(34)
@@ -251,6 +257,12 @@ function OSU:Startup()
 	]]
 	local width = ScrW() * 0.08
 	local width2x = width * 2
+	local svonl = OSU:LookupTranslate("#ServerOnline")
+	local svoff = OSU:LookupTranslate("#ServerOffline")
+	local svche = OSU:LookupTranslate("#ServerCheck")
+	local accstr = OSU:LookupTranslate("#Acc")
+	local rksstr = OSU:LookupTranslate("#RKS")
+	local tmpstr = OSU:LookupTranslate("#TotalMap")
 	OSU.ObjectLayer.Paint = function()
 	if(OSU.CurTime - OSU.MouseInactiveTime > 1.5) then
 		OSU.MenuAlphaMul = math.Clamp(OSU.MenuAlphaMul - OSU:GetFixedValue(0.0015), 0, 1)
@@ -270,18 +282,18 @@ function OSU:Startup()
 			draw.RoundedBox(0, 0, 0, ScrW(), h, Color(0, 0, 0, a))
 			draw.RoundedBox(0, 0, ScrH() - h, ScrW(), h, Color(0, 0, 0, a))
 			if(OSU.FetchingStatus) then
-				local tx, ty = OSU:GetTextSize("OSUBeatmapTitle", "Checking server status..")
-				draw.DrawText("Checking server status..", "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(255, 255, 255, fa), TEXT_ALIGN_CENTER)
+				local tx, ty = OSU:GetTextSize("OSUBeatmapTitle", svche)
+				draw.DrawText(svche, "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(255, 255, 255, fa), TEXT_ALIGN_CENTER)
 			else
 				if(OSU.ServerStatus) then
-					local tx, ty = OSU:GetTextSize("OSUBeatmapTitle", "Server is online!")
-					draw.DrawText("Server is online!", "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(200, 255, 200, fa), TEXT_ALIGN_CENTER)
+					local tx, ty = OSU:GetTextSize("OSUBeatmapTitle", svonl)
+					draw.DrawText(svonl, "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(200, 255, 200, fa), TEXT_ALIGN_CENTER)
 					surface.SetDrawColor(200, 255, 200, fa)
 					surface.SetMaterial(OSU.ConnectTx)
 					surface.DrawTexturedRect((ScrW() / 2) + (tx / 2) + gap, ScrH() - (h / 2) - kSx / 2, kSx, kSx)
 				else
-					local tx, ty = OSU:GetTextSize("OSUBeatmapTitle", "Server is offline...")
-					draw.DrawText("Server is offline...", "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(255, 200, 200, fa), TEXT_ALIGN_CENTER)
+					local tx, ty = OSU:GetTextSize("OSUBeatmapTitle", svoff)
+					draw.DrawText(svoff, "OSUBeatmapTitle", ScrW() / 2, ScrH() - ((h / 2) + ScreenScale(7)), Color(255, 200, 200, fa), TEXT_ALIGN_CENTER)
 					surface.SetDrawColor(255, 200, 200, fa)
 					surface.SetMaterial(OSU.DisconnectTx)
 					surface.DrawTexturedRect((ScrW() / 2) + (tx / 2) + gap, ScrH() - (h / 2) - kSx / 2, kSx, kSx)
@@ -317,11 +329,11 @@ function OSU:Startup()
 				surface.DrawText(t)
 				surface.SetTextPos(_npos, _pos + sy)
 				surface.SetFont("OSUDetails")
-				surface.DrawText("Accuracy: ".._a)
+				surface.DrawText(accstr..": ".._a)
 				surface.SetTextPos(_npos, _pos + sy + _sy)
-				surface.DrawText("Ranking Score: ".._s)
+				surface.DrawText(rksstr..": ".._s)
 				surface.SetTextPos(_npos, _pos + sy + (_sy * 2))
-				surface.DrawText("Total Map Played: ".._p)
+				surface.DrawText(tmpstr..": ".._p)
 				draw.DrawText("#"..OSU.UserRanking, "OSUBeatmapTitle", _npos + _w, h - (_th + gap), Color(255, 255, 255, ha), TEXT_ALIGN_RIGHT)
 			else
 				lRotate = math.Clamp(lRotate + OSU:GetFixedValue(2), 0, 360)
@@ -388,6 +400,9 @@ function OSU:Startup()
 	end
 	OSU.Button_Exit.DoClick = function()
 		OSU.MainGameFrame:Close()
+		if(IsValid(OSU.GameUIOverlay)) then
+			OSU.GameUIOverlay:SetVisible(true)
+		end
 		OSU:StopSound()
 		OSU:PlaySoundEffect(OSU.CurrentSkin["menu-direct-click"])
 	end
@@ -423,5 +438,33 @@ function OSU:Startup()
 			end
 		end
 	end
-	OSU:StartupAnimation()
+	if(!pskip) then
+		OSU:StartupAnimation()
+	end
 end
+
+local vis = false
+hook.Add("Think", "OSU_MenuController", function()
+	if(!IsValid(OSU.GameUIOverlay)) then
+		OSU.GameUIOverlay = OSU:CreateOverlay()
+		OSU.GameUIOverlay:SetVisible(gui.IsGameUIVisible())
+		OSU.GameUIOverlay:SetDrawOnTop(true)
+		return
+	end
+	if(IsValid(OSU.MainGameFrame) || game.SinglePlayer()) then
+		OSU.GameUIOverlay:SetVisible(false)
+		return
+	end
+	if(gui.IsGameUIVisible()) then
+		if(!vis) then
+			OSU.GameUIOverlay:SetVisible(true)
+			OSU.GameUIOverlay:SetDrawOnTop(true)
+			vis = true
+		end
+	else
+		if(vis) then
+			OSU.GameUIOverlay:SetVisible(false)
+			vis = false
+		end
+	end
+end)

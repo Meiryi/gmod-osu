@@ -300,7 +300,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.BreakTime = 0
 	OSU.AppearTime = 0
 	OSU.ObjectIndex = 0
-	OSU.SliderBackground = Material("osu/internal/hitcircle.png", "smooth")
+	OSU.SliderBackground = Material(OSU.CurrentSkin["hitcircle"], "smooth")
 	OSU.rHitCircleOverlay = Material(OSU.CurrentSkin["hitcircleoverlay"], "smooth")
 	OSU.HitCircleOverlay = Material(OSU.CurrentSkin["sliderb0"], "smooth")
 	OSU.RevArrow = Material(OSU.CurrentSkin["reversearrow"], "smooth")

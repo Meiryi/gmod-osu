@@ -58,6 +58,7 @@ OSU.UserAvatar = nil
 OSU.MusicControlPanel = nil
 OSU.MusicDetails = nil
 OSU.MusicControlTab = nil
+OSU.GameUIOverlay = nil
 OSU.FPSCounter = nil
 OSU.Logo = nil
 OSU.Button_Play = nil

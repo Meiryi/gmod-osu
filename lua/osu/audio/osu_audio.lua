@@ -52,19 +52,23 @@ function OSU:GetAudioFromFile(ctx)
 		end
 	end
 	local ret = ""
-	if(OSU.ArtistUnicode) then
+	if(OSU.BeatmapArtistType == "ArtistUnicode") then
 		if(ArtistUnicode != "Unknown") then
-			Artist = ArtistUnicode
+			ret = ret..ArtistUnicode
+		else
+			ret = ret..Artist
 		end
 	else
 		ret = ret..Artist
 	end
-	if(OSU.TitleUnicode) then
+	if(OSU.BeatmapNameType == "TitleUnicode") then
 		if(TitleUnicode != "Unknown") then
-			Title = TitleUnicode
+			ret = ret.." - "..TitleUnicode
+		else
+			ret = ret.." - "..Title
 		end
 	else
-		ret = ret.." - "..TitleUnicode
+		ret = ret.." - "..Title
 	end
 	return fn, ret
 end
@@ -153,6 +157,7 @@ function OSU:PickRandomMusic(readBPM)
 	local tps_end = 0
 	local musicPath = OSU.MusicLists[rand][2]
 	local bpm = 183
+	local fn, title = "", ""
 	if(string.Right(musicPath, 1) == "\r") then
 		musicPath = string.Left(OSU.MusicLists[rand][2], string.len(OSU.MusicLists[rand][2]) - 1)
 	end
@@ -173,7 +178,8 @@ function OSU:PickRandomMusic(readBPM)
 			if(!file.Exists(_path..v, "DATA")) then
 				continue
 			end
-			local ctx = string.Explode("\n", file.Read(_path..v, "DATA"))
+			local raw = file.Read(_path..v, "DATA")
+			local ctx = string.Explode("\n", raw)
 			local bpm_processing = ""
 			for x,y in pairs(ctx) do
 				if(string.find(y, "TimingPoints")) then

@@ -64,6 +64,7 @@ OSU.CurrentObjectColor = Color(255, 255, 255, 255)
 OSU.CurrentColourIndex = 1
 OSU.CurrentComboIndex = 1
 OSU.ReplayModeUserNick = "Unknown"
+OSU.SliderInnerTexture = Material("osu/internal/hitcircle.png", "smooth")
 
 OSU.TempData = {
 	["b"] = "",

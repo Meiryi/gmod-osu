@@ -14,6 +14,15 @@ function PANEL:Init()
 	self.DropButton.Paint = function( panel, w, h ) end
 	self.DropButton:SetMouseInputEnabled( false )
 	self.DropButton.ComboBox = self
+	self.RoundVal = ScreenScale(2)
+	self.DropButton.ComboBox.Paint = function()
+		local s = self.DropButton.ComboBox
+		if(s:IsHovered()) then
+			draw.RoundedBox(self.RoundVal, 0, 0, s:GetWide(), s:GetTall(),  Color(190 ,20, 120, 220))
+		else
+			draw.RoundedBox(self.RoundVal, 0, 0, s:GetWide(), s:GetTall(),  Color(0, 0 ,0, 200, 220))
+		end
+	end
 
 	-- Setup internals
 	self:SetTall(ScreenScale(12))
@@ -195,7 +204,10 @@ function PANEL:OpenMenu( pControlOpener )
 	if ( !IsValid( parent ) ) then parent = self end
 
 	self.Menu = DermaMenu( false, parent )
-
+	self.Menu:SetTall(#self.Choices * self:GetTall())
+	self.Menu.Paint = function()
+		draw.RoundedBox(0, 0, 0, self.Menu:GetWide(), self.Menu:GetTall(),  Color(0, 0 ,0, 0))
+	end
 	if ( self:GetSortItems() ) then
 		local sorted = {}
 		for k, v in pairs( self.Choices ) do
@@ -211,6 +223,32 @@ function PANEL:OpenMenu( pControlOpener )
 			if ( self.Spacers[ v.id ] ) then
 				self.Menu:AddSpacer()
 			end
+			option:SetTextColor(Color(255, 255, 255, 255))
+			option:SetFont(self:GetFont())
+			function option:PerformLayout() -- Can't we have DMenuOption:SetTall?, why forced to use 22px??????
+				return
+			end
+			option.baseHeight = 0
+			option.iAlpha = 0
+			option:SetAlpha(0)
+			option.Think = function()
+				if(OSU == nil) then return end
+				if(OSU.GetFixedValue == nil) then return end
+				option.baseHeight = math.Clamp(option.baseHeight + OSU:GetFixedValue(5), 0, self:GetTall())
+				option.iAlpha = math.Clamp(option.iAlpha + OSU:GetFixedValue(20), 0, 220)
+				option:SetAlpha(option.iAlpha)
+			end
+			option.Paint = function()
+				if(option:IsHovered()) then
+					draw.RoundedBox(0, 0, 0, option:GetWide(), option.baseHeight, Color(190 ,20, 120, option.iAlpha))
+				else
+					draw.RoundedBox(0, 0, 0, option:GetWide(), option.baseHeight, Color(0, 0, 0, option.iAlpha))
+				end
+			end
+			function option:OnCursorEntered()
+				OSU:PlaySoundEffect(OSU.CurrentSkin["click-short"])
+			end
+			option:SetTall(self:GetTall())
 		end
 	else
 		for k, v in pairs( self.Choices ) do
@@ -225,7 +263,10 @@ function PANEL:OpenMenu( pControlOpener )
 	end
 
 	local x, y = self:LocalToScreen( 0, self:GetTall() )
-
+	self.Menu.Think = function()
+		local x, y = self:LocalToScreen( 0, self:GetTall() )
+		self.Menu:SetPos(x, y)
+	end
 	self.Menu:SetMinimumWidth( self:GetWide() )
 	self.Menu:Open( x, y, false, self )
 
@@ -258,7 +299,6 @@ function PANEL:CheckConVarChanges()
 end
 
 function PANEL:Think()
-
 	self:CheckConVarChanges()
 
 end

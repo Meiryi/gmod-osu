@@ -398,12 +398,14 @@ function OSU:RefreshBeatmapList(keyWord)
 					Title:SetText(name[OSU.BeatmapNameType])
 					Title:SetSize(wide, ScreenScale(14))
 					Title:SetPos(bgmat_w + gap2x + iconsx, 0)
+					Title:SetTextColor(Color(255, 255, 255, 255))
 					local sx, sy = OSU:GetTextSize("OSUBeatmapTitle", "Dummy Text")
 					local Detail = vgui.Create("DLabel", vBase)
 					Detail:SetFont("OSUBeatmapDetails")
 					Detail:SetText(name[OSU.BeatmapArtistType].." // "..name["Creator"])
 					Detail:SetSize(wide, ScreenScale(8))
 					Detail:SetPos(bgmat_w + gap2x + iconsx, sy)
+					Detail:SetTextColor(Color(255, 255, 255, 255))
 					local ext = ""
 					datas["mode"] = mode
 					if(mode == 3) then
@@ -414,6 +416,7 @@ function OSU:RefreshBeatmapList(keyWord)
 					Version:SetFont("OSUBeatmapVersion")
 					Version:SetText(ver..ext)
 					Version:SetSize(wide, ScreenScale(8))
+					Version:SetTextColor(Color(255, 255, 255, 255))
 					local _sx, _sy = OSU:GetTextSize("OSUBeatmapVersion", "Dummy Text")
 					Version:SetPos(bgmat_w + gap2x + iconsx, sy + _sy)
 					vBase.NextCheckTime = 0
@@ -579,12 +582,14 @@ function OSU:RefreshBeatmapList(keyWord)
 		Title:SetText(name[OSU.BeatmapNameType])
 		Title:SetSize(wide, ScreenScale(14))
 		Title:SetPos(bgmat_w + gap, gap)
+		Title:SetTextColor(Color(200, 200, 200, 255))
 		local sx, sy = OSU:GetTextSize("OSUBeatmapTitle", "Dummy Text")
 		local Detail = vgui.Create("DLabel", pBase.Title)
 		Detail:SetFont("OSUBeatmapDetails")
 		Detail:SetText(name[OSU.BeatmapArtistType].." // "..name["Creator"])
 		Detail:SetSize(wide, ScreenScale(8))
 		Detail:SetPos(bgmat_w + gap, (gap * 2) + sy)
+		Detail:SetTextColor(Color(200, 200, 200, 255))
 		OSU.PanelAmount = OSU.PanelAmount + 1
 		table.insert(OSU.BeatmapPanels, pBase)
 		OSU.TotalBeatmapSets = OSU.TotalBeatmapSets + 1
@@ -616,7 +621,7 @@ function OSU:RefreshBeatmapList(keyWord)
 				function btn_n:OnCursorEntered()
 					OSU:PlaySoundEffect(OSU.CurrentSkin["menuclick"])
 				end
-				--gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
+				gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
 				btn_n.DoClick = function()
 					if(base.tutPage >= 4) then
 						base:Remove()
@@ -868,12 +873,13 @@ function OSU:SetupBeatmapPanel()
 	local _h = h
 	local w, h = ScreenScale(150), ScreenScale(15)
 	local gap, padding = ScreenScale(2), (h - ScreenScale(10)) / 2
+	local searchstr = OSU:LookupTranslate("#DLSearch")..":"
 	OSU.SearchBox = OSU:CreateFrame(OSU.PlayMenuLayer, ScrW() - w, _h, w, h, Color(0, 0, 0, 150), false)
 	OSU.SearchBox.Paint = function()
 		draw.RoundedBox(gap, 0, 0, OSU.SearchBox:GetWide(), OSU.SearchBox:GetTall(), Color(0, 0, 0, 150))
-		draw.DrawText("Search :", "OSUOptionDesc", gap, padding, Color(173, 221, 61, 255), Color(255, 255, 255, 255))
+		draw.DrawText(searchstr, "OSUOptionDesc", gap, padding, Color(173, 221, 61, 255), Color(255, 255, 255, 255))
 	end
-	local tw, th = OSU:GetTextSize("OSUOptionDesc", "Search :")
+	local tw, th = OSU:GetTextSize("OSUOptionDesc", searchstr)
 	local entryTall = OSU.SearchBox:GetTall() * 0.8
 	local entry = OSU.SearchBox:Add("DTextEntry")
 		entry:SetPos(tw + (gap * 2), (OSU.SearchBox:GetTall() - entryTall) / 2)

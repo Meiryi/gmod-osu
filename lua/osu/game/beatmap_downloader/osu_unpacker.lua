@@ -36,7 +36,7 @@ function OSU:UnpackBeatmap(osz)
 	    n_ext = string.Replace(n_ext, ".", "")
 	    file.Write("osu!/beatmaps/"..osz.."/"..n_ext.._ext, ctx)
 	end
-	OSU:SideNotify("Beatmap set "..osz.."\nUnpacked successfully!", 2)
+	OSU:SideNotify("Beatmap set "..osz.."\n"..OSU:LookupTranslate("#DLUnpacked"), 2)
 
 	file.Delete("osu!/download/"..osz..".dat")
 end

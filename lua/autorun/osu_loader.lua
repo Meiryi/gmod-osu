@@ -13,6 +13,7 @@
 
 if(CLIENT) then
 	include("osu/osu_globalvars.lua")
+	include("osu/osu_localization.lua")
 	include("osu/osu_skin_precache.lua")
 	include("osu/osu_skin_manager.lua")
 	include("osu/osu_dev_functions.lua")
@@ -82,6 +83,7 @@ if(SERVER) then
 	include("osu/osu_serverhook.lua")
 
 	AddCSLuaFile("osu/osu_globalvars.lua")
+	AddCSLuaFile("osu/osu_localization.lua")
 	AddCSLuaFile("osu/osu_skin_precache.lua")
 	AddCSLuaFile("osu/osu_skin_manager.lua")
 	AddCSLuaFile("osu/osu_dev_functions.lua")

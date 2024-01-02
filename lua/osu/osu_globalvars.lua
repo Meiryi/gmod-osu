@@ -68,6 +68,7 @@ OSU.CheaterTx = Material("osu/internal/cheater_trans.png")
 OSU.NoRecordTx = Material("osu/internal/norecord.png", "noclamp smooth")
 OSU.RightFade = Material("osu/internal/fade_rev.png", "noclamp smooth")
 OSU.LeftFade = Material("osu/internal/fade.png", "noclamp smooth")
+OSU.WarningFooter = Material("osu/internal/warning-footer.png", "noclamp smooth")
 OSU.PlayMenuAnimStarted = false
 OSU.PlayMenuObjectOffset = 0
 OSU.BackgroundDim = 70

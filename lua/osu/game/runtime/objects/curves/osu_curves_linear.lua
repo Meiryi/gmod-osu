@@ -17,7 +17,7 @@ function OSU:LinearCurves(points)
 	for k,v in next, points do
 		local _next = points[k + 1]
 		if(_next == nil) then continue end
-		local step = 1 / 200
+		local step = 1 / math.Distance(v.x, v.y, _next.x, _next.y)
 		for i = 0, 1, step do
 			table.insert(temp, OSU:BezierCurve(i, {v, _next}))
 		end

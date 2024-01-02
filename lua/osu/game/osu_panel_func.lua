@@ -274,7 +274,7 @@ function OSU:CreateLogo(parent, x, y, w, h, image, tile)
 			local amo = OSU:GetFixedValue((max - Lerp(beat, min, max)) / 5)
 			if(dImage.Beat) then
 				if(dImage:IsHovered()) then
-					OSU:PlaySoundEffect("sound/osu/internal/heartbeat.wav")
+					OSU:PlaySoundEffect(OSU.CurrentSkin["heartbeat"])
 				end
 				dImage.eSX = 0
 				dImage.NextBeat = UnPredictedCurTime() + beat
@@ -394,6 +394,7 @@ function OSU:CenteredMessage(str, time)
 		dFrame.iYoffs = 0
 		dFrame.Index = OSU.CurrentMessageIndex
 		dFrame:SetZPos(32767)
+		dFrame:SetDrawOnTop(true)
 		dFrame:MakePopup()
 		dFrame.Think = function()
 			if(OSU.CurrentMessageIndex != dFrame.Index) then
@@ -917,7 +918,7 @@ function OSU:PrintBeatmapDetails(details)
 		detail:SetSize(OSU.BeatmapDetailsTab:GetWide(), _tit)
 		detail:SetColor(Color(255, 255, 255))
 		detail:SetFont("OSUBeatmapDetails_TOP")
-		detail:SetText("Length: "..OSU:SecondsToMin(details["Length"]).." BPM: "..details["BPM"].." Objects "..details["Objects"])
+		detail:SetText(OSU:LookupTranslate("#BMLength")..": "..OSU:SecondsToMin(details["Length"]).."  BPM: "..details["BPM"].."  "..OSU:LookupTranslate("#BMObjects")..": "..details["Objects"])
 		detail.iAlpha = 0
 		detail.Think = function()
 			detail:SetColor(Color(255 ,255, 255, detail.iAlpha))
@@ -933,7 +934,7 @@ function OSU:PrintBeatmapDetails(details)
 		object:SetSize(OSU.BeatmapDetailsTab:GetWide(), _tit)
 		object:SetColor(Color(255, 255, 255))
 		object:SetFont("OSUBeatmapObjects_TOP")
-		object:SetText("Circles: "..details["Circles"].." Sliders: "..details["Sliders"].." Spinners: "..details["Spinners"])
+		object:SetText(OSU:LookupTranslate("#BMCircles")..": "..details["Circles"].."  "..OSU:LookupTranslate("#BMSliders")..": "..details["Sliders"].."  "..OSU:LookupTranslate("#BMSpinners")..": "..details["Spinners"])
 		object.iAlpha = 0
 		object.Think = function()
 			object:SetColor(Color(255 ,255, 255, object.iAlpha))
@@ -953,7 +954,7 @@ function OSU:PrintBeatmapDetails(details)
 		difficulty:SetSize(OSU.BeatmapDetailsTab:GetWide(), _tit)
 		difficulty:SetColor(Color(255, 255, 255))
 		difficulty:SetFont("OSUBeatmapDifficulty_TOP")
-		difficulty:SetText(tx..details["CS"].." AR: "..details["AR"].." OD: "..details["OD"].." HP: "..details["HP"].." Star Rating: "..details["Stars"])
+		difficulty:SetText(tx..details["CS"].."  AR: "..details["AR"].."  OD: "..details["OD"].."  HP: "..details["HP"].."  Star Rating: "..details["Stars"])
 		difficulty.iAlpha = 0
 		difficulty.Think = function()
 			difficulty:SetColor(Color(255 ,255, 255, difficulty.iAlpha))
@@ -962,7 +963,7 @@ function OSU:PrintBeatmapDetails(details)
 			end
 		end
 		function OSU.BeatmapDetailsTab.UpdateRating(details)
-			difficulty:SetText("CS: "..details["CS"].." AR: "..details["AR"].." OD: "..details["OD"].." HP: "..details["HP"].." Star Rating: "..details["Stars"])
+			difficulty:SetText("CS: "..details["CS"].."  AR: "..details["AR"].."  OD: "..details["OD"].."  HP: "..details["HP"].."  Star Rating: "..details["Stars"])
 		end
 end
 
@@ -1161,12 +1162,137 @@ function OSU:SideNotify(message, level)
 	table.insert(OSU.NotifyTable, {panel, pindex, baseX, baseY, heightgap})
 end
 
+surface.CreateFont("OSUOverlayTitle", {
+	font = "Aller",
+	size = ScreenScale(16),
+	antialias = true,
+})
+function OSU:CreateOverlay()
+	local w, h = ScreenScale(16), ScrH()
+	local maxw = ScrW() * 0.2
+	local minw = ScreenScale(16)
+	local gap = ScreenScale(2)
+	local d_alp = 0
+	local o_alp = 0
+	local oLay = vgui.Create("DImage")
+		oLay:SetPos(0, 0)
+		oLay:SetSize(w, h)
+		function oLay:MouseHovered()
+			local x1, y1, x2, y2 = oLay:GetX(), oLay:GetY(), oLay:GetX() + oLay:GetWide(), oLay:GetY() + oLay:GetTall()
+			local x, y = input.GetCursorPos()
+			return (x >= x1 && y >= y1 && x <= x2 && y <= y2)
+		end
+		local sx = ScreenScale(13)
+		local pad = ScreenScale(1)
+		local osu = vgui.Create("DImage", oLay)
+			osu:SetPos((w / 2) - (sx / 2), (h / 2) - (sx / 2))
+			osu:SetSize(sx, sx)
+			osu:SetImage("osu/internal/logo_outlineRBSM.png")
+		local sx2 = ScreenScale(13)
+		local minsx = ScreenScale(13)
+		local maxsx = maxw * 0.75
+		local bg = vgui.Create("DImage", oLay)
+			bg:SetPos(0, 0)
+			bg:SetSize(ScrW(), ScrH())
+			bg:SetImage("osu/internal/shapedbackground.png")
+			bg:SetAlpha(0)
+		local osu2 = vgui.Create("DImage", oLay)
+			osu2:SetPos((w / 2) - (sx / 2), (h / 2) - (sx / 2))
+			osu2:SetSize(sx, sx)
+			osu2:SetImage("osu/internal/logo_outline.png")
+			osu2:SetAlpha(0)
+			local height = h * 0.05
+			local hovered = false
+			local clicked = false
+			oLay.Paint = function()
+				draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 200))
+				draw.RoundedBox(0, w - pad, (h / 2) - height / 2, pad, height, Color(255, 255, 255, d_alp))
+				if(oLay:MouseHovered()) then
+					w = math.Clamp(w + OSU:GetFixedValue(math.max((maxw - w) * 0.2, 1)), minw, maxw)
+					d_alp = math.Clamp(d_alp - OSU:GetFixedValue(20), 0, 255)
+					o_alp = math.Clamp(o_alp + OSU:GetFixedValue(20), 0, 255)
+					sx2 = math.Clamp(sx2 + OSU:GetFixedValue(math.max((maxsx - sx2) * 0.25, 1)), minsx, maxsx)
+					if(input.IsMouseDown(107)) then
+						if(!clicked) then
+							if(!IsValid(OSU.MainGameFrame)) then
+								OSU:Startup()
+							end
+							clicked = true
+						end
+					else
+						clicked = false
+					end
+					if(!hovered) then
+						OSU:PlaySoundEffect("sound/osu/click-short.wav")
+						hovered = true
+					end
+				else
+					w = math.Clamp(w - OSU:GetFixedValue(math.max((w - minw) * 0.2, 1)), minw, maxw)
+					d_alp = math.Clamp(d_alp + OSU:GetFixedValue(5), 0, 255)
+					o_alp = math.Clamp(o_alp - OSU:GetFixedValue(20), 0, 255)
+					sx2 = math.Clamp(sx2 - OSU:GetFixedValue(math.max((sx2) * 0.25, 1)), minsx, maxsx)
+					hovered = false
+				end
+				oLay:SetWide(w)
+				osu:SetX(((w / 2) - pad) - (sx / 2))
+				osu:SetAlpha(d_alp)
+				osu2:SetAlpha(o_alp)
+				bg:SetAlpha(o_alp * 0.1)
+				osu2:SetSize(sx2, sx2)
+				osu2:SetPos((w / 2) - ((sx2 / 2) + pad), (h / 2) - (sx2 / 1.25))
+				draw.DrawText(OSU:LookupTranslate("#C2S"), "OSUOverlayTitle", w / 2, (h / 2) + (sx2 * 0.33), Color(255, 255, 255, o_alp), TEXT_ALIGN_CENTER)
+			end
+		--[[
+		local vBase = oLay:Add("DFrame")
+			vBase:SetTitle("")
+			vBase:SetDraggable(false)
+			vBase:ShowCloseButton(false)
+			vBase:SetSize(w, h)
+			vBase.Hovered = false
+			function vBase:MouseHovered()
+				local _x, _y = input.GetCursorPos()
+				if(_x > x1 && _y > y1 && _x < x2 && _y < y2) then
+					if(!vBase.Hovered) then
+						OSU:PlaySoundEffect("sound/osu/click-short.wav")
+						vBase.Hovered = true
+					end
+					return true
+				else
+					if(vBase.Hovered) then
+						vBase.Hovered = false
+					end
+					return false
+				end
+			end
+			vBase.Paint = function()
+				if(vBase:MouseHovered()) then
+					clr = math.Clamp(clr + OSU:GetFixedValue(20), 0, 100)
+					alp = math.Clamp(alp + OSU:GetFixedValue(30), 0, 255)
+				else
+					clr = math.Clamp(clr - OSU:GetFixedValue(20), 0, 100)
+					alp = math.Clamp(alp - OSU:GetFixedValue(30), 0, 255)
+				end
+				surface.SetDrawColor(255, 255, 255, 128)
+				surface.DrawOutlinedRect(0, 0, w, h, vsx)
+				draw.RoundedBox(0, vsx, vsx, w - vsx2x, h - vsx2x, Color(0, 0, 0, 100 + clr))
+			end
+			local sx = ScreenScale(16)
+			local pad = ScreenScale(2)
+			]]
+		return oLay
+end
+
 function OSU:GetFixedValue(input)
 	local target = 0.01666666666
 	local cur = FrameTime()
 	return input * (cur / target)
 end
 
+surface.CreateFont("OSUOverlayWarning", {
+	font = "Aller",
+	size = ScreenScale(12),
+	antialias = true,
+})
 local inactive = false
 local rotate_deg = 0
 local gap = ScreenScale(3)
@@ -1176,6 +1302,7 @@ local sampletime = 0
 local CTempedFrameTime = 0
 local CAlpha = 0
 local cursorTrails = {}
+local cursorLayer = {}
 local lastCursorPos = {x = 0, y = 0}
 local flSx = 10240
 local min = ScrW() * 7
@@ -1191,10 +1318,18 @@ local labelpadding = ScreenScale(10)
 local breathingAlpha = 0
 local breathingAlphaSwitch = false
 local mul = 0.05
+local footerh = ScreenScale(16)
 hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 	local cx, cy = input.GetCursorPos()
 	OSU.CursorPos = osu_vec2t(cx, cy)
 	OSU.TempFrameTime = FrameTime()
+
+	if(gui.IsGameUIVisible() && game.SinglePlayer()) then
+		surface.SetMaterial(OSU.WarningFooter)
+		surface.SetDrawColor(255, 255, 255, 100)
+		surface.DrawTexturedRect(0, 0, ScrW(), footerh)
+		draw.DrawText(OSU:LookupTranslate("#SPWarning3"), "OSUOverlayTitle", ScrW() / 2, 0, Color(255, 255, 255, 205), TEXT_ALIGN_CENTER)
+	end
 
 	local inGame = IsValid(OSU.MainGameFrame)
 	if(!inGame) then return end
@@ -1230,31 +1365,55 @@ hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 		rotate_deg = math.Clamp(rotate_deg + OSU:GetFixedValue(1), 0, 360)
 	end
 	local cSize = ScreenScale(OSU.CursorSize)
+	local tSize = OSU.CursorTrailSize
 	local cmSize = cSize / 2
-	local tSize = cSize / 4
 	local x, y = input.GetCursorPos()
 	if(OSU.CursorTrail && math.Distance(OSU.CursorPos.x, OSU.CursorPos.y, lastCursorPos.x, lastCursorPos.y) > 0) then
-		local minDistance = math.Distance(0, 0, tSize, tSize) / 4
+		local minDistance = math.Distance(0, 0, tSize, tSize) / 5
 		local dst = math.Distance(OSU.CursorPos.x, OSU.CursorPos.y, lastCursorPos.x, lastCursorPos.y)
+		local col = Color(255, 255, 255, 255)
+		local col2 = Color(255, 255, 255, 255)
+		if(OSU.RGBTrail) then
+			local val = (CurTime() * 240) % 360
+			col = HSVToColor(val, 1, 1)
+			val = val + OSU.RGBRate
+			if(val >= 360) then
+				val = val - 360
+			end
+			col2 = HSVToColor(val, 1, 1)
+		end
 		if(dst >= minDistance && OSU.FillCursorGap) then
 			for i = 0, 1, (minDistance / dst) * 0.85 do
-				table.insert(cursorTrails, {OSU:BezierCurve(i, {Vector(lastCursorPos.x, lastCursorPos.y, 0), Vector(OSU.CursorPos.x, OSU.CursorPos.y, 0)}), OSU.CurTime + OSU.CursorTrailLife, 255, tSize})
+				table.insert(cursorTrails, {OSU:BezierCurve(i, {Vector(lastCursorPos.x, lastCursorPos.y, 0), Vector(OSU.CursorPos.x, OSU.CursorPos.y, 0)}), OSU.CurTime + OSU.CursorTrailLife, tSize, col, 255})
+				table.insert(cursorLayer, {OSU:BezierCurve(i, {Vector(lastCursorPos.x, lastCursorPos.y, 0), Vector(OSU.CursorPos.x, OSU.CursorPos.y, 0)}), OSU.CurTime + OSU.CursorTrailLife, tSize * 0.6, col2, 255})
 			end
 		else
-			table.insert(cursorTrails, {OSU.CursorPos, OSU.CurTime + OSU.CursorTrailLife, 255, tSize})
+			table.insert(cursorTrails, {OSU.CursorPos, OSU.CurTime + OSU.CursorTrailLife, tSize, col, 255})
+			table.insert(cursorLayer, {OSU.CursorPos, OSU.CurTime + OSU.CursorTrailLife, tSize * 0.6, col2, 255})
 		end
 	end
 	surface.SetMaterial(OSU.CurTrailMat)
 	for k,v in next, cursorTrails do
 		if(v[2] <= OSU.CurTime) then
-			v[3] = math.Clamp(v[3] - OSU:GetFixedValue(15), 0, 255)
-			v[4] = math.Clamp(v[4] - OSU:GetFixedValue(2), 0, 32767)
-			if(v[3] <= 0) then
+			v[5] = math.Clamp(v[5] - OSU:GetFixedValue(20), 0, 255)
+			v[3] = math.Clamp(v[3] - OSU:GetFixedValue(1), 0, 32767)
+			if(v[5] <= 10) then
 				table.remove(cursorTrails, k)
 			end
 		end
-		surface.SetDrawColor(255, 255, 255, v[3])
-		surface.DrawTexturedRect(v[1].x - (v[4] / 2), v[1].y - (v[4] / 2), v[4], v[4])
+		surface.SetDrawColor(v[4].r, v[4].g, v[4].b, v[5])
+		surface.DrawTexturedRect(v[1].x - (v[3] / 2), v[1].y - (v[3] / 2), v[3], v[3])
+	end
+	for k,v in next, cursorLayer do
+		if(v[2] <= OSU.CurTime) then
+			v[5] = math.Clamp(v[5] - OSU:GetFixedValue(20), 0, 255)
+			v[3] = math.Clamp(v[3] - OSU:GetFixedValue(2), 0, 32767)
+			if(v[5] <= 10) then
+				table.remove(cursorLayer, k)
+			end
+		end
+		surface.SetDrawColor(v[4].r, v[4].g, v[4].b, v[5])
+		surface.DrawTexturedRect(v[1].x - (v[3] / 2), v[1].y - (v[3] / 2), v[3], v[3])
 	end
 	if(OSU.ShouldDrawFakeCursor) then
 		surface.SetDrawColor(55, 55, 255, 255)
@@ -1311,7 +1470,7 @@ hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 	local count = table.Count(OSU.WebDownloadingTable)
 	if(count > 0) then
 		draw.RoundedBox(0, ScrW() * 0.25, ScrH() - dlheight, ScrW() * 0.5, dlheight, Color(30, 30, 30, 150))
-		draw.DrawText("Downloading beatmap(s).. ("..count.." remianing)", "OSUBeatmapDetails", ScrW() / 2, ScrH() - (dlheight - dockpad), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+		draw.DrawText(OSU:LookupTranslate("#DLDownloading").." ("..count..")", "OSUBeatmapDetails", ScrW() / 2, ScrH() - (dlheight - dockpad), Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
 		draw.RoundedBox(0, (ScrW() * 0.25) + (labelpadding / 2), ScrH() - elementsgap, (ScrW() * 0.5) - (labelpadding), dockpad, Color(255, 255, 255, breathingAlpha))
 		if(breathingAlphaSwitch) then
 			breathingAlpha = math.Clamp(breathingAlpha - OSU:GetFixedValue(math.max(breathingAlpha * 0.05, 0.05)), 0, 255)
@@ -1336,14 +1495,20 @@ hook.Add("RenderScene", "OSU_RenderScene", function()
 			vPanel:SetCursor("blank")
 		end
 	end
-	return (inGame && OSU.WorldRender)
+	if(inGame && OSU.WorldRender) then
+		return true 
+	end
 end)
 
 local noticed = false
 hook.Add("HUDPaint", "OSU_Notice", function()
 	if(!IsValid(LocalPlayer())) then return end
 	if(!noticed) then
-		LocalPlayer():ChatPrint("[osu!] Type osu in console or type /osu in chat to play!")
+		LocalPlayer():ChatPrint("[osu!] "..OSU:LookupTranslate("#STNotify"))
+		if(game.SinglePlayer()) then
+			chat.AddText(Color(255, 100, 100), "[osu!] "..OSU:LookupTranslate("#SPWarning1"))
+			chat.AddText(Color(255, 100, 100), "[osu!] "..OSU:LookupTranslate("#SPWarning2"))
+		end
 		noticed = true
 	end
 end)
