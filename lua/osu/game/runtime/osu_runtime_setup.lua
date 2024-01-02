@@ -240,9 +240,6 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	for i = 0, 9, 1 do
 		OSU.DefaultMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["default-"..i])
 	end
-	for i = 0, 9, 1 do
-		OSU.ScoreMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["score-"..i])
-	end
 	OSU.ScoreMaterialTable["x"] = Material(OSU.CurrentSkin["score-x"])
 	OSU.ScoreMaterialTable["p"] = Material(OSU.CurrentSkin["score-percent"])
 	OSU.ScoreMaterialTable["."] = Material(OSU.CurrentSkin["score-dot"])

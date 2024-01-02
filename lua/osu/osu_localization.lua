@@ -623,6 +623,16 @@ OSU.Lang = {
 		["zh-TW"] = "自定義按鍵",
 		["zh-CN"] = "",
 	},
+	["#STLoadSkinImage"] = {
+		["en"] = "Load skin images (WIP, NOT RECOMMENDED)",
+		["zh-TW"] = "載入Skin材質 (未完成，不建議)",
+		["zh-CN"] = "",
+	},
+	["#STLoad@2x"] = {
+		["en"] = "Load high resolution images",
+		["zh-TW"] = "載入高畫質材質",
+		["zh-CN"] = "",
+	},
 }
 
 OSU.Trans = "en"

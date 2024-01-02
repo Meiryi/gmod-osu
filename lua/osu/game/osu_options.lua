@@ -72,6 +72,9 @@ OSU.ConfigTable = {
 	"RGBRate",
 	"Key1Code",
 	"Key2Code",
+	"CurrentSkinPath",
+	"LoadSkinImage",
+	"Load2x",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -120,8 +123,10 @@ OSU.LoadCards = true
 OSU.DisableMouse = false
 OSU.UploadToLeaderboard = true
 OSU.RGBTrail = false
+OSU.LoadSkinImage = false
 OSU.CursorTrailSize = 8
 OSU.RGBRate = 22.5
+OSU.Load2x = false
 OSU.ManiaKeys = {
 	[1] = 29,	
 	[2] = 14,	
@@ -522,6 +527,7 @@ function OSU:Opt_CreateDropDown(str, opt, options)
 				OSU[opt] = options[text]
 				OSU:WriteConfigFile()
 				OSU:RestartGame()
+				OSU:PlaySoundEffect(OSU.CurrentSkin["menu-direct-click"])
 			end
 end
 
@@ -1142,6 +1148,13 @@ function OSU:OpenOptionsMenu()
 	OSU:Opt_CreateSlider(OSU:LookupTranslate("#STEVol"), "EffectVolume", 0, 2)
 	OSU:CreateSectionTitle(OSU:LookupTranslate("#STSkin"))
 	OSU:CreateSubTitle(OSU:LookupTranslate("#STSkins"))
+	local skinTable = {}
+	local f, d = file.Find("osu!/skins/*", "DATA")
+	for k,v in next, d do
+		skinTable[v] = v
+	end
+	OSU:Opt_CreateDropDown("Skin > ", "CurrentSkinPath", skinTable)
+	OSU:Opt_CreateButton(OSU:LookupTranslate("#STLoadSkinImage"), "LoadSkinImage")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrail"), "CursorTrail")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrailGap"), "FillCursorGap")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrailRGB"), "RGBTrail")

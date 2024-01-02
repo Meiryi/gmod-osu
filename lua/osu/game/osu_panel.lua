@@ -49,24 +49,25 @@ function OSU:StartupAnimation()
 			end
 		end
 	end
+	local w, h = OSU:GetMaterialSizeMul(OSU.CurrentSkin["welcome_text"], 0.5)
 	OSU.StartupAnim.Welcome = vgui.Create("DImage", OSU.StartupAnim)
 	OSU.StartupAnim.Welcome:SetImage(OSU.CurrentSkin["welcome_text"])
 	OSU.StartupAnim.Welcome.ExtW = 0
 	OSU.StartupAnim.Welcome.ExtH = 0
 	OSU.StartupAnim.Welcome.BaseH = 0
-	OSU.StartupAnim.Welcome.MaxH = ScreenScale(24)
+	OSU.StartupAnim.Welcome.MaxH = h
 	OSU.StartupAnim.Welcome.iAlpha = 0
 	OSU.StartupAnim.Welcome.Think = function()
 		local extinc = ScreenScale(0.2)
 		local basehinc = ScreenScale(1.2)
 		if(OSU.StartupAnim.Welcome.BaseH < OSU.StartupAnim.Welcome.MaxH) then
-			OSU.StartupAnim.Welcome.BaseH = math.Clamp(OSU.StartupAnim.Welcome.BaseH + OSU:GetFixedValue(basehinc), 0, OSU.StartupAnim.Welcome.MaxH)
+			OSU.StartupAnim.Welcome.BaseH = math.Clamp(OSU.StartupAnim.Welcome.BaseH + OSU:GetFixedValue(math.max((OSU.StartupAnim.Welcome.MaxH - OSU.StartupAnim.Welcome.BaseH) * 0.1, 1)), 0, OSU.StartupAnim.Welcome.MaxH)
 		else
 			OSU.StartupAnim.Welcome.ExtW = OSU.StartupAnim.Welcome.ExtW + OSU:GetFixedValue(extinc)
 			OSU.StartupAnim.Welcome.ExtH = OSU.StartupAnim.Welcome.ExtH + OSU:GetFixedValue(extinc / 4)
 		end
 		OSU.StartupAnim.Welcome.iAlpha = math.Clamp(OSU.StartupAnim.Welcome.iAlpha + OSU:GetFixedValue(2), 0, 255)
-		OSU.StartupAnim.Welcome:SetSize(ScreenScale(125) + OSU.StartupAnim.Welcome.ExtW, OSU.StartupAnim.Welcome.BaseH + OSU.StartupAnim.Welcome.ExtH)
+		OSU.StartupAnim.Welcome:SetSize(w + OSU.StartupAnim.Welcome.ExtW, OSU.StartupAnim.Welcome.BaseH + OSU.StartupAnim.Welcome.ExtH)
 		OSU.StartupAnim.Welcome:SetPos((OSU.StartupAnim:GetWide() / 2) - (OSU.StartupAnim.Welcome:GetWide() / 2), (OSU.StartupAnim:GetTall() / 2) - (OSU.StartupAnim.Welcome:GetTall() / 2))
 		OSU.StartupAnim.Welcome:SetImageColor(Color(255, 255, 255, OSU.StartupAnim.Welcome.iAlpha))
 		if(UnPredictedCurTime() > OSU.StartupTimer) then

@@ -10,15 +10,102 @@
 
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
+OSU.ImageExtensions = {".png", ".jpg", "jpeg"}
+OSU.AudioExtensions = {".wav", ".ogg", ".mp3"}
+OSU.CurrentLoadedSkin = "?"
+
+function OSU:IsWhitelistedImage(fn)
+	local str = string.Replace(fn, "@2x", "")
+	local bList = {
+		["approachcircle"] = true,
+		["hitcircle"] = true,
+		["hitcircleoverlay"] = true,
+		["cursor"] = true,
+		["cursormiddle"] = true,
+		["cursortrail"] = true,
+		["lighting"] = true,
+		["reversearrow"] = true,
+		["default-0"] = true,
+		["default-1"] = true,
+		["default-2"] = true,
+		["default-3"] = true,
+		["default-4"] = true,
+		["default-5"] = true,
+		["default-6"] = true,
+		["default-7"] = true,
+		["default-8"] = true,
+		["default-9"] = true,
+		--[[
+		["score-0"] = true,
+		["score-1"] = true,
+		["score-2"] = true,
+		["score-3"] = true,
+		["score-4"] = true,
+		["score-5"] = true,
+		["score-6"] = true,
+		["score-7"] = true,
+		["score-8"] = true,
+		["score-9"] = true,
+		["score-percent"] = true,
+		["score-x"] = true,
+		["score-comma"] = true,
+		["score-dot"] = true,
+		]]
+		["welcome_text"] = true,
+	}
+	return bList[str] != true
+end
+
+function OSU:GetFileNameNoExtension(input)
+	return string.Explode(".", input)[1]
+end
+
+function OSU:FileExtensionType(input)
+	if(input == "mp3" || input == "wav") then
+		return 1
+	else
+		return 2
+	end
+end
 
 function OSU:SetupSkins()
+	if(OSU.CurrentLoadedSkin == OSU.CurrentSkinPath) then return end
+	OSU.CurrentLoadedSkin = OSU.CurrentSkinPath
+	local path = "data/osu!/skins/"..OSU.CurrentSkinPath.."/"
+	local dpath = "data/osu!/skins/default/"
+	local type = {}
 	for k,v in next, OSU.SkinList do
-		OSU.CurrentSkin[k] = "data/"..OSU.CurrentSkinPath..v
+		local t = string.GetExtensionFromFilename(v)
+		local fn = OSU:GetFileNameNoExtension(v)
+		local found = false
+		if(OSU:FileExtensionType(t) == 1) then -- Audio
+			for x,y in next, OSU.AudioExtensions do
+				local _fn = fn..y
+				if(file.Exists(path.._fn, "GAME")) then
+					OSU.CurrentSkin[k] = path.._fn
+					found = true
+					break
+				end
+			end
+		else -- Image
+			if(!OSU.LoadSkinImage && OSU:IsWhitelistedImage(fn)) then OSU.CurrentSkin[k] = dpath..v continue end
+			for x,y in next, OSU.ImageExtensions do
+				local _fn = fn..y
+				if(file.Exists(path.._fn, "GAME")) then
+					OSU.CurrentSkin[k] = path.._fn
+					found = true
+					break
+				end
+			end
+		end
+		if(!found) then
+			OSU.CurrentSkin[k] = dpath..v
+		end
 	end
 	OSU.CursorTexture = Material(OSU.CurrentSkin["cursor"])
 	OSU.CursorMiddleTexture = Material(OSU.CurrentSkin["cursormiddle"])
-end
-
-function OSU:LoadSkin(path)
-	
+	OSU.CurTrailMat = Material(OSU.CurrentSkin["cursortrail"])
+	for i = 0, 9, 1 do
+		OSU.ScoreMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["score-"..i])
+	end
 end

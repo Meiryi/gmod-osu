@@ -621,7 +621,7 @@ function OSU:RefreshBeatmapList(keyWord)
 				function btn_n:OnCursorEntered()
 					OSU:PlaySoundEffect(OSU.CurrentSkin["menuclick"])
 				end
-				gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
+				--gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
 				btn_n.DoClick = function()
 					if(base.tutPage >= 4) then
 						base:Remove()

@@ -11,7 +11,7 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
-OSU.CurrentSkinPath = "osu!/skins/default/"
+OSU.CurrentSkinPath = "default"
 
 OSU.SkinList = {
 	['approachcircle'] = 'approachcircle.png',

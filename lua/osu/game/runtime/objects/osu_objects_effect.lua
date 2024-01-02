@@ -27,7 +27,7 @@ function OSU:CreateClickEffect(radius, vec_2t, zp, clr)
 		circle:SetPos(vec_2t.x - offs, vec_2t.y - offs)
 		circle:SetImageColor(clr)
 		circle.Think = function()
-			circle.iAlpha = math.Clamp(circle.iAlpha - OSU:GetFixedValue(25), 0, 255)
+			circle.iAlpha = math.Clamp(circle.iAlpha - math.max(OSU:GetFixedValue(circle.iAlpha * 0.2), 0.5), 0, 255)
 			cext = math.Clamp(cext + OSU:GetFixedValue(math.abs(ext - cext) * 0.1), 0, ext)
 			circle:SetSize(radius + cext, radius + cext)
 			offs = (radius / 2) + cext / 2

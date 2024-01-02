@@ -148,14 +148,11 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				area.iAlpha = math.Clamp(area.iAlpha + OSU:GetFixedValue(alprate2), 0, 255)
 			end
 		else
-			if(OSU.CurTime > alptime) then
-				area.iAlpha = math.Clamp(area.iAlpha - OSU:GetFixedValue(alprate), 0, 255)
-			end
 			if(!area.Removed) then
 				OSU:RemoveScreenObject(area)
 				area.Removed = true
 			end
-			area.iAlpha = math.Clamp(area.iAlpha - OSU:GetFixedValue(30), 0, 255)
+			area.iAlpha = math.Clamp(area.iAlpha - OSU:GetFixedValue(25), 0, 255)
 			if(area.iAlpha <= 0) then
 				area:Remove()
 			end
@@ -240,7 +237,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			surface.DrawTexturedRect(x - offs, y - offs, radius, radius)
 			surface.SetMaterial(OSU.SliderFollow)
 			surface.SetDrawColor(Color(255, 255 ,255, area.iFollowAlpha))
-			local sx = area.iFollowSize + (OSU.SliderBeat * 1.25)
+			local sx = area.iFollowSize + (OSU.SliderBeat * 1.15)
 			surface.DrawTexturedRect(x - sx / 2, y - sx / 2, sx, sx)
 			local lMiss = math.abs(area.lastHoldTime - OSU.CurTime)
 			if(OSU.KeyDown && dis <= radius) then
