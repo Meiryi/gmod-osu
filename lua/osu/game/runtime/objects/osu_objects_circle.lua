@@ -13,7 +13,7 @@
 
 function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	-- https://osu.ppy.sh/wiki/en/Beatmap/Circle_size
-	local radius = ScreenScale(54.4 - 1.5 * OSU.CS)
+	local radius = OSU.CircleRadius
 	local offs = radius / 2
 	local dec, fadein, ms = OSU:GetApproachRate(radius)
 	local base = vgui.Create("DPanel", OSU.PlayFieldLayer)

@@ -442,6 +442,11 @@ function OSU:Startup(pskip)
 	if(!pskip) then
 		OSU:StartupAnimation()
 	end
+	if(OSU.RGBTrail) then
+		OSU.CurTrailMat = Material("osu/internal/rbgtrail.png", "smooth")
+	else
+		OSU.CurTrailMat = Material(OSU.CurrentSkin["cursortrail"], "smooth")
+	end
 end
 
 local vis = false

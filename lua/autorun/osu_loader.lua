@@ -70,10 +70,10 @@ if(CLIENT) then
 	include("osu/game/runtime/objects/osu_objects_overall_difficulty.lua")
 	include("osu/game/runtime/objects/osu_objects_hitsound.lua")
 	include("osu/game/runtime/objects/osu_objects_shared.lua")
-	include("osu/game/runtime/objects/curves/osu_curves_type.lua")
 	include("osu/game/runtime/objects/curves/osu_curves_bezier.lua")
 	include("osu/game/runtime/objects/curves/osu_curves_linear.lua")
 	include("osu/game/runtime/objects/curves/osu_curves_catmullrom.lua")
+	include("osu/game/runtime/objects/curves/osu_curves_type.lua")
 	concommand.Add("osu", function(ply, cmd, args)
 		OSU:Startup()
 	end)
@@ -140,10 +140,10 @@ if(SERVER) then
 	AddCSLuaFile("osu/game/runtime/objects/osu_objects_overall_difficulty.lua")
 	AddCSLuaFile("osu/game/runtime/objects/osu_objects_hitsound.lua")
 	AddCSLuaFile("osu/game/runtime/objects/osu_objects_shared.lua")
-	AddCSLuaFile("osu/game/runtime/objects/curves/osu_curves_type.lua")
 	AddCSLuaFile("osu/game/runtime/objects/curves/osu_curves_bezier.lua")
 	AddCSLuaFile("osu/game/runtime/objects/curves/osu_curves_linear.lua")
 	AddCSLuaFile("osu/game/runtime/objects/curves/osu_curves_catmullrom.lua")
+	AddCSLuaFile("osu/game/runtime/objects/curves/osu_curves_type.lua")
 end
 
 file.CreateDir("osu!")

@@ -11,15 +11,21 @@
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
 
-function OSU:LinearCurves(points)
+local math_Distance = math.Distance
+function OSU:TraceLinear(t, p1, p2)
+	local x, y = p2.x - p1.x, p2.y - p1.y
+	return Vector(p1.x + x * t, p1.y + y * t, 0)
+end
+
+function OSU:LinearCurves(points, mul)
 	-- Split it into a 2 point bezier
 	local temp = {}
 	for k,v in next, points do
 		local _next = points[k + 1]
 		if(_next == nil) then continue end
-		local step = 1 / math.Distance(v.x, v.y, _next.x, _next.y)
+		local step = 1 / (math_Distance(v.x, v.y, _next.x, _next.y) * mul)
 		for i = 0, 1, step do
-			table.insert(temp, OSU:BezierCurve(i, {v, _next}))
+			table.insert(temp, OSU:TraceLinear(i, v, _next))
 		end
 	end
 	return temp

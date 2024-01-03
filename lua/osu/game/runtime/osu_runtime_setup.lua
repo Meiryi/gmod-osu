@@ -10,7 +10,6 @@
 
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
-
 function osu_vec2t(x, y)
 	return {x = x, y = y}
 end
@@ -170,6 +169,18 @@ function OSU:ConstrustPlayField(field)
 	field:SetX((OSU.PlayFieldLayer:GetWide() / 2) - (field:GetWide() / 2))
 end
 
+local table_insert = table.insert
+local string_explode = string.Explode
+local string_len = string.len
+local string_replace = string.Replace
+local string_sub = string.sub
+local string_find = string.find
+local string_left = string.Left
+local math_rad = math.rad
+local math_cos = math.cos
+local math_sin = math.sin
+local math_abs = math.abs
+local math_distance = math.Distance
 local _stop = false
 function OSU:StartBeatmap(beatmap, details, id, replay)
 	if(OSU.CurrentMode != 0) then
@@ -318,6 +329,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		OSU.HP = OSU.HP * 1.4
 		OSU.OD = math.Clamp(OSU.OD * 1.3, 0.1, 10)
 	end
+	local __st = SysTime()
 	OSU.CurrentHitSound = "soft"
 	local apprTime = OSU:GetApprTime()
 	OSU.AppearTime = apprTime
@@ -375,10 +387,10 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 					end
 				end
 			end
-			local ctx_ = string.Explode("\n", beatmap)
+			local ctx_ = string_explode("\n", beatmap)
 			for i = tps_start, tps_end, 1 do
 				local _ctx = ctx_[i]
-				local ret = string.Explode(",", _ctx)
+				local ret = string_explode(",", _ctx)
 				if(i == tps_start) then
 					OSU.BeatLength = tonumber(ret[2])
 					if(OSU.HT) then
@@ -390,27 +402,27 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				end
 				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
 				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
-				table.insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
+				table_insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
 			end
 			local breakStart = 0
 			local breakEnd = 0
 			for k,v in pairs(ctx_) do
-				if(string.find(v, "SliderMultiplier:")) then
-					local num = string.Replace(v, "SliderMultiplier:", "")
+				if(string_find(v, "SliderMultiplier:")) then
+					local num = string_replace(v, "SliderMultiplier:", "")
 					OSU.SliderMultiplier = tonumber(num)
 					OSU.SliderVelocity = OSU.SliderMultiplier
 				end
-				if(string.find(v, "SampleSet:")) then
-					OSU.CurrentHitSound = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
-					OSU.BeatmapDefaultSet = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
+				if(string_find(v, "SampleSet:")) then
+					OSU.CurrentHitSound = OSU:PickSampleSet(string_replace(v, "SampleSet: ", ""))
+					OSU.BeatmapDefaultSet = OSU:PickSampleSet(string_replace(v, "SampleSet: ", ""))
 				end
 				if(breakStart == 0) then
-					if(string.find(v, "//Break")) then
+					if(string_find(v, "//Break")) then
 						breakStart = k + 1
 					end
 				else
 					if(breakEnd == 0) then
-						if(string.find(v, "//Storyboard Layer 0")) then
+						if(string_find(v, "//Storyboard Layer 0")) then
 							breakEnd = k - 1
 						end
 					end
@@ -418,13 +430,13 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			end
 			if(breakStart != 0 && breakEnd != 0) then
 				for i = breakStart, breakEnd, 1 do
-					local _bd = string.Explode(",", ctx_[i])
-					table.insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000), OSU.BeatmapTime + (tonumber(_bd[3]) / 1000)})
+					local _bd = string_explode(",", ctx_[i])
+					table_insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000), OSU.BeatmapTime + (tonumber(_bd[3]) / 1000)})
 				end
 			end
 		else
 			local nextTime = OSU.BeatmapTime
-			local ctx = string.Explode("\n", beatmap)
+			local ctx = string_explode("\n", beatmap)
 			--[[
 				Object types
 					1 - Circle
@@ -434,7 +446,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			local _sTime = SysTime()
 			for i = obj_start, obj_end, 1 do
 				local _ctx = ctx[i]
-				local ret = string.Explode(",", _ctx)
+				local ret = string_explode(",", _ctx)
 				-- x, y, time, type, hitSound, objectParams, hitSample
 				local gX, gY = tonumber(ret[1]), tonumber(ret[2])
 				local scX, scY = OSU:OsuPixelToPixel(gX, gY)
@@ -443,7 +455,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				local hitsound = OSU:GetHitsoundTable(tonumber(ret[5]))
 				local newcombo = OSU:NewCombo(tonumber(ret[4]))
 				if(OSU:GetObjectType(ret[4]) == 1) then -- Circle
-					table.insert(OSU.Objects, {
+					table_insert(OSU.Objects, {
 						["otime"] = time,
 						["type"] = 1,
 						["time"] = time,
@@ -456,56 +468,56 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 					local points = {}
 					local _repeat = 1
 					local length = 1
-					local type = string.Left(ret[6], 1)
+					local type = string_left(ret[6], 1)
 					local curveStart = 0
-					local _len = string.len(_ctx)
+					local _len = string_len(_ctx)
 					local sliderDataString = ""
 					local edgesound = OSU:GetHitsoundTable(tonumber(ret[5]))
 					for _ = 1, _len, 1 do
-						if(string.sub(_ctx, _, _) == "|") then
+						if(string_sub(_ctx, _, _) == "|") then
 								curveStart = _ + 1
 							break
 						end
 					end
-					local curveData = string.Explode("|", string.sub(_ctx, curveStart, _len))
+					local curveData = string_explode("|", string_sub(_ctx, curveStart, _len))
 					local _max = #curveData
 					for _ = 1, #curveData, 1 do -- Make sure it ends on corrent position
-						local inx = string.Explode(":", curveData[_])
-						local ex = string.Explode(",", inx[2])
+						local inx = string_explode(":", curveData[_])
+						local ex = string_explode(",", inx[2])
 						if(#ex >= 3) then
 							_max = _
 							break
 						end
 					end
-					table.insert(points, Vector(_x, _y))
+					table_insert(points, Vector(_x, _y))
 					for x, y in pairs(curveData) do
 						if(x > _max) then continue end -- Unused datas
 						
 						if(x < _max) then -- Vec datas
-							local _v = string.Explode(":", y)
+							local _v = string_explode(":", y)
 							local scX, scY = OSU:OsuPixelToPixel(tonumber(_v[1]), tonumber(_v[2]))
 							local _x, _y = OSU:OsuPixelToScreen(scX, scY)
-							table.insert(points, Vector(_x, _y))
+							table_insert(points, Vector(_x, _y))
 						else -- Slider datas
 							sliderDataString = y
 							local dataStart = 1
-							local dataLen = string.len(y)
+							local dataLen = string_len(y)
 							for _ = 1, dataLen, 1 do
-								if(string.sub(y, _, _) == ",") then
+								if(string_sub(y, _, _) == ",") then
 										dataStart = _ + 1
 									break
 								end
 							end
-							local sliderDatas = string.Explode(",", string.sub(y, dataStart, dataLen))
+							local sliderDatas = string_explode(",", string_sub(y, dataStart, dataLen))
 							_repeat = sliderDatas[1]
 							length = sliderDatas[2]
 							if(sliderDatas[3] != nil) then
 								edgesound = OSU:GetHitsoundTable(tonumber(sliderDatas[3]))
 							end
-							local _v = string.Explode(":", string.sub(y, 1, dataStart - 2))
+							local _v = string_explode(":", string_sub(y, 1, dataStart - 2))
 							local scX, scY = OSU:OsuPixelToPixel(tonumber(_v[1]), tonumber(_v[2]))
 							local _x, _y = OSU:OsuPixelToScreen(scX, scY)
-							table.insert(points, Vector(_x, _y))
+							table_insert(points, Vector(_x, _y))
 							--[[
 								local scX, scY = OSU:OsuPixelToPixel(_v[1], _v[2])
 								local _x, _y = OSU:OsuPixelToScreen(scX, scY)
@@ -514,8 +526,8 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 					end
 					_repeat = tonumber(_repeat)
 					length = tonumber(length)
-					local ret_curves, realFollowPoint = OSU:GetCurves(type, points, length)
-					table.insert(OSU.Objects, {
+					local ret_curves, realFollowPoint, outlinepoints = OSU:GetCurves(type, points, length)
+					table_insert(OSU.Objects, {
 						["otime"] = time,
 						["type"] = 2,
 						["time"] = time,
@@ -530,9 +542,10 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 						["edgesd"] = edgesound,
 						["spawned"] = false,
 						["newcombo"] = newcombo,
+						["outlinepoints"] = outlinepoints,
 					})
 				else -- Spinner
-					table.insert(OSU.Objects, {
+					table_insert(OSU.Objects, {
 						["otime"] = time,
 						["type"] = 3,
 						["time"] = time,
@@ -550,7 +563,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			OSU.BeatmapTime = nextTime + _processTime
 			for i = tps_start, tps_end, 1 do
 				local _ctx = ctx[i]
-				local ret = string.Explode(",", _ctx)
+				local ret = string_explode(",", _ctx)
 				if(i == tps_start) then
 					OSU.BeatLength = tonumber(ret[2])
 					if(OSU.HT) then
@@ -562,7 +575,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				end
 				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
 				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
-				table.insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
+				table_insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
 			end
 			local temp = {
 				["objects"] = OSU.Objects,
@@ -570,7 +583,6 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			}
 			if(OSU.WriteObjectFile) then
 				file.Write(OSU.HitObjectsCachePath..id..".dat", util.TableToJSON(temp))
-				OSU:CenteredMessage("Writing beatmap temp ("..id..".dat), this lag will only happen once per beatmap!  ("..math.Round(_processTime, 3).."s)", _processTime)
 			else
 				--OSU:CenteredMessage("Map loaded ("..math.Round(_processTime, 3).."s)", _processTime)
 			end
@@ -621,22 +633,22 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			local breakStart = 0
 			local breakEnd = 0
 			for k,v in pairs(ctx) do
-				if(string.find(v, "SliderMultiplier:")) then
-					local num = string.Replace(v, "SliderMultiplier:", "")
+				if(string_find(v, "SliderMultiplier:")) then
+					local num = string_replace(v, "SliderMultiplier:", "")
 					OSU.SliderMultiplier = tonumber(num)
 					OSU.SliderVelocity = OSU.SliderMultiplier
 				end
-				if(string.find(v, "SampleSet:")) then
-					OSU.CurrentHitSound = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
-					OSU.BeatmapDefaultSet = OSU:PickSampleSet(string.Replace(v, "SampleSet: ", ""))
+				if(string_find(v, "SampleSet:")) then
+					OSU.CurrentHitSound = OSU:PickSampleSet(string_replace(v, "SampleSet: ", ""))
+					OSU.BeatmapDefaultSet = OSU:PickSampleSet(string_replace(v, "SampleSet: ", ""))
 				end
 				if(breakStart == 0) then
-					if(string.find(v, "//Break")) then
+					if(string_find(v, "//Break")) then
 						breakStart = k + 1
 					end
 				else
 					if(breakEnd == 0) then
-						if(string.find(v, "//Storyboard Layer 0")) then
+						if(string_find(v, "//Storyboard Layer 0")) then
 							breakEnd = k - 1
 						end
 					end
@@ -645,11 +657,12 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			if(breakStart != 0 && breakEnd != 0) then
 				for i = breakStart, breakEnd, 1 do
 					if(ctx[i] == nil) then continue end
-					local _bd = string.Explode(",", ctx[i])
-					table.insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000),OSU.BeatmapTime + (tonumber(_bd[3]) / 1000), false})
+					local _bd = string_explode(",", ctx[i])
+					table_insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000),OSU.BeatmapTime + (tonumber(_bd[3]) / 1000), false})
 				end
 			end
 		end
+	OSU.CircleRadius = ScreenScale(54.4 - 1.5 * OSU.CS)
 	local mul = 1
 	if(OSU.HT) then
 		mul = 1.5
@@ -657,10 +670,79 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	if(OSU.DT) then
 		mul = 0.5
 	end
+	local _Size = OSU.CircleRadius / 2.25
+	local _Size2 = _Size * 0.875
+	local _SizeH = _Size * 0.5
+	
 	for k,v in next, OSU.Objects do
 		v["time"] = OSU.BeatmapTime + (v["otime"] * mul) - apprTime
 		if(v["type"] == 3) then
 			v["killttime"] = OSU.BeatmapTime + (v["okilltime"] * mul)
+		elseif(v["type"] == 2 && OSU.BetaSliders) then
+			local _w, _h = 0, 0
+			if(OSU.HR) then
+				_w, _h = ScrW(), ScrH()
+			end
+			local polys = {}
+			local mindex = #v["outlinepoints"]
+			for x,y in next, v["outlinepoints"] do
+				--y[1], y[2] y[3], y[4] current
+				--n[1], n[2] n[3], n[4] next
+				if(x == mindex || x == 1) then
+					local p = nil
+					if(x == mindex) then
+						p = v["outlinepoints"][x - 1]
+					else
+						p = y
+					end
+					if(p == nil) then continue end
+					local deg = p[4]
+					if(x == 1) then
+						deg = deg - 180
+					end
+					for i = 0, 9, 1 do
+						local a1 = math_rad(deg + (i * 18))
+						local a2 = math_rad(deg + ((i * 18) + 18))
+						local poly = {
+							{x = math_abs((p[3].x + math_sin(a2) * _Size2) - _w), y =  math_abs((p[3].y + math_cos(a2) * _Size2) - _h)},
+							{x = math_abs((p[3].x + math_sin(a2) * _Size) - _w), y = math_abs((p[3].y + math_cos(a2) * _Size) - _h)},
+							{x = math_abs((p[3].x + math_sin(a1) * _Size) - _w), y = math_abs((p[3].y + math_cos(a1) * _Size) - _h)},
+							{x = math_abs((p[3].x + math_sin(a1) * _Size2) - _w), y = math_abs((p[3].y + math_cos(a1) * _Size2) - _h)},
+						}
+						table_insert(polys, {poly})
+					end
+					if(x == mindex) then continue end
+				end
+				local n = v["outlinepoints"][x + 1]
+				local p1, p2 = Vector(y[3].x + math_sin(y[1]) * _Size2, y[3].y + math_cos(y[1]) * _Size2, 0), Vector(y[3].x + math_sin(y[2]) * _Size, y[3].y + math_cos(y[2]) * _Size, 0)
+				local skip = false
+				--[[
+				for _ = 1, x, 1 do
+					local d = v["followpoint"][_]
+					if(d == nil) then continue end
+					if(math_distance(d.x, d.y, p1.x, p1.y) > _SizeH && math_distance(d.x, d.y, p2.x, p2.y) > _SizeH) then continue end
+					skip = true
+				end
+				if(skip) then
+					continue
+				end
+				]]
+				local poly1 = {
+					{x = math_abs((y[3].x + math_sin(y[1]) * _Size2) - _w), y = math_abs((y[3].y + math_cos(y[1]) * _Size2) - _h)},
+					{x = math_abs((n[3].x + math_sin(n[1]) * _Size2) - _w), y = math_abs((n[3].y + math_cos(n[1]) * _Size2) - _h)},
+					{x = math_abs((n[3].x + math_sin(n[1]) * _Size) - _w), y = math_abs((n[3].y + math_cos(n[1]) * _Size) - _h)},
+					{x = math_abs((y[3].x + math_sin(y[1]) * _Size) - _w), y = math_abs((y[3].y + math_cos(y[1]) * _Size) - _h)},
+				}
+				local poly2 = {
+					{x = math_abs((y[3].x + math_sin(y[2]) * _Size) - _w), y = math_abs((y[3].y + math_cos(y[2]) * _Size) - _h)},
+					{x = math_abs((n[3].x + math_sin(n[2]) * _Size) - _w), y = math_abs((n[3].y + math_cos(n[2]) * _Size) - _h)},
+					{x = math_abs((n[3].x + math_sin(n[2]) * _Size2) - _w), y = math_abs((n[3].y + math_cos(n[2]) * _Size2) - _h)},
+					{x = math_abs((y[3].x + math_sin(y[2]) * _Size2) - _w), y = math_abs((y[3].y + math_cos(y[2]) * _Size2) - _h)},
+				}
+
+				table_insert(polys, {poly1, poly2})
+			end
+			v["outlinepoints"] = polys
 		end
 		if(k == 1) then
 			OSU.BeatmapStartTime = v["time"]
@@ -669,6 +751,9 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			OSU.BeatmapEndTime = v["time"] + 2.5
 		end
 	end
+	local __ed = SysTime()
+	local _processTime = __ed - __st
+	OSU:CenteredMessage("Map loaded with ("..math.Round(_processTime, 3).."s)", _processTime)
 	OSU.OffsList = {}
 	OSU.TotalHitOffs = 0
 	OSU.AvgHitOffs = 0

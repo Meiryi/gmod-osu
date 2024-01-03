@@ -40,6 +40,7 @@ OSU.RecordInterval = 0
 OSU.ObjectIndex = 0
 OSU.BeatDivisor = 4
 OSU.CurrentBeatCount = 0
+OSU.CircleRadius = 54
 OSU.BPMTimeGap = 0
 OSU.LogoLastClickTime = 0
 OSU.LastInaccuracyTime = 0

@@ -147,7 +147,7 @@ function OSU:RunTime()
 						OSU:CreateCircle(v["vec_2"], v["sound"], OSU.CurrentZPos, nil, OSU.ObjectIndex, OSU.CurrentComboIndex)
 						OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
 					elseif(v["type"] == 2) then
-						OSU:CreateSlider(v["vec_2"], v["followpoint"], v["realfollowpoint"], v["connectpoints"], v["length"], v["repeat"], v["sound"], OSU.CurrentZPos, v["stype"], OSU.ObjectIndex, v["edgesd"], OSU.CurrentComboIndex)
+						OSU:CreateSlider(v["vec_2"], v["followpoint"], v["realfollowpoint"], v["connectpoints"], v["length"], v["repeat"], v["sound"], OSU.CurrentZPos, v["stype"], OSU.ObjectIndex, v["edgesd"], OSU.CurrentComboIndex, v["outlinepoints"])
 						OSU.CurrentComboIndex = OSU.CurrentComboIndex + 1
 					else
 						OSU:CreateSpinner(v["vec_2"], v["sound"], OSU.CurrentZPos, v["killttime"])

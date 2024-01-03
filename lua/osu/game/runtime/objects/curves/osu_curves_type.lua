@@ -10,7 +10,16 @@
 
 	Copyright (C) 2023 Meika. All rights reserved
 ]]
-
+local QuadraticBezier = math.QuadraticBezier
+local BSplinePoint = math.BSplinePoint
+local math_abs = math.abs
+local table_insert = table.insert
+local math_round = math.Round
+local math_floor = math.floor
+local math_Distance = math.Distance
+local math_deg = math.deg
+local math_atan2 = math.atan2
+local math_rad = math.rad
 function OSU:GetCurves(type, curvePoints, length)
 	--[[
 		Bézier (B)
@@ -18,35 +27,40 @@ function OSU:GetCurves(type, curvePoints, length)
 		Linear (L)
 		Perfect circle (P)
 	]]
+	local sliderMul = 0.2
 	local followPoint = {}
 	local realFollowPoint = {}
-	local step = 1 / length
-
+	local outlinePolys = {}
+	local step = 1 / (length * sliderMul)
 	if(type == "B" || type == "C") then
+		if(#curvePoints >= 8) then
+			sliderMul = 0.5
+		end
+		step = 1 / (length * sliderMul)
 		for i = 0, 1, step do
 			if(#curvePoints < 3) then
-				table.insert(followPoint, OSU:BezierCurve(i, curvePoints))
+				table_insert(followPoint, OSU:BezierCurve(i, curvePoints))
 			else
 				if(#curvePoints == 3) then
-					table.insert(followPoint, math.QuadraticBezier(i, curvePoints[1], curvePoints[2], curvePoints[3]))
+					table_insert(followPoint, QuadraticBezier(i, curvePoints[1], curvePoints[2], curvePoints[3]))
 				else
-					table.insert(followPoint, math.BSplinePoint(i, curvePoints, 1))
+					table_insert(followPoint, BSplinePoint(i, curvePoints, 1))
 				end
 			end
 		end
 		if(#curvePoints >= 3) then
 			local connect = {}
-			local diff = 1 / OSU:PixelToOsuPixel(math.abs((curvePoints[1].x + curvePoints[1].y) - (followPoint[1].x + followPoint[1].y)))
+			local diff = 1 / (math_Distance(curvePoints[1].x, curvePoints[1].y, followPoint[1].x, followPoint[1].y) * sliderMul)
 			for _ = 0, 1, diff do
-				table.insert(connect, OSU:BezierCurve(_, {curvePoints[1], followPoint[1]}))
+				table_insert(connect, OSU:BezierCurve(_, {curvePoints[1], followPoint[1]}))
 			end
 			for k,v in next, followPoint do
-				table.insert(connect, v)
+				table_insert(connect, v)
 			end
 			followPoint = connect
 		end
 	elseif(type == "L") then
-		followPoint = OSU:LinearCurves(curvePoints)
+		followPoint = OSU:LinearCurves(curvePoints, sliderMul)
 	elseif(type == "P") then
 		if(#curvePoints == 3) then
 			local connect = {}
@@ -54,37 +68,53 @@ function OSU:GetCurves(type, curvePoints, length)
 			for x,y in next, curvePoints do
 				if(x == #curvePoints) then continue end
 				local n = curvePoints[x + 1]
-				_dst = _dst + math.Distance(y.x, y.y, n.x, n.y)
+				_dst = _dst + math_Distance(y.x, y.y, n.x, n.y)
 			end
-			local _step = 1 / _dst
+			local _step = 1 / (_dst * sliderMul)
 			for _ = 0, 1, _step do
-				table.insert(connect, math.QuadraticBezier(_, curvePoints[1], curvePoints[2], curvePoints[3]))
+				table_insert(connect, QuadraticBezier(_, curvePoints[1], curvePoints[2], curvePoints[3]))
 			end
 			followPoint = connect
 		else
-			followPoint = OSU:LinearCurves(curvePoints)
+			followPoint = OSU:LinearCurves(curvePoints, sliderMul)
 		end
 	end
 
 	local start = followPoint[1]
 	local curdis = 0
-	table.insert(realFollowPoint, followPoint[1])
+	table_insert(realFollowPoint, followPoint[1])
 	for k,v in next, followPoint do
 		v.z = 0
-		local dis = math.Round(math.Distance(start.x, start.y, v.x, v.y), 2)
+		local dis = math_round(math_Distance(start.x, start.y, v.x, v.y), 2)
 		curdis = curdis + dis
-		if(math.floor(curdis) >= 0.5) then
-			if(math.floor(curdis) >= 1) then
-				for i = 0, 1, 1 / curdis do
-					table.insert(realFollowPoint, OSU:BezierCurve(i, {start, v}))
+		if(math_floor(curdis) >= 0.5) then
+			if(math_floor(curdis) >= 1) then
+				for i = 0, 1, 1 / (curdis * sliderMul) do
+					table_insert(realFollowPoint, OSU:BezierCurve(i, {start, v}))
 				end
 			else
-				table.insert(realFollowPoint, v)
+				table_insert(realFollowPoint, v)
 			end
 			curdis = 0
 		end
 		start = v
 	end
 
-	return followPoint, realFollowPoint
+	for k,v in next, followPoint do
+		if(k == #followPoint) then
+			local n = followPoint[k - 1]
+			local deg = math_deg(math_atan2(v.y - n.y, n.x - v.x))
+			local a_a = math_rad(deg - 180)
+			local a_b = math_rad(deg)
+			table_insert(outlinePolys, {a_a, a_b, v, deg})
+		else
+			local n = followPoint[k + 1]
+			local deg = math_deg(math_atan2(v.y - n.y, n.x - v.x))
+			local a_a = math_rad(deg)
+			local a_b = math_rad(deg - 180)
+			table_insert(outlinePolys, {a_a, a_b, v, deg})
+		end
+	end
+
+	return followPoint, realFollowPoint, outlinePolys
 end

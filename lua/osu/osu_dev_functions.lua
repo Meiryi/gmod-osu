@@ -120,3 +120,61 @@ function OSU:RestoreScore()
 	end
 	print(s)
 end
+
+function OSU:MergeTranslateFile(target, append)
+	for k,v in next, target do
+		local _apd = append[k]
+		for x,y in next, _apd do
+			if(v[x] != nil) then continue end
+			v[x] = y
+		end
+	end
+	local f = "osu!/dev/translate_lua.txt"
+	file.Write(f, "")
+	file.Append(f, "OSU.Lang = {\n")
+	for k,v in next, target do
+		file.Append(f, '		["'..k..'"] = {\n')
+		for x,y in next, v do
+			file.Append(f, '			["'..x..'"] = "'..y..'",\n')
+		end
+		file.Append(f, '		},\n')
+	end
+	file.Append(f, "}\n")
+end
+
+--[[
+function draw.Circle( x, y, radius)
+	local r2 = radius * 0.85
+	local cir = {}
+
+	table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
+	local b = 0
+	for i = 0, 9, 1 do
+		local a = math.rad((b) * -1)
+		local _x, _y = x + math.sin( a ) * radius,y + math.cos( a ) * radius
+		local __x, __y = x + math.sin( a ) * r2,y + math.cos( a ) * r2
+		local a = math.rad((b + 18) * -1)
+		local ___x, ___y = x + math.sin( a ) * radius,y + math.cos( a ) * radius
+		local ____x, ____y = x + math.sin( a ) * r2,y + math.cos( a ) * r2
+		local poly = {
+			{x = __x, y = __y},
+			{x = _x, y = _y},
+			{x = ___x, y = ___y},
+			{x = ____x, y = ____y},
+		}
+		surface.DrawPoly(poly)
+		b = b + 18
+	end
+end
+
+hook.Add("HUDPaint", "PolygonCircleTest", function()
+	
+	surface.SetDrawColor( 0, 0, 0, 200)
+	draw.NoTexture()
+	draw.Circle( ScrW() / 2, ScrH() / 2, 200, 10 )
+
+	--Usage:
+	--draw.Circle( x, y, radius, segments )
+
+end )
+]]

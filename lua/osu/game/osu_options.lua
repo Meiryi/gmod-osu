@@ -75,6 +75,7 @@ OSU.ConfigTable = {
 	"CurrentSkinPath",
 	"LoadSkinImage",
 	"Load2x",
+	"BetaSliders",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -127,6 +128,7 @@ OSU.LoadSkinImage = false
 OSU.CursorTrailSize = 8
 OSU.RGBRate = 22.5
 OSU.Load2x = false
+OSU.BetaSliders = false
 OSU.ManiaKeys = {
 	[1] = 29,	
 	[2] = 14,	
@@ -140,9 +142,9 @@ OSU.ManiaKeys = {
 	[10] = 20,	
 }
 
-OSU.MainVersion = "1.2.1"
+OSU.MainVersion = "1.2.2"
 OSU.AvatarVersion = "1.0.1"
-OSU.BeatmapCacheVersion = "1.2.0"
+OSU.BeatmapCacheVersion = "1.3.3"
 
 function OSU:RestartGame()
 	local fade = OSU:CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
@@ -1075,8 +1077,16 @@ function OSU:OpenOptionsMenu()
 	local langTable = {
 		["English"] = "en",
 		["繁體中文"] = "zh-TW",
+		["日本語"] = "ja",
+		["Русский"] = "ru",
 	}
 	OSU:Opt_CreateDropDown(OSU:LookupTranslate("#STDisplayLanguage"), "Trans", langTable)
+	if(OSU.Trans == "ja") then
+		OSU:CreateString("*Special thanks to Daypark for the translate*", OSU.OptPink)
+	end
+	if(OSU.Trans == "ru") then
+		OSU:CreateString("*Special thanks to berry for the translate*", OSU.OptPink)
+	end
 	OSU:CreateString("*Add Meiryi on steam if you want to translate it", Color(255, 255, 255, 255)) 
 	OSU:CreateString("to other language*", Color(255, 255, 255, 255))
 	OSU:Opt_CreateBNameButton(OSU:LookupTranslate("#STMetaString").." (Map Name)")
@@ -1154,10 +1164,17 @@ function OSU:OpenOptionsMenu()
 		skinTable[v] = v
 	end
 	OSU:Opt_CreateDropDown("Skin > ", "CurrentSkinPath", skinTable)
+	OSU:Opt_CreateButton(OSU:LookupTranslate("#STTestSlider"), "BetaSliders")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STLoadSkinImage"), "LoadSkinImage")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrail"), "CursorTrail")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrailGap"), "FillCursorGap")
-	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrailRGB"), "RGBTrail")
+	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrailRGB"), "RGBTrail", function()
+		if(OSU.RGBTrail) then
+			OSU.CurTrailMat = Material("osu/internal/rbgtrail.png", "smooth")
+		else
+			OSU.CurTrailMat = Material(OSU.CurrentSkin["cursortrail"], "smooth")
+		end
+	end)
 	OSU:Opt_CreateSlider(OSU:LookupTranslate("#STCursorSize"), "CursorSize", 1, 48)
 	OSU:Opt_CreateSlider(OSU:LookupTranslate("#STCursorTrailSize"), "CursorTrailSize", 1, 48)
 	OSU:Opt_CreateSlider(OSU:LookupTranslate("#STRGBRate"), "RGBRate", 1, 360)
