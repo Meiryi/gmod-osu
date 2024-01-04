@@ -15,6 +15,7 @@
 OSU.Lang = {
 		["#STCustomKeyboard"] = {
 			["en"] = "Customize key",
+			["tr"] = "Tuşu özelleştir",
 			["zh-TW"] = "自定義按鍵",
 			["zh-CN"] = "",
 			["ru"] = "Настройка клавиши",
@@ -22,6 +23,7 @@ OSU.Lang = {
 		},
 		["#DLDownload"] = {
 			["en"] = "Downloads",
+			["tr"] = "İndirilenler",
 			["zh-TW"] = "已下載",
 			["zh-CN"] = "",
 			["ru"] = "Загрузки",
@@ -29,6 +31,7 @@ OSU.Lang = {
 		},
 		["#STAudio"] = {
 			["en"] = "Audio",
+			["tr"] = "Ses",
 			["zh-TW"] = "音效",
 			["zh-CN"] = "",
 			["ru"] = "Аудио",
@@ -36,6 +39,7 @@ OSU.Lang = {
 		},
 		["#STMainMenu"] = {
 			["en"] = "Main Menu",
+			["tr"] = "Ana Menü",
 			["zh-TW"] = "主介面",
 			["zh-CN"] = "",
 			["ru"] = "Главное меню",
@@ -43,6 +47,7 @@ OSU.Lang = {
 		},
 		["#STLoad@2x"] = {
 			["en"] = "Load high resolution images",
+			["tr"] = "Yüksek çözünürlüklü görselleri yükle",
 			["zh-TW"] = "載入高畫質材質",
 			["zh-CN"] = "",
 			["ru"] = "Загрузить изображения высокого разрешения",
@@ -50,6 +55,7 @@ OSU.Lang = {
 		},
 		["#DLReset"] = {
 			["en"] = "Reset",
+			["tr"] = "Sıfırla",
 			["zh-TW"] = "重製",
 			["zh-CN"] = "",
 			["ru"] = "Сброс",
@@ -57,6 +63,7 @@ OSU.Lang = {
 		},
 		["#STMetaString"] = {
 			["en"] = "Prefer metadata in original language",
+			["tr"] = "Üst veriyi orijinal dilde tercih et",
 			["zh-TW"] = "顯示地圖原文",
 			["zh-CN"] = "",
 			["ru"] = "Показывать метаданные песен на языке оригинала",
@@ -64,6 +71,7 @@ OSU.Lang = {
 		},
 		["#STNotify"] = {
 			["en"] = "Type osu in console or type /osu in chat to play!",
+			["tr"] = "Oynamak için konsolda osu veya sohbette /osu yazın!",
 			["zh-TW"] = "在控制台輸入osu 或者在聊天室輸入/osu 即可開始遊戲",
 			["zh-CN"] = "",
 			["ru"] = "Введите osu в консоли или /osu в чате, чтобы играть!",
@@ -71,6 +79,7 @@ OSU.Lang = {
 		},
 		["#STRGBRate"] = {
 			["en"] = "RGB speed",
+			["tr"] = "RGB hızı",
 			["zh-TW"] = "RGB 速度",
 			["zh-CN"] = "",
 			["ru"] = "Скорость RGB",
@@ -78,6 +87,7 @@ OSU.Lang = {
 		},
 		["#STFPS"] = {
 			["en"] = "Show FPS counter",
+			["tr"] = "FPS sayacını göster",
 			["zh-TW"] = "顯示FPS",
 			["zh-CN"] = "",
 			["ru"] = "Показывать счётчик кадров",
@@ -85,6 +95,7 @@ OSU.Lang = {
 		},
 		["#ServerOffline"] = {
 			["en"] = "Server is offline...",
+			["tr"] = "Sunucu çevrim dışı...",
 			["zh-TW"] = "無法連接到伺服器",
 			["zh-CN"] = "",
 			["ru"] = "Сервер отключён...",
@@ -92,6 +103,7 @@ OSU.Lang = {
 		},
 		["#STLName"] = {
 			["en"] = "Name & Leaderboard",
+			["tr"] = "Ad ve Skor Tablosu",
 			["zh-TW"] = "名稱與排行榜",
 			["zh-CN"] = "",
 			["ru"] = "Имя и таблица рекордов",
@@ -99,6 +111,7 @@ OSU.Lang = {
 		},
 		["#STCursorTrailSize"] = {
 			["en"] = "Cursor trail size",
+			["tr"] = "İmleç izi boyutu",
 			["zh-TW"] = "游標軌跡大小",
 			["zh-CN"] = "",
 			["ru"] = "Размер следа от курсора",
@@ -106,6 +119,7 @@ OSU.Lang = {
 		},
 		["#STCursorTrail"] = {
 			["en"] = "Cursor trail",
+			["tr"] = "İmleç izi",
 			["zh-TW"] = "游標軌跡",
 			["zh-CN"] = "",
 			["ru"] = "След от курсора",
@@ -113,6 +127,7 @@ OSU.Lang = {
 		},
 		["#RankingTotalPlay"] = {
 			["en"] = "Total Plays",
+			["tr"] = "Toplam Oynanma",
 			["zh-TW"] = "總遊玩次數",
 			["zh-CN"] = "",
 			["ru"] = "Всего игр",
@@ -120,6 +135,7 @@ OSU.Lang = {
 		},
 		["#STTheme"] = {
 			["en"] = "osu! music theme",
+			["tr"] = "osu! müziği",
 			["zh-TW"] = "osu! 主題曲",
 			["zh-CN"] = "",
 			["ru"] = "Музыкальная тема osu!",
@@ -127,6 +143,7 @@ OSU.Lang = {
 		},
 		["#STSteamName"] = {
 			["en"] = "Use steam name for leaderboard",
+			["tr"] = "Skor tablosu için steam adı kullan",
 			["zh-TW"] = "使用Steam名稱",
 			["zh-CN"] = "",
 			["ru"] = "Использовать имя из Steam в таблице рекордов",
@@ -134,12 +151,14 @@ OSU.Lang = {
 		},
 		["#STCards"] = {
 			["en"] = "Load beatmap cards",
+			["tr"] = "Beatmapleri yükle",
 			["zh-TW"] = "載入圖譜預覽背景",
 			["zh-CN"] = "",
 			["ru"] = "Загружать карточки карт",
 		},
 		["#STNoBGFlash"] = {
 			["en"] = "Disable background flashing effect",
+			["tr"] = "Arka plan yanıp sönme efektini devre dışı bırak",
 			["zh-TW"] = "關閉背景閃爍效果",
 			["zh-CN"] = "",
 			["ru"] = "Отключить эффект мигания фона",
@@ -147,6 +166,7 @@ OSU.Lang = {
 		},
 		["#RankingScore"] = {
 			["en"] = "Ranking Score",
+			["tr"] = "Sıralama Skoru",
 			["zh-TW"] = "積分",
 			["zh-CN"] = "",
 			["ru"] = "Рейтинг по очкам",
@@ -154,6 +174,7 @@ OSU.Lang = {
 		},
 		["#DLDownloadFinished"] = {
 			["en"] = "Download finished!",
+			["tr"] = "İndirme tamamlandı!",
 			["zh-TW"] = "下載完成",
 			["zh-CN"] = "",
 			["ru"] = "Скачивание завершено!",
@@ -161,6 +182,7 @@ OSU.Lang = {
 		},
 		["#STHObject"] = {
 			["en"] = "Hit Objects",
+			["tr"] = "Tıklama Objeleri",
 			["zh-TW"] = "打擊物件",
 			["zh-CN"] = "",
 			["ru"] = "Игровые объекты",
@@ -168,6 +190,7 @@ OSU.Lang = {
 		},
 		["#STMenuDim"] = {
 			["en"] = "Menu background dim",
+			["tr"] = "Menü arka plan sönüklüğü",
 			["zh-TW"] = "主畫面亮度",
 			["zh-CN"] = "",
 			["ru"] = "Затемнение фона меню",
@@ -175,6 +198,7 @@ OSU.Lang = {
 		},
 		["#RankingName"] = {
 			["en"] = "Player name",
+			["tr"] = "Oyuncu adı",
 			["zh-TW"] = "玩家名稱",
 			["zh-CN"] = "",
 			["ru"] = "Имя игрока",
@@ -182,6 +206,7 @@ OSU.Lang = {
 		},
 		["#STRenderer"] = {
 			["en"] = "Renderer",
+			["tr"] = "Görüntü İşleyici",
 			["zh-TW"] = "渲染",
 			["zh-CN"] = "",
 			["ru"] = "Отрисовка",
@@ -189,6 +214,7 @@ OSU.Lang = {
 		},
 		["#SPWarning3"] = {
 			["en"] = "Warning: osu cannot work on singleplayer",
+			["tr"] = "Uyarı: osu tek kişilikte oynanamaz",
 			["zh-TW"] = "警告: osu無法在單人模式下運作",
 			["zh-CN"] = "",
 			["ru"] = "Внимание: osu не может работать в одиночной игре",
@@ -196,6 +222,7 @@ OSU.Lang = {
 		},
 		["#RankingLeaderboard"] = {
 			["en"] = "Ranking Leaderboard",
+			["tr"] = "Skor Tablosu",
 			["zh-TW"] = "全球排行榜",
 			["zh-CN"] = "",
 			["ru"] = "Таблица рекордов рейтинга",
@@ -203,6 +230,7 @@ OSU.Lang = {
 		},
 		["#ModDiffSpec"] = {
 			["en"] = "Special",
+			["tr"] = "Özel",
 			["zh-TW"] = "特殊",
 			["zh-CN"] = "",
 			["ru"] = "Специальное",
@@ -210,6 +238,7 @@ OSU.Lang = {
 		},
 		["#BMLength"] = {
 			["en"] = "Length",
+			["tr"] = "Uzunluk",
 			["zh-TW"] = "圖譜長度",
 			["zh-CN"] = "",
 			["ru"] = "Длина",
@@ -217,6 +246,7 @@ OSU.Lang = {
 		},
 		["#ModDiffInc"] = {
 			["en"] = "Difficulty Increase",
+			["tr"] = "Zorluk Artırma",
 			["zh-TW"] = "增加難度",
 			["zh-CN"] = "",
 			["ru"] = "Повышение сложности",
@@ -224,6 +254,7 @@ OSU.Lang = {
 		},
 		["#ModDiffReduc"] = {
 			["en"] = "Difficulty Reduction",
+			["tr"] = "Zorluk Azaltma",
 			["zh-TW"] = "減少難度",
 			["zh-CN"] = "",
 			["ru"] = "Снижение сложности",
@@ -231,6 +262,7 @@ OSU.Lang = {
 		},
 		["#STAllEdgeSound"] = {
 			["en"] = "Allow all edge sounds",
+			["tr"] = "Kenar seslerinin tümüne izin ver",
 			["zh-TW"] = "啟用全部的滑條擊中音效",
 			["zh-CN"] = "",
 			["ru"] = "Разрешить все краевые звуки",
@@ -238,6 +270,7 @@ OSU.Lang = {
 		},
 		["#ModNote"] = {
 			["en"] = "Mods provide different ways to enjoy gameplay. Some have an effect on the score you can\n achieve during ranked play. Others are just for fun",
+			["tr"] = "Modlar oyunun keyfini çıkarmanın farklı yollarını sunar. Bazıları sıralı maçlarda alabileceğiniz\n skoru etkileyebilir. Diğerleri ise sadece eğlenceliktir",
 			["zh-TW"] = "開啟Mod可以讓你以不同模式享受遊戲，有些會影響你的分數，其他的僅供娛樂",
 			["zh-CN"] = "",
 			["ru"] = "Моды предоставляют различные способы наслаждения игрой. Некоторые из них влияют на очки,\n получаемые при прохождении рейтинговых карт. Другие просто забавы ради",
@@ -245,6 +278,7 @@ OSU.Lang = {
 		},
 		["#STDConnect"] = {
 			["en"] = "Display connectpoints and curve type",
+			["tr"] = "Bağlanma noktalarını ve eğim tipini göster",
 			["zh-TW"] = "顯示曲線控制點和渲染數量",
 			["zh-CN"] = "",
 			["ru"] = "Отображение точек соединения и типа кривых",
@@ -252,6 +286,7 @@ OSU.Lang = {
 		},
 		["#STMVol"] = {
 			["en"] = "Music",
+			["tr"] = "Müzik",
 			["zh-TW"] = "音樂",
 			["zh-CN"] = "",
 			["ru"] = "Музыка",
@@ -259,12 +294,14 @@ OSU.Lang = {
 		},
 		["#SPWarning2"] = {
 			["en"] = "Go to 'Start new game's top right corner -> change it to atleast 2 players",
+			["tr"] = "'Yeni oyun başlat' a gidin -> en az 2 kişilik olacak şekilde ayarlayın",
 			["zh-TW"] = "從 '開始新遊戲' 的右上角進行變更",
 			["zh-CN"] = "",
 			["ru"] = "Перейдите в «Начать новую игру» в правом верхнем углу -> измените значение на минимум 2 игрока",
 		},
 		["#STCached"] = {
 			["en"] = "Cached Datas",
+			["tr"] = "Önbelleğe Alınmış Veriler",
 			["zh-TW"] = "已快取檔案",
 			["zh-CN"] = "",
 			["ru"] = "Данные в кэше",
@@ -272,6 +309,7 @@ OSU.Lang = {
 		},
 		["#SPWarning1"] = {
 			["en"] = "Gmod osu need to be in multiplayer mode in order to work",
+			["tr"] = "Gmod osu'nun çalışması için çoklu oyuncu modunda olunması gerekiyor",
 			["zh-TW"] = "Gmod osu 需要在多人模式下才可正常運作",
 			["zh-CN"] = "",
 			["ru"] = "Gmod osu должен быть запущен в сетевом режиме, чтобы работать",
@@ -279,6 +317,7 @@ OSU.Lang = {
 		},
 		["#STNoComboBreak"] = {
 			["en"] = "Disable combobreak sound",
+			["tr"] = "Kombo bozulma sesini devre dışı bırak",
 			["zh-TW"] = "關閉斷Combo音效",
 			["zh-CN"] = "",
 			["ru"] = "Отключить звук промаха",
@@ -286,6 +325,7 @@ OSU.Lang = {
 		},
 		["#STDSlider"] = {
 			["en"] = "Sliders",
+			["tr"] = "Kaydıraçlar",
 			["zh-TW"] = "滑條",
 			["zh-CN"] = "",
 			["ru"] = "Ползунки",
@@ -293,6 +333,7 @@ OSU.Lang = {
 		},
 		["#STEdgeFlash"] = {
 			["en"] = "Edge flashing",
+			["tr"] = "Kenar ışığı yanıp sönmesi",
 			["zh-TW"] = "螢幕邊緣閃爍",
 			["zh-CN"] = "",
 			["ru"] = "Мигающие края",
@@ -300,12 +341,14 @@ OSU.Lang = {
 		},
 		["#STDebug"] = {
 			["en"] = "Debugging",
+			["tr"] = "Hata ayıklama",
 			["zh-TW"] = "",
 			["zh-CN"] = "",
 			["ru"] = "Отладка",
 		},
 		["#STCacheWarning"] = {
 			["en"] = "Deleting cached data will cause longer load time!",
+			["tr"] = "Önbelleğe alınmış veriyi silmek açılma süresinin uzamasına sebep olacaktır!",
 			["zh-TW"] = "刪除快取檔案會延長載入時間!",
 			["zh-CN"] = "",
 			["ru"] = "Удаление данных в кэше приведёт к увеличению времени загрузки!",
@@ -313,6 +356,7 @@ OSU.Lang = {
 		},
 		["#STClearCache"] = {
 			["en"] = "Clear all cached datas",
+			["tr"] = "Önbelleğe alınmış tüm verileri temizle",
 			["zh-TW"] = "清除已快取檔案",
 			["zh-CN"] = "",
 			["ru"] = "Очистить все данные в кэше",
@@ -320,6 +364,7 @@ OSU.Lang = {
 		},
 		["#STCache"] = {
 			["en"] = "Cache",
+			["tr"] = "Veri",	
 			["zh-TW"] = "快取",
 			["zh-CN"] = "",
 			["ru"] = "Кэш",
@@ -327,12 +372,14 @@ OSU.Lang = {
 		},
 		["#Acc"] = {
 			["en"] = "Accuracy",
+			["tr"] = "Tutarlılık",
 			["zh-TW"] = "準確度",
 			["zh-CN"] = "",
 			["ru"] = "Точность",
 		},
 		["#STLoggedIn-Yes"] = {
 			["en"] = "Logged in",
+			["tr"] = "Giriş yapıldı",
 			["zh-TW"] = "已登入",
 			["zh-CN"] = "",
 			["ru"] = "Вошли",
@@ -340,6 +387,7 @@ OSU.Lang = {
 		},
 		["#BMSliders"] = {
 			["en"] = "Sliders",
+			["tr"] = "Kaydıraçlar",
 			["zh-TW"] = "滑條",
 			["zh-CN"] = "",
 			["ru"] = "Ползунки",
@@ -347,6 +395,7 @@ OSU.Lang = {
 		},
 		["#ServerOnline"] = {
 			["en"] = "Server is online!",
+			["tr"] = "Sunucu çevrim içi!",
 			["zh-TW"] = "已連接到伺服器!",
 			["zh-CN"] = "",
 			["ru"] = "Сервер работает!",
@@ -354,6 +403,7 @@ OSU.Lang = {
 		},
 		["#STSentScore"] = {
 			["en"] = "Submit score to leaderboard",
+			["tr"] = "Skoru skor tablosuna gönder",
 			["zh-TW"] = "送出成績到排行榜",
 			["zh-CN"] = "",
 			["ru"] = "Отправить результаты в таблицу рекордов",
@@ -361,6 +411,7 @@ OSU.Lang = {
 		},
 		["#STDetails"] = {
 			["en"] = "Detail Settings",
+			["tr"] = "Ayrıntı Ayarları",
 			["zh-TW"] = "細節設定",
 			["zh-CN"] = "",
 			["ru"] = "Настройка деталей",
@@ -368,6 +419,7 @@ OSU.Lang = {
 		},
 		["#STNoAvatar"] = {
 			["en"] = "Disable avatars on leaderboard",
+			["tr"] = "Skor tablosunda avatarları devre dışı bırak",
 			["zh-TW"] = "不顯示排行榜頭像",
 			["zh-CN"] = "",
 			["ru"] = "Отключить аватары в таблице рекордов",
@@ -375,12 +427,14 @@ OSU.Lang = {
 		},
 		["#DLLagNotify"] = {
 			["en"] = "Importing maps will cause\ntemporary lag",
+			["tr"] = "Harita yüklemek kısa takılmalara\n sebep olabilir",
 			["zh-TW"] = "導入圖譜時會暫時卡頓",
 			["zh-CN"] = "",
 			["ru"] = "Импортирование карт вызовет\nвременную задержку",
 		},
 		["#STVolume"] = {
 			["en"] = "Volume",
+			["tr"] = "Ses Düzeyi",
 			["zh-TW"] = "音量",
 			["zh-CN"] = "",
 			["ru"] = "Громкость",
@@ -388,6 +442,7 @@ OSU.Lang = {
 		},
 		["#STInput"] = {
 			["en"] = "Input",
+			["tr"] = "Giriş",
 			["zh-TW"] = "輸入",
 			["zh-CN"] = "",
 			["ru"] = "Устройства ввода",
@@ -395,6 +450,7 @@ OSU.Lang = {
 		},
 		["#STForceBG"] = {
 			["en"] = "Force default background",
+			["tr"] = "Varsayılan arka planı zorla",
 			["zh-TW"] = "強制使用預設背景",
 			["zh-CN"] = "",
 			["ru"] = "Принудительный фон по умолчанию",
@@ -402,6 +458,7 @@ OSU.Lang = {
 		},
 		["#STCursorTrailGap"] = {
 			["en"] = "Fill gap between cursor position",
+			["tr"] = "İmleç konumu arasındaki boşluğu doldur",
 			["zh-TW"] = "填滿間隔",
 			["zh-CN"] = "",
 			["ru"] = "Заполнить промежуток между положением курсора",
@@ -409,6 +466,7 @@ OSU.Lang = {
 		},
 		["#STShowThumbnails"] = {
 			["en"] = "Show thumbnails",
+			["tr"] = "Küçük resimleri göster",
 			["zh-TW"] = "縮圖",
 			["zh-CN"] = "",
 			["ru"] = "Показывать миниатюры",
@@ -416,11 +474,13 @@ OSU.Lang = {
 		},
 		["#STCursorTrailRGB"] = {
 			["en"] = "RGB",
+			["tr"] = "RGB",
 			["zh-TW"] = "RGB",
 			["zh-CN"] = "",
 		},
 		["#STCursorSize"] = {
 			["en"] = "Cursor size",
+			["tr"] = "İmleç boyutu",
 			["zh-TW"] = "游標大小",
 			["zh-CN"] = "",
 			["ru"] = "Размер курсора",
@@ -428,6 +488,7 @@ OSU.Lang = {
 		},
 		["#STSkins"] = {
 			["en"] = "Skins",
+			["tr"] = "Kaplamalar",
 			["zh-TW"] = "Skins",
 			["zh-CN"] = "",
 			["ru"] = "Облики",
@@ -435,6 +496,7 @@ OSU.Lang = {
 		},
 		["#TotalMap"] = {
 			["en"] = "Total Map Played",
+			["tr"] = "Oynanan Toplam Harita",
 			["zh-TW"] = "總遊玩次數",
 			["zh-CN"] = "",
 			["ru"] = "Всего карт сыграно",
@@ -442,6 +504,7 @@ OSU.Lang = {
 		},
 		["#DiscServer"] = {
 			["en"] = "Disconnected to server!",
+			["tr"] = "Sunucu bağlantısı kesildi!",
 			["zh-TW"] = "與伺服器斷開連接!",
 			["zh-CN"] = "",
 			["ru"] = "Отключены от сервера!",
@@ -449,6 +512,7 @@ OSU.Lang = {
 		},
 		["#STFPoint"] = {
 			["en"] = "Followpoints",
+			["tr"] = "Takip noktaları",
 			["zh-TW"] = "物件跟隨指示",
 			["zh-CN"] = "",
 			["ru"] = "Следующие точки",
@@ -456,6 +520,7 @@ OSU.Lang = {
 		},
 		["#DLDownloading"] = {
 			["en"] = "Downloading beatmap(s)..",
+			["tr"] = "Beatmap indiriliyor..",
 			["zh-TW"] = "正在下載圖譜",
 			["zh-CN"] = "",
 			["ru"] = "Скачивание карт(-ы)..",
@@ -463,6 +528,7 @@ OSU.Lang = {
 		},
 		["#STSkin"] = {
 			["en"] = "Skin",
+			["tr"] = "Kaplama",
 			["zh-TW"] = "外觀",
 			["zh-CN"] = "",
 			["ru"] = "Облик",
@@ -470,6 +536,7 @@ OSU.Lang = {
 		},
 		["#STEVol"] = {
 			["en"] = "Effects",
+			["tr"] = "Efektler",
 			["zh-TW"] = "其他音效",
 			["zh-CN"] = "",
 			["ru"] = "Эффекты",
@@ -477,6 +544,7 @@ OSU.Lang = {
 		},
 		["#STBlur"] = {
 			["en"] = "Blur shader",
+			["tr"] = "Bulanıklık",
 			["zh-TW"] = "畫面模糊",
 			["zh-CN"] = "",
 			["ru"] = "Шейдер размытия",
@@ -484,6 +552,7 @@ OSU.Lang = {
 		},
 		["#STBeheaves"] = {
 			["en"] = "Change the way osu! beheaves",
+			["tr"] = "Osu'nun çalışma şeklini değiştir",
 			["zh-TW"] = "個人化你的 osu! 設定",
 			["zh-CN"] = "",
 			["ru"] = "Измените поведение osu!",
@@ -491,6 +560,7 @@ OSU.Lang = {
 		},
 		["#STNoEdgeSound"] = {
 			["en"] = "Disable slider edge sound",
+			["tr"] = "Kenar kaydıraç sesini devre dışı bırak",
 			["zh-TW"] = "關閉滑條的額外擊中音效",
 			["zh-CN"] = "",
 			["ru"] = "Отключить звук края ползунка",
@@ -498,6 +568,7 @@ OSU.Lang = {
 		},
 		["#STHVol"] = {
 			["en"] = "Hitsound",
+			["tr"] = "Tık sesi",
 			["zh-TW"] = "擊中音效",
 			["zh-CN"] = "",
 			["ru"] = "Звук попадания",
@@ -505,6 +576,7 @@ OSU.Lang = {
 		},
 		["#STSmoothObj"] = {
 			["en"] = "Smoother hitcircles",
+			["tr"] = "Daha pürüzsüz tıklama daireleri",
 			["zh-TW"] = "物件平滑化",
 			["zh-CN"] = "",
 			["ru"] = "Гладкие ноты",
@@ -512,6 +584,7 @@ OSU.Lang = {
 		},
 		["#STSnaking"] = {
 			["en"] = "Snaking sliders",
+			["tr"] = "Kıvrılan kaydıraçlar",
 			["zh-TW"] = "滑條漸出",
 			["zh-CN"] = "",
 			["ru"] = "Движущиеся ползунки",
@@ -519,6 +592,7 @@ OSU.Lang = {
 		},
 		["#STPerfectHit"] = {
 			["en"] = "Show perfect hits",
+			["tr"] = "Mükemmel tıkları göster",
 			["zh-TW"] = "顯示完美打擊",
 			["zh-CN"] = "",
 			["ru"] = "Показывать идеальные попадания",
@@ -526,6 +600,7 @@ OSU.Lang = {
 		},
 		["#STHitError"] = {
 			["en"] = "Hit-error bar",
+			["tr"] = "Tık hata çubuğu",
 			["zh-TW"] = "準確度指示器",
 			["zh-CN"] = "",
 			["ru"] = "Панель ошибки при попадании",
@@ -533,6 +608,7 @@ OSU.Lang = {
 		},
 		["#STNoOBJFlash"] = {
 			["en"] = "Disable flashing on hitobjects",
+			["tr"] = "Tık objelerinde yanıp sönmeyi devre dışı bırak",
 			["zh-TW"] = "關閉物件閃爍效果",
 			["zh-CN"] = "",
 			["ru"] = "Отключить мигание на игровых объектах",
@@ -540,6 +616,7 @@ OSU.Lang = {
 		},
 		["#DLNoResult"] = {
 			["en"] = "No Result",
+			["tr"] = "Sonuç Yok",
 			["zh-TW"] = "無結果",
 			["zh-CN"] = "",
 			["ru"] = "Нет результатов",
@@ -547,6 +624,7 @@ OSU.Lang = {
 		},
 		["#DLSearch"] = {
 			["en"] = "Search",
+			["tr"] = "Ara",
 			["zh-TW"] = "搜尋",
 			["zh-CN"] = "",
 			["ru"] = "Поиск",
@@ -554,6 +632,7 @@ OSU.Lang = {
 		},
 		["#DLUnpacked"] = {
 			["en"] = "Unpacked successfully",
+			["tr"] = "Başarıyla çıkarıldı",
 			["zh-TW"] = "導入完成",
 			["zh-CN"] = "",
 			["ru"] = "Распаковка выполнена",
@@ -561,6 +640,7 @@ OSU.Lang = {
 		},
 		["#STInterfaceSound"] = {
 			["en"] = "Interface voices",
+			["tr"] = "Arayüz sesleri",
 			["zh-TW"] = "介面語音",
 			["zh-CN"] = "",
 			["ru"] = "Голосовое приветствие",
@@ -568,6 +648,7 @@ OSU.Lang = {
 		},
 		["#STDownloader"] = {
 			["en"] = "Downloader",
+			["tr"] = "İndirici",
 			["zh-TW"] = "圖譜下載器",
 			["zh-CN"] = "",
 			["ru"] = "Загрузчик",
@@ -575,6 +656,7 @@ OSU.Lang = {
 		},
 		["#STSmoothBG"] = {
 			["en"] = "Smooth background",
+			["tr"] = "Pürüzsüz arka plan",
 			["zh-TW"] = "背景平滑化",
 			["zh-CN"] = "",
 			["ru"] = "Плавный фон",
@@ -582,6 +664,7 @@ OSU.Lang = {
 		},
 		["#BMObjects"] = {
 			["en"] = "Objects",
+			["tr"] = "Objeler",
 			["zh-TW"] = "物件數量",
 			["zh-CN"] = "",
 			["ru"] = "Объекты",
@@ -589,6 +672,7 @@ OSU.Lang = {
 		},
 		["#STCursorTrailLife"] = {
 			["en"] = "Trail lifetime",
+			["tr"] = "İz süresi",
 			["zh-TW"] = "軌跡長度",
 			["zh-CN"] = "",
 			["ru"] = "Длительность следа",
@@ -596,6 +680,7 @@ OSU.Lang = {
 		},
 		["#STGeneral"] = {
 			["en"] = "General",
+			["tr"] = "Genel",
 			["zh-TW"] = "一般",
 			["zh-CN"] = "",
 			["ru"] = "Общее",
@@ -603,6 +688,7 @@ OSU.Lang = {
 		},
 		["#STBGDim"] = {
 			["en"] = "Background dim",
+			["tr"] = "Arka plan parlaklığı",
 			["zh-TW"] = "背景亮度",
 			["zh-CN"] = "",
 			["ru"] = "Затемнение фона",
@@ -610,6 +696,7 @@ OSU.Lang = {
 		},
 		["#C2S"] = {
 			["en"] = "Click to start",
+			["tr"] = "Başlamak için tıkla",
 			["zh-TW"] = "點擊開始",
 			["zh-CN"] = "",
 			["ru"] = "Нажмите, чтобы начать",
@@ -617,6 +704,7 @@ OSU.Lang = {
 		},
 		["#STSignIn"] = {
 			["en"] = "Sign in",
+			["tr"] = "Kayıt ol",
 			["zh-TW"] = "登入",
 			["zh-CN"] = "",
 			["ru"] = "Войти",
@@ -624,6 +712,7 @@ OSU.Lang = {
 		},
 		["#STGraphics"] = {
 			["en"] = "Graphics",
+			["tr"] = "Grafik",
 			["zh-TW"] = "畫面",
 			["zh-CN"] = "",
 			["ru"] = "Графика",
@@ -631,6 +720,7 @@ OSU.Lang = {
 		},
 		["#STCheckThumbnails"] = {
 			["en"] = "Check if map has more than one thumbnails",
+			["tr"] = "Haritanın birden fazla küçük resmi olup olmadığını kontrol et",
 			["zh-TW"] = "檢查圖譜是否有一張以上的背景",
 			["zh-CN"] = "",
 			["ru"] = "Проверять, есть ли на карте более одной миниатюры.",
@@ -638,6 +728,7 @@ OSU.Lang = {
 		},
 		["#STMenuSnow"] = {
 			["en"] = "Menu snow",
+			["tr"] = "Menü karı",
 			["zh-TW"] = "降雪效果",
 			["zh-CN"] = "",
 			["ru"] = "Снег в меню",
@@ -645,6 +736,7 @@ OSU.Lang = {
 		},
 		["#STPrevImg"] = {
 			["en"] = "Preview Image",
+			["tr"] = "Görseli Önizle",
 			["zh-TW"] = "預覽圖片",
 			["zh-CN"] = "",
 			["ru"] = "Изображение предпросмотра",
@@ -652,6 +744,7 @@ OSU.Lang = {
 		},
 		["#DLStopSound"] = {
 			["en"] = "Stop sounds",
+			["tr"] = "Sesleri durdur",
 			["zh-TW"] = "停止預覽",
 			["zh-CN"] = "",
 			["ru"] = "Остановить звуки",
@@ -659,6 +752,7 @@ OSU.Lang = {
 		},
 		["#STLoadSkinImage"] = {
 			["en"] = "Load skin images (WIP, NOT RECOMMENDED)",
+			["tr"] = "Kaplama görsellerini yükle (DENEYSELDİR, ÖNERİLMEZ)",
 			["zh-TW"] = "載入Skin材質 (未完成，不建議)",
 			["zh-CN"] = "",
 			["ru"] = "Загрузить изображения облика (В РАЗРАБОТКЕ, НЕ РЕКОМЕНДУЕТСЯ)",
@@ -666,6 +760,7 @@ OSU.Lang = {
 		},
 		["#STDisableMouse"] = {
 			["en"] = "Disable mouse buttons",
+			["tr"] = "Fare tuşlarını devre dışı bırak",
 			["zh-TW"] = "停用滑鼠按鍵",
 			["zh-CN"] = "",
 			["ru"] = "Отключить кнопки мыши",
@@ -673,6 +768,7 @@ OSU.Lang = {
 		},
 		["#STSelectSong"] = {
 			["en"] = "Song Select",
+			["tr"] = "Şarkı Seç",
 			["zh-TW"] = "圖譜選取",
 			["zh-CN"] = "",
 			["ru"] = "Выбор песни",
@@ -680,6 +776,7 @@ OSU.Lang = {
 		},
 		["#STAvatarFrame"] = {
 			["en"] = "Load avatar frames",
+			["tr"] = "Avatar çerçevelerini yükle",
 			["zh-TW"] = "載入頭像框",
 			["zh-CN"] = "",
 			["ru"] = "Загрузить рамки аватаров",
@@ -687,6 +784,7 @@ OSU.Lang = {
 		},
 		["#STCustomName"] = {
 			["en"] = "Name for leaderboard",
+			["tr"] = "Skor tablosu için ad",
 			["zh-TW"] = "自訂名稱",
 			["zh-CN"] = "",
 			["ru"] = "Имя для таблицы рекордов",
@@ -694,6 +792,7 @@ OSU.Lang = {
 		},
 		["#STGameplay"] = {
 			["en"] = "Gameplay",
+			["tr"] = "Oynanış",
 			["zh-TW"] = "遊玩設定",
 			["zh-CN"] = "",
 			["ru"] = "Игра",
@@ -701,6 +800,7 @@ OSU.Lang = {
 		},
 		["#DLImport"] = {
 			["en"] = "Import",
+			["tr"] = "İçeri aktar",
 			["zh-TW"] = "導入圖譜",
 			["zh-CN"] = "",
 			["ru"] = "Импорт",
@@ -708,6 +808,7 @@ OSU.Lang = {
 		},
 		["#STNoRender"] = {
 			["en"] = "Stop world rendering (Highly recommended)",
+			["tr"] = "Dünyayı işlemeyi durdur (Şiddetle tavsiye edilir)",
 			["zh-TW"] = "停止世界渲染",
 			["zh-CN"] = "",
 			["ru"] = "Остановить обработку мира (настоятельно рекомендуется)",
@@ -715,6 +816,7 @@ OSU.Lang = {
 		},
 		["#ServerCheck"] = {
 			["en"] = "Checking server status...",
+			["tr"] = "Sunucu durumu kontrol ediliyor...",
 			["zh-TW"] = "嘗試連接至伺服器...",
 			["zh-CN"] = "",
 			["ru"] = "Проверка состояния сервера...",
@@ -722,6 +824,7 @@ OSU.Lang = {
 		},
 		["#BMSpinners"] = {
 			["en"] = "Spinners",
+			["tr"] = "Topaç",
 			["zh-TW"] = "轉盤",
 			["zh-CN"] = "",
 			["ru"] = "Спиннеры",
@@ -729,6 +832,7 @@ OSU.Lang = {
 		},
 		["#DLType2S"] = {
 			["en"] = "Type to search!",
+			["tr"] = "Aramak için yazın!",
 			["zh-TW"] = "搜尋圖譜!",
 			["zh-CN"] = "",
 			["ru"] = "Начните печатать!",
@@ -736,6 +840,7 @@ OSU.Lang = {
 		},
 		["#STMouse"] = {
 			["en"] = "Mouse",
+			["tr"] = "Fare",
 			["zh-TW"] = "滑鼠",
 			["zh-CN"] = "",
 			["ru"] = "Мышь",
@@ -743,6 +848,7 @@ OSU.Lang = {
 		},
 		["#STLanguage"] = {
 			["en"] = "Language",
+			["tr"] = "Dil",
 			["zh-TW"] = "語言",
 			["zh-CN"] = "",
 			["ru"] = "Язык",
@@ -750,6 +856,7 @@ OSU.Lang = {
 		},
 		["#STKeyboard"] = {
 			["en"] = "Keyboard",
+			["tr"] = "Klavye",
 			["zh-TW"] = "鍵盤",
 			["zh-CN"] = "",
 			["ru"] = "Клавиатура",
@@ -757,6 +864,7 @@ OSU.Lang = {
 		},
 		["#STLoggedIn-No"] = {
 			["en"] = "Not logged in",
+			["tr"] = "Giriş yapılmamış",
 			["zh-TW"] = "未登入",
 			["zh-CN"] = "",
 			["ru"] = "Не вошли",
@@ -764,6 +872,7 @@ OSU.Lang = {
 		},
 		["#RKS"] = {
 			["en"] = "Ranking Score",
+			["tr"] = "Sıralama Skoru",
 			["zh-TW"] = "積分",
 			["zh-CN"] = "",
 			["ru"] = "Рейтинг по очкам",
@@ -771,6 +880,7 @@ OSU.Lang = {
 		},
 		["#STWelcome"] = {
 			["en"] = "Welcome : ",
+			["tr"] = "Hoşgeldiniz : ",
 			["zh-TW"] = "歡迎 : ",
 			["zh-CN"] = "",
 			["ru"] = "Добро пожаловать : ",
@@ -778,6 +888,7 @@ OSU.Lang = {
 		},
 		["#STDisplayLanguage"] = {
 			["en"] = "Language",
+			["tr"] = "Dil",
 			["zh-TW"] = "語言",
 			["zh-CN"] = "",
 			["ru"] = "Язык",
@@ -785,6 +896,7 @@ OSU.Lang = {
 		},
 		["#STSounds"] = {
 			["en"] = "Sounds",
+			["tr"] = "Ses",
 			["zh-TW"] = "音效",
 			["zh-CN"] = "",
 			["ru"] = "Звуки",
@@ -792,6 +904,7 @@ OSU.Lang = {
 		},
 		["#ConnServer"] = {
 			["en"] = "Connected to server!",
+			["tr"] = "Sunucuya bağlanıldı!",
 			["zh-TW"] = "已連線到伺服器!",
 			["zh-CN"] = "",
 			["ru"] = "Подключены к серверу!",
@@ -799,6 +912,7 @@ OSU.Lang = {
 		},
 		["#DLPlaceholder"] = {
 			["en"] = "Search beatmap name / mapper",
+			["tr"] = "Beatmap adı / yapımcısı",
 			["zh-TW"] = "搜尋圖譜 / 製譜者",
 			["zh-CN"] = "",
 			["ru"] = "Поиск по имени карты / картодела",
@@ -806,6 +920,7 @@ OSU.Lang = {
 		},
 		["#STWriteCache"] = {
 			["en"] = "Write beatmap cache (Faster load time)",
+			["tr"] = "Beatmap verisini kaydet (Daha hızlı açılma)",
 			["zh-TW"] = "寫入圖譜快取",
 			["zh-CN"] = "",
 			["ru"] = "Запись кэша карт (Ускоренное время загрузки)",
@@ -813,6 +928,7 @@ OSU.Lang = {
 		},
 		["#STOptions"] = {
 			["en"] = "Options",
+			["tr"] = "Ayarlar",
 			["zh-TW"] = "設定",
 			["zh-CN"] = "",
 			["ru"] = "Настройки",
@@ -820,6 +936,7 @@ OSU.Lang = {
 		},
 		["#RankingNum"] = {
 			["en"] = "Ranking",
+			["tr"] = "Sıralama",
 			["zh-TW"] = "排名",
 			["zh-CN"] = "",
 			["ru"] = "Рейтинг",
@@ -827,6 +944,7 @@ OSU.Lang = {
 		},
 		["#BMCircles"] = {
 			["en"] = "Circles",
+			["tr"] = "Daireler",
 			["zh-TW"] = "圓圈",
 			["zh-CN"] = "",
 			["ru"] = "Кружки",
@@ -834,6 +952,7 @@ OSU.Lang = {
 		},
 		["#STPerformance"] = {
 			["en"] = "Performance",
+			["tr"] = "Performans",
 			["zh-TW"] = "性能",
 			["zh-CN"] = "",
 			["ru"] = "Производительность",
@@ -841,6 +960,7 @@ OSU.Lang = {
 		},
 		["#STIdentify"] = {
 			["en"] = "Identify",
+			["tr"] = "Kimlik doğrula",
 			["zh-TW"] = "身分驗證",
 			["zh-CN"] = "",
 			["ru"] = "Определить",
@@ -848,6 +968,7 @@ OSU.Lang = {
 		},
 		["#DLCurPage"] = {
 			["en"] = "Current page",
+			["tr"] = "Geçerli sayfa",
 			["zh-TW"] = "目前頁面",
 			["zh-CN"] = "",
 			["ru"] = "Текущая страница",
@@ -855,6 +976,7 @@ OSU.Lang = {
 		},
 		["#STStatus"] = {
 			["en"] = "Status",
+			["tr"] = "Durum",
 			["zh-TW"] = "狀態",
 			["zh-CN"] = "",
 			["ru"] = "Состояние",
@@ -862,6 +984,7 @@ OSU.Lang = {
 		},
 		["#STNoOutline"] = {
 			["en"] = "Don't draw slider's outlines",
+			["tr"] = "Kaydıraçların dış çizgisini çizme",
 			["zh-TW"] = "不渲染滑條外圍線條",
 			["zh-CN"] = "",
 			["ru"] = "Не показывать контуры ползунков",
@@ -869,6 +992,7 @@ OSU.Lang = {
 		},
 		["#STLeaderboard"] = {
 			["en"] = "Leaderboard",
+			["tr"] = "Skor Tablosu",
 			["zh-TW"] = "排行榜",
 			["zh-CN"] = "",
 			["ru"] = "Таблица рекордов",
@@ -876,6 +1000,7 @@ OSU.Lang = {
 		},
 		["#STTestSlider"] = {
 			["en"] = "Use experimental sliders",
+			["tr"] = "Deneysel kaydıraçları kullan",
 			["zh-TW"] = "使用測試版滑條",
 			["zh-CN"] = "",
 			["ru"] = "Использовать экспериментальные ползунки",
