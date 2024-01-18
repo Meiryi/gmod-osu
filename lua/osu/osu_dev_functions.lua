@@ -167,14 +167,23 @@ function draw.Circle( x, y, radius)
 	end
 end
 
+
+function draw.Circle( x, y, radius, seg )
+	local cir = {}
+
+	table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
+	for i = 0, seg do
+		local a = math.rad( ( i / seg ) * -360 )
+		table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+	end
+
+	local a = math.rad( 0 ) -- This is needed for non absolute segment counts
+	table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+
+	surface.DrawPoly( cir )
+end
+
 hook.Add("HUDPaint", "PolygonCircleTest", function()
-	
-	surface.SetDrawColor( 0, 0, 0, 200)
-	draw.NoTexture()
-	draw.Circle( ScrW() / 2, ScrH() / 2, 200, 10 )
 
-	--Usage:
-	--draw.Circle( x, y, radius, segments )
-
-end )
+end)
 ]]

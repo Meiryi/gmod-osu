@@ -118,6 +118,11 @@ function OSU:Startup(pskip)
 	OSU.MainGameFrame.iAlpha__R = 0
 	OSU.MainGameFrame.BlurTime = SysTime()
 	OSU.MainGameFrame.Think = function()
+		if(input.IsKeyDown(49)) then
+			OSU.MainGameFrame:Remove()
+			OSU:StopSound()
+			return
+		end
 		OSU:ProcessNotify()
 		OSU:RunTime()
 		OSU.SliderBeat = math.Clamp(OSU.SliderBeat - OSU:GetFixedValue(1.5), 0, 255)

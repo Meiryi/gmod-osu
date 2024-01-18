@@ -23,6 +23,9 @@ OSU.ModesTMP = {
 	HT = false,
 	DT = false,
 	FL = false,
+	RL = false,
+	AP = false,
+	SO = false,
 }
 OSU.OriginalSize = ScreenScale(54.4)
 OSU.CurrentMode = 0
@@ -54,6 +57,8 @@ OSU.MenuTimingPoints = {}
 OSU.TimingPoints = {}
 OSU.Objects = {}
 OSU.Breaks = {}
+OSU.InGameLeaderboard = {}
+OSU.ReloadInGameLeaderboard = false
 OSU.ComboColours = {}
 OSU.FakeCursorPos = {x = 0, y = 0}
 OSU.ShouldDrawFakeCursor = false
@@ -93,9 +98,10 @@ OSU.HD = false
 OSU.HT = false
 OSU.DT = false
 OSU.FL = false
-OSU.RLAC = false
-OSU.RLAM = false
+OSU.RL = false
+OSU.AP = false
 OSU.SP = false
+OSU.SO = false
 OSU.AT = false
 
 OSU.BeatLength = 180

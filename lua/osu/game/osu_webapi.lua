@@ -192,6 +192,7 @@ function OSU:RequestLeaderboard(beatmapid)
 				OSU.ResultFetched = true
 			else
 				if(!IsValid(OSU.LeaderboardScrollPanel) || curID != OSU.CurrentBeatmapID) then return end
+				OSU.InGameLeaderboard = {}
 				OSU.LeaderboardScrollPanel:Clear()
 				if(table.Count(dat) <= 0) then OSU.NoRecords = true end
 				table.sort(dat, function(a, b) return tonumber(a["score"]) > tonumber(b["score"]) end)
@@ -372,6 +373,9 @@ function OSU:RequestLeaderboard(beatmapid)
 														HT = OSU:ConvertStringBool(v["ht"]),
 														DT = OSU:ConvertStringBool(v["dt"]),
 														FL = OSU:ConvertStringBool(v["fl"]),
+														RL = OSU:ConvertStringBool(v["rl"]),
+														AP = OSU:ConvertStringBool(v["ap"]),
+														SO = OSU:ConvertStringBool(v["so"]),
 													}
 												end
 												OSU:PlaySoundEffect(OSU.CurrentSkin["click-short-confirm"])
@@ -438,12 +442,26 @@ function OSU:RequestLeaderboard(beatmapid)
 											if(v["fl"] == "true") then
 												text = text.." FL"
 											end
+											if(v["rl"] == "true") then
+												text = text.." RL"
+											end
+											if(v["ap"] == "true") then
+												text = text.." AP"
+											end
+											if(v["so"] == "true") then
+												text = text.." SO"
+											end
 											local nw, nh = OSU:GetTextSize("OSULeaderboardDesc", text)
 											local mods = vbase:Add("DLabel")
 												mods:SetFont("OSULeaderboardDesc")
 												mods:SetText(text)
 												mods:SetSize(nw, nh)
 												mods:SetPos(OSU.LeaderboardScrollPanel:GetWide() - (nw + gap2), h - ((nh * 3) + gap2))
+					table.insert(OSU.InGameLeaderboard, {v["name"], v["score"], v["combo"], false})
+				end
+				if(#dat > 0) then
+					table.insert(OSU.InGameLeaderboard, {LocalPlayer():Nick(), 0, 0, true})
+					OSU.ReloadInGameLeaderboard = true
 				end
 			end
 			OSU.ResultFetched = true
@@ -538,6 +556,9 @@ function OSU:SubmitScore(tmp)
 		ht = OSU:BoolenToString("HT"),
 		dt = OSU:BoolenToString("DT"),
 		fl = OSU:BoolenToString("FL"),
+		rl = OSU:BoolenToString("RL"),
+		ap = OSU:BoolenToString("AP"),
+		so = OSU:BoolenToString("SO"),
 		rid = tostring(tmp["rID"])
 	}
 	HTTP({

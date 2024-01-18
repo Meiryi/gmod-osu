@@ -43,27 +43,43 @@ end
 
 function OSU:CreateHitScore(vec_2t, type)
 	if(type == 1 && !OSU.PerfectHit) then return end
+	local vFadeOut = 0
 	local vTime = OSU.CurTime + 0.07
+	local vSwitch = false
 	local yOffs = 0
 	local cext = 0
 	local size_2t = OSU:GetHitImageSize(type)
 	local offsx, offsy = size_2t.x / 2, size_2t.y / 2
 	local circle = vgui.Create("DImage", OSU.PlayFieldLayer)
-		circle.iAlpha = 255
+	local alpinc = 100
+		circle.iAlpha = 0
+		if(type == 4) then
+			alpinc = alpinc * 2
+		end
 		circle.dec = 0
 		circle:SetZPos(32767)
 		circle:SetImage(OSU:GetHitImage(type))
 		circle:SetSize(size_2t.x, size_2t.y)
 		circle:SetPos(vec_2t.x - offsx, vec_2t.y - offsy)
 		circle.Think = function()
-			if(type == 4 && vTime <= OSU.CurTime) then
-				yOffs = yOffs + OSU:GetFixedValue(0.5)
+			if(!vSwitch) then
+				circle.iAlpha = math.Clamp(circle.iAlpha + OSU:GetFixedValue(alpinc), 0, 255)
+				if(circle.iAlpha >= 255) then
+					vSwitch = true
+					vFadeOut = OSU.CurTime + 0.15
+				end
+			else
+				if(vFadeOut < OSU.CurTime) then
+					if(type == 4) then
+						yOffs = yOffs + OSU:GetFixedValue(0.5)
+					end
+					circle.iAlpha = math.Clamp(circle.iAlpha - OSU:GetFixedValue(math.max(circle.iAlpha * 0.2, 1)), 0, 255)
+					if(circle.iAlpha <= 1) then
+						circle:Remove()
+					end
+				end
 			end
-			circle.iAlpha = math.Clamp(circle.iAlpha - OSU:GetFixedValue(9), 0, 255)
 			circle:SetImageColor(Color(255, 255, 255, circle.iAlpha))
-			if(circle.iAlpha <= 0) then
-				circle:Remove()
-			end
 			circle:SetY(vec_2t.y + yOffs - size_2t.y / 2)
 		end
 

@@ -17,7 +17,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	local offs = radius / 2
 	local dec, fadein, ms = OSU:GetApproachRate(radius)
 	local base = vgui.Create("DPanel", OSU.PlayFieldLayer)
-	base.Paint = function() return end
+	base.Paint = function()return end
 	local hcircle = vgui.Create("DImage", base)
 		hcircle:SetImage(OSU.CurrentSkin["hitcircle"])
 		hcircle:SetSize(radius, radius)
@@ -32,6 +32,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 	local traced = false
 	local traceTime = OSU.CurTime + (ms / 5)
 	local target = OSU.Objects[2]
+	local aimscl = ScrH() / ScrW()
 	if(noscore) then
 		target = nil
 	end
@@ -72,10 +73,8 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 						local pos = target["vec_2"]
 						local ang = math.deg(math.atan2(vec_2t.y - pos.y, pos.x - vec_2t.x))
 						local dst = math.Distance(vec_2t.x, vec_2t.y, pos.x, pos.y)
-						local __end = time + (OSU.AppearTime / 2)
-						local _trend = time
-						if(dst > radius) then
-							OSU:TraceFollowPoint(vec_2t, pos, ang, _trend - OSU.CurTime, dst, ptime)
+						if(dst > radius * 1.5) then
+							OSU:TraceFollowPoint(vec_2t, pos, ang, OSU.CurTime, target["time"] + ms / 1.4, dst)
 						end
 					end
 				end
@@ -114,9 +113,11 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 					OSU:CreateHitScore(vec_2t, 4)
 				end
 			end
-			if(OSU.AutoNotes) then
+			if(OSU.AutoNotes || OSU.AP) then
 				if(OSU.CurTime >= ptime) then
-					base.Click()
+					if(!OSU.AP) then
+						base.Click()
+					end
 				else
 					if(OSU:GetValidObject() == base) then
 						OSU.CurrentTarget = base

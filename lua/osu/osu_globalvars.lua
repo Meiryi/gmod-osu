@@ -13,6 +13,14 @@
 
 OSU = {}
 
+if(OSU_RenderTarget == nil) then
+	OSU_RenderTarget = GetRenderTarget("osu_rt", ScrW(), ScrH()) 
+	OSU_RTMaterial = CreateMaterial("osu_rt_mat", "UnlitGeneric", {
+		['$basetexture'] = OSU_RenderTarget:GetName(),
+		["$translucent"] = "1" 
+	});
+end
+
 OSU.BeatmapPath = "osu!/beatmaps/"
 OSU.SkinsPath = "osu!/skins/"
 OSU.DevPath = "osu!/dev/"

@@ -27,14 +27,13 @@ function OSU:GetCurves(type, curvePoints, length)
 		Linear (L)
 		Perfect circle (P)
 	]]
-	local sliderMul = 0.2
+	local sliderMul = 0.15
 	local followPoint = {}
 	local realFollowPoint = {}
-	local outlinePolys = {}
 	local step = 1 / (length * sliderMul)
 	if(type == "B" || type == "C") then
 		if(#curvePoints >= 8) then
-			sliderMul = 0.5
+			sliderMul = 0.45
 		end
 		step = 1 / (length * sliderMul)
 		for i = 0, 1, step do
@@ -100,21 +99,5 @@ function OSU:GetCurves(type, curvePoints, length)
 		start = v
 	end
 
-	for k,v in next, followPoint do
-		if(k == #followPoint) then
-			local n = followPoint[k - 1]
-			local deg = math_deg(math_atan2(v.y - n.y, n.x - v.x))
-			local a_a = math_rad(deg - 180)
-			local a_b = math_rad(deg)
-			table_insert(outlinePolys, {a_a, a_b, v, deg})
-		else
-			local n = followPoint[k + 1]
-			local deg = math_deg(math_atan2(v.y - n.y, n.x - v.x))
-			local a_a = math_rad(deg)
-			local a_b = math_rad(deg - 180)
-			table_insert(outlinePolys, {a_a, a_b, v, deg})
-		end
-	end
-
-	return followPoint, realFollowPoint, outlinePolys
+	return followPoint, realFollowPoint
 end

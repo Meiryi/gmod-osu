@@ -20,14 +20,30 @@ function OSU:AddCombo(noins)
 	end
 end
 
-function OSU:TraceFollowPoint(from, to, angle, time, dst, _end)
+function OSU:TraceFollowPoint(from, to, angle, time, etime, dst, notar)
 	if(!OSU.CircleFollowPoint) then return end
-	local fade = math.Clamp(255 / (60 * time), 5, 255)
+	local _time = (etime - time) * 0.2
+	local fade = 255 * _time
 	local step = OSU.FollowPointsGap / dst
 	local tmp = {}
+	local vec_2t = {x = to.x - from.x, y = to.y - from.y}
+	local rad = OSU.CircleRadius / 2
 	for i = 0, 1, step do
-		local _step = (time / (1.25 - math.max(i, 0.1)))
-		table.insert(tmp, {OSU:BezierCurve(i, {Vector(from.x, from.y, 0), Vector(to.x, to.y, 0)}), 0, fade, _end, angle, OSU.CurTime + _step, _end + _step})
+		local target = Vector(from.x + vec_2t.x * i, from.y + vec_2t.y * i)
+		if(math.Distance(target.x, target.y, to.x, to.y) < rad) then
+			continue
+		end
+		if(notar && math.Distance(target.x, target.y, from.x, from.y) < rad) then
+			continue
+		end
+		table.insert(tmp, {
+			[1] = time + (_time * i) * 2,
+			[2] = fade,
+			[3] = target,
+			[4] = 0,
+			[5] = angle,
+			[6] = etime - (_time * (1 - i))
+		})
 	end
 	table.insert(OSU.FollowPointsTable, tmp)
 end
@@ -141,10 +157,10 @@ function OSU:RunHitObjectsCheck(type)
 	else
 		if(OSU.LastInaccuracyTime < OSU.CurTime) then
 			OSU.LastInaccuracyTime = OSU.CurTime + (12 + OSU.HP)
-			OSU.HealObjectsHit = 8 + math.floor(OSU.HP / 2)
+			OSU.HealObjectsHit = 10 + math.floor(OSU.HP / 2)
 		else
-			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime + (OSU.HP / 2) + 6
-			OSU.HealObjectsHit = OSU.HealObjectsHit + math.floor(OSU.HP * 0.33)
+			OSU.LastInaccuracyTime = OSU.LastInaccuracyTime + (OSU.HP / 2) + 9
+			OSU.HealObjectsHit = OSU.HealObjectsHit + math.floor(OSU.HP * 0.5) + 4
 		end
 		OSU.HealAccuracy = 1
 		OSU.HealRating = 0

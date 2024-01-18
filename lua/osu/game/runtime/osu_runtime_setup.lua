@@ -123,6 +123,29 @@ function OSU:GetManiaObjectType(bitindex)
 	end
 end
 
+local exec = false
+function OSU:ReloadRanking()
+	if(!exec) then return end
+	if(!IsValid(OSU.PlayFieldLayer)) then return end
+	OSU.PlayFieldLayer.Leaderboard:Clear()
+	local gap = ScreenScale(1)
+	local w, h = OSU.PlayFieldLayer.Leaderboard:GetWide(), (OSU.PlayFieldLayer.Leaderboard:GetTall() / 6.5) - gap
+	for k,v in next, OSU.InGameLeaderboard do
+		if(k > 50) then
+			continue
+		end
+		local vBase = OSU.PlayFieldLayer.Leaderboard:Add("DFrame")
+			vBase:SetDraggable(false)
+			vBase:SetTitle("")
+			vBase:ShowCloseButton(false)
+			vBase:SetSize(w, h)
+			vBase.Paint = function()
+				draw.RoundedBox(0, 0, 0, w, h, Color(100, 100, 255, 150))
+			end
+			vBase:SetY((k - 1) * (h + gap))
+	end
+end
+
 function OSU:PickSampleSet(sample)
 	if(sample == "Normal") then
 		return "normal"
@@ -180,7 +203,51 @@ local math_rad = math.rad
 local math_cos = math.cos
 local math_sin = math.sin
 local math_abs = math.abs
+local math_mod = math.mod
+local math_Round = math.Round
 local math_distance = math.Distance
+local util_Base64Encode = util.Base64Encode
+function OSU:InitHTMLAudio(audiopath, html)
+	local b = file.Read(audiopath, "GAME")
+	if(b == nil) then return false end
+	b = util_Base64Encode(b, true)
+	local chunk = {}
+	local chunk_size = 150000
+	local len = string_len(b)
+	local remain = math_mod(len, chunk_size)
+
+	if(len < chunk_size) then
+		table_insert(chunk, b)
+	else
+		local t = math_Round((len / chunk_size) + 0.5)
+		for i = 1, t, 1 do
+			local _end = (i * chunk_size)
+			if(i == t) then
+				_end = len
+			end
+			local ctx = string_sub(b, 1 + (chunk_size * (i - 1)), _end)
+			table_insert(chunk, ctx)
+		end
+	end
+	html.OnDocumentReady = function(url)
+		for _, v in next, chunk do
+		   	html:Call([[
+				b64.push("]]..v..[[");
+			]])
+		end
+			html:Call([[
+				let _audio = document.getElementById("audioplayer");
+				for (var i = 0; i < b64.length; i++) {
+				  output = output + b64[i];
+				}
+				_audio.src = "data:audio/wav;base64,"+ output;
+				_audio.playbackRate = 1.5;
+				_audio.volume = 0.2;
+			]])
+		end
+	return true
+end
+
 local _stop = false
 function OSU:StartBeatmap(beatmap, details, id, replay)
 	if(OSU.CurrentMode != 0) then
@@ -223,6 +290,53 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		OSU.SliderMultiplier = 1
 		OSU.CurrentTableIndex = 1
 		OSU.CurrentTableIndex_Read = 1
+
+		if(OSU.DT || OSU.HT) then
+			OSU.PlayFieldLayer.SoundChannel = OSU.PlayFieldLayer:Add("DHTML")
+			OSU.PlayFieldLayer.SoundChannel:SetSize(1, 1)
+			OSU.PlayFieldLayer.SoundChannel.Paint = function() end
+			OSU.PlayFieldLayer.SoundChannel:SetAllowLua(true)
+			OSU.PlayFieldLayer.SoundChannel:SetHTML([[
+				<html> 
+					<body> 
+						<audio id = "audioplayer" controls="controls" autobuffer="autobuffer">
+						</audio>
+						<script>
+							var b64 = [];
+							var output = "";
+
+							function PlayAudio(vol, time) {
+								let _audio = document.getElementById("audioplayer");
+								_audio.play();
+								_audio.volume = vol;
+								console.log("RUNLUA:OSU:UpdateTimeOffs("+time+")");
+							}
+							function StopAudio() {
+								let _audio = document.getElementById("audioplayer");
+								_audio.play();
+							}
+							function SetTime() {
+								let _audio = document.getElementById("audioplayer");
+								console.log("RUNLUA:OSU.SoundChannel:SetTime("+_audio.currentTime+")");
+							}
+							function SetAudioTime(t) {
+								let _audio = document.getElementById("audioplayer");
+								_audio.currentTime = t;
+							}
+						</script>
+					</body> 
+				</html>
+				]])
+
+			if(!OSU:InitHTMLAudio(details["Audiopath"], OSU.PlayFieldLayer.SoundChannel)) then
+				OSU:ChangeScene(OSU_MENU_STATE_MAIN)
+				OSU.ShouldDrawFakeCursor = false
+				OSU:CenteredMessage("Failed to init Audio player!", 0.33)
+				OSU.SoundChannel:SetPlaybackRate(1)
+				OSU.PlayFieldLayer:Remove()
+				return
+			end
+		end
 	end	
 
 	OSU.OriginalSize = ScreenScale(54.4)
@@ -329,6 +443,11 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		OSU.HP = OSU.HP * 1.4
 		OSU.OD = math.Clamp(OSU.OD * 1.3, 0.1, 10)
 	end
+	if(OSU.DT) then
+		OSU.AR = OSU.AR * 1.1
+		OSU.BPM = details["BPM"] * 1.5
+	end
+
 	local __st = SysTime()
 	OSU.CurrentHitSound = "soft"
 	local apprTime = OSU:GetApprTime()
@@ -350,12 +469,12 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			for k,v in next, OSU.TimingPoints do
 				local mul = 1
 				if(OSU.HT) then
-					mul = 1.5
+					mul = 0.75
 				end
 				if(OSU.DT) then
-					mul = 0.5
+					mul = 1.5
 				end
-				v[1] = (v[1] * mul) + OSU.BeatmapTime
+				v[1] = (v[1] / mul) + OSU.BeatmapTime
 			end
 			for k,v in next, OSU.Objects do
 				v["time"] = OSU.BeatmapTime + v["time"] - apprTime
@@ -393,14 +512,8 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				local ret = string_explode(",", _ctx)
 				if(i == tps_start) then
 					OSU.BeatLength = tonumber(ret[2])
-					if(OSU.HT) then
-						OSU.BeatLength = OSU.BeatLength * 1.5
-					end
-					if(OSU.DT) then
-						OSU.BeatLength = OSU.BeatLength * 0.5
-					end
 				end
-				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
+				if(tonumber(ret[2]) == nil) then continue end
 				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
 				table_insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
 			end
@@ -428,10 +541,17 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 					end
 				end
 			end
+			local mul = 1
+			if(OSU.HT) then
+				mul = 0.75
+			end
+			if(OSU.DT) then
+				mul = 1.5
+			end
 			if(breakStart != 0 && breakEnd != 0) then
 				for i = breakStart, breakEnd, 1 do
 					local _bd = string_explode(",", ctx_[i])
-					table_insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000), OSU.BeatmapTime + (tonumber(_bd[3]) / 1000)})
+					table_insert(OSU.Breaks, {OSU.BeatmapTime + ((tonumber(_bd[2]) / 1000) / mul), OSU.BeatmapTime + ((tonumber(_bd[3]) / 1000) / mul)})
 				end
 			end
 		else
@@ -526,7 +646,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 					end
 					_repeat = tonumber(_repeat)
 					length = tonumber(length)
-					local ret_curves, realFollowPoint, outlinepoints = OSU:GetCurves(type, points, length)
+					local ret_curves, realFollowPoint = OSU:GetCurves(type, points, length)
 					table_insert(OSU.Objects, {
 						["otime"] = time,
 						["type"] = 2,
@@ -542,7 +662,6 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 						["edgesd"] = edgesound,
 						["spawned"] = false,
 						["newcombo"] = newcombo,
-						["outlinepoints"] = outlinepoints,
 					})
 				else -- Spinner
 					table_insert(OSU.Objects, {
@@ -551,8 +670,8 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 						["time"] = time,
 						["sound"] = hitsound,
 						["vec_2"] = osu_vec2t(_x, _y),
-						["killttime"] = (tonumber(ret[6]) / 1000) - apprTime,
-						["okilltime"] = (tonumber(ret[6]) / 1000) - apprTime,
+						["killttime"] = (tonumber(ret[6]) / 1000),
+						["okilltime"] = (tonumber(ret[6]) / 1000),
 						["spawned"] = false,
 					})
 				end
@@ -566,14 +685,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				local ret = string_explode(",", _ctx)
 				if(i == tps_start) then
 					OSU.BeatLength = tonumber(ret[2])
-					if(OSU.HT) then
-						OSU.BeatLength = OSU.BeatLength * 1.5
-					end
-					if(OSU.DT) then
-						OSU.BeatLength = OSU.BeatLength * 0.5
-					end
 				end
-				if(tonumber(ret[2]) == nil || tonumber(ret[2]) > 0) then continue end
 				if(tonumber(ret[1]) == nil || tonumber(ret[2]) == nil || tonumber(ret[3]) == nil || tonumber(ret[4]) == nil || tonumber(ret[8]) == nil) then continue end
 				table_insert(OSU.TimingPoints, {(tonumber(ret[1]) / 1000), tonumber(ret[2]), false, tonumber(ret[4]), tonumber(ret[8])})
 			end
@@ -589,15 +701,19 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			for k,v in next, OSU.TimingPoints do
 				local mul = 1
 				if(OSU.HT) then
-					mul = 1.5
+					mul = 0.75
 				end
 				if(OSU.DT) then
-					mul = 0.5
+					mul = 1.5
 				end
-				v[1] = (v[1] * mul) + OSU.BeatmapTime
+				v[1] = (v[1] / mul) + OSU.BeatmapTime
 			end
 			for k,v in next, OSU.Objects do
-				v["time"] = OSU.BeatmapTime + v["time"] - apprTime
+				if(v["type"] != 3) then
+					v["time"] = OSU.BeatmapTime + v["time"] - apprTime
+				else
+					v["time"] = OSU.BeatmapTime + v["time"]
+				end
 				if(v["type"] == 3) then
 					v["killttime"] = OSU.BeatmapTime + v["killttime"]
 				end
@@ -654,30 +770,42 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 					end
 				end
 			end
+			local mul = 1
+			if(OSU.HT) then
+				mul = 0.75
+			end
+			if(OSU.DT) then
+				mul = 1.5
+			end
 			if(breakStart != 0 && breakEnd != 0) then
 				for i = breakStart, breakEnd, 1 do
 					if(ctx[i] == nil) then continue end
 					local _bd = string_explode(",", ctx[i])
-					table_insert(OSU.Breaks, {OSU.BeatmapTime + (tonumber(_bd[2]) / 1000),OSU.BeatmapTime + (tonumber(_bd[3]) / 1000), false})
+					table_insert(OSU.Breaks, {OSU.BeatmapTime + ((tonumber(_bd[2]) / 1000) / mul), OSU.BeatmapTime + ((tonumber(_bd[3]) / 1000) / mul), false})
 				end
 			end
 		end
 	OSU.CircleRadius = ScreenScale(54.4 - 1.5 * OSU.CS)
 	local mul = 1
 	if(OSU.HT) then
-		mul = 1.5
+		mul = 0.75
 	end
 	if(OSU.DT) then
-		mul = 0.5
+		mul = 1.5
 	end
 	local _Size = OSU.CircleRadius / 2.25
 	local _Size2 = _Size * 0.875
 	local _SizeH = _Size * 0.5
 	
 	for k,v in next, OSU.Objects do
-		v["time"] = OSU.BeatmapTime + (v["otime"] * mul) - apprTime
+		if(v["type"] != 3) then
+			v["time"] = OSU.BeatmapTime + (v["otime"] / mul) - apprTime
+		else
+			v["time"] = OSU.BeatmapTime + (v["otime"] / mul)
+		end
 		if(v["type"] == 3) then
-			v["killttime"] = OSU.BeatmapTime + (v["okilltime"] * mul)
+			v["killttime"] = OSU.BeatmapTime + (v["okilltime"] / mul)
+		--[[
 		elseif(v["type"] == 2 && OSU.BetaSliders) then
 			local _w, _h = 0, 0
 			if(OSU.HR) then
@@ -716,17 +844,17 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				local n = v["outlinepoints"][x + 1]
 				local p1, p2 = Vector(y[3].x + math_sin(y[1]) * _Size2, y[3].y + math_cos(y[1]) * _Size2, 0), Vector(y[3].x + math_sin(y[2]) * _Size, y[3].y + math_cos(y[2]) * _Size, 0)
 				local skip = false
-				--[[
-				for _ = 1, x, 1 do
-					local d = v["followpoint"][_]
-					if(d == nil) then continue end
-					if(math_distance(d.x, d.y, p1.x, p1.y) > _SizeH && math_distance(d.x, d.y, p2.x, p2.y) > _SizeH) then continue end
-					skip = true
-				end
-				if(skip) then
-					continue
-				end
-				]]
+
+				--for _ = 1, x, 1 do
+					--local d = v["followpoint"][_]
+					--if(d == nil) then continue end
+					--if(math_distance(d.x, d.y, p1.x, p1.y) > _SizeH && math_distance(d.x, d.y, p2.x, p2.y) > _SizeH) then continue end
+					--skip = true
+				--end
+				--if(skip) then
+					--continue
+				--end
+
 				local poly1 = {
 					{x = math_abs((y[3].x + math_sin(y[1]) * _Size2) - _w), y = math_abs((y[3].y + math_cos(y[1]) * _Size2) - _h)},
 					{x = math_abs((n[3].x + math_sin(n[1]) * _Size2) - _w), y = math_abs((n[3].y + math_cos(n[1]) * _Size2) - _h)},
@@ -743,6 +871,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 				table_insert(polys, {poly1, poly2})
 			end
 			v["outlinepoints"] = polys
+			]]
 		end
 		if(k == 1) then
 			OSU.BeatmapStartTime = v["time"]
@@ -784,26 +913,38 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		falpha = 200
 	end
 	if(!IsValid(OSU.PlayFieldLayer)) then return end
+	OSU.PlayFieldLayer.Leaderboard = OSU.PlayFieldLayer:Add("DFrame")
+	OSU.PlayFieldLayer.Leaderboard:SetSize(ScrW() * 0.1, ScrH() * 0.45)
+	OSU.PlayFieldLayer.Leaderboard:SetY((ScrH() / 2) - (OSU.PlayFieldLayer.Leaderboard:GetTall() * 0.2))
+	OSU.PlayFieldLayer.Leaderboard:SetDraggable(false)
+	OSU.PlayFieldLayer.Leaderboard:SetTitle("")
+	OSU.PlayFieldLayer.Leaderboard:ShowCloseButton(false)
+	OSU.PlayFieldLayer.Leaderboard.Paint = function() end
+	OSU.PlayFieldLayer.Leaderboard.Think = function()
+		if(OSU.ReloadInGameLeaderboard) then
+			OSU:ReloadRanking()
+			OSU.ReloadInGameLeaderboard = false
+		end
+	end
 	OSU.PlayFieldLayer.Paint = function()
 		surface.SetMaterial(OSU.FollowPointTx["t"])
 		for _, t in next, OSU.FollowPointsTable do
 			for k,v in next, t do
-			-- pos, alpha, alpha++, end time, angle, st time
-			if(v[4] > OSU.CurTime) then
-				if(v[6] <= OSU.CurTime) then
-					v[2] = math.Clamp(v[2] + OSU:GetFixedValue(v[3]), 0, 255)
+				if(v[6] > OSU.CurTime) then
+					if(v[1] < OSU.CurTime) then
+						v[4] = math.Clamp(v[4] + OSU:GetFixedValue(v[2]), 0, 255)
+					end
+				else
+					v[4] = math.Clamp(v[4] - OSU:GetFixedValue(v[2]), 0, 255)
+					if(v[4] <= 0) then
+						table.remove(t, k)
+					end
 				end
-			else
-				if(v[7] <= OSU.CurTime) then
-					v[2] = math.Clamp(v[2] - OSU:GetFixedValue(v[3]), 0, 255)
-				end
-				if(v[2] <= 0) then
-					table.remove(OSU.FollowPointsTable[_], k)
-				end
+				surface.SetDrawColor(255, 255, 255, v[4])
+				surface.DrawTexturedRectRotated(v[3].x, v[3].y, OSU.FollowPointTx["w"], OSU.FollowPointTx["h"], v[5])
 			end
-
-			surface.SetDrawColor(255, 255, 255, v[2])
-			surface.DrawTexturedRectRotated(v[1].x, v[1].y, OSU.FollowPointTx["w"], OSU.FollowPointTx["h"], v[5])
+			if(#t <= 0) then
+				table.remove(OSU.FollowPointsTable, _)
 			end
 		end
 	end

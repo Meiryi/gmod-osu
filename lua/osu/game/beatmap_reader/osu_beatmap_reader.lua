@@ -26,6 +26,8 @@ function OSU:GetBeatmapDetails(ctx)
 		["Video"] = false,
 		["VideoFN"] = "NULL",
 		["VideoOffset"] = "0",
+		["BPMs"] = {},
+		["Audiopath"] = "",
 	}
 	local ctx = string.Explode("\n", ctx)
 	local bpm_processing = ""
@@ -136,6 +138,14 @@ function OSU:GetBeatmapDetails(ctx)
 		end
 	end
 	if(bpm_processing != "") then
+		for i = tps_start, tps_end, 1 do
+			local line = ctx[i]
+			local str = string.Explode(",", line)
+			if(str[2] == nil) then continue end
+			if(tonumber(str[2]) > 0) then
+				table.insert(details["BPMs"], 1 / tonumber(str[2]) * 1000 * 60)
+			end
+		end
 		local ret = string.Explode(",", bpm_processing)
 		local output = tonumber(ret[2])
 		local timegap = tonumber(ret[1])

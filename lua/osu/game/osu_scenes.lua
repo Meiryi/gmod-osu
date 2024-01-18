@@ -130,8 +130,6 @@ function OSU:ChangeScene(state)
 					["m"] = OSU.MISS,
 					["rID"] = rID,
 				}
-				local baseScore = (tmp["3"] * 300) + (tmp["1"] * 100) + (tmp["5"] * 50)
-				if(tmp["score"] < baseScore) then tmp["score"] = baseScore + 1 end
 				if(tmp["combo"] < 0) then tmp["combo"] = 1 end
 				if(tmp["score"] < 0) then tmp["score"] = 1 end
 				OSU:SubmitScore(tmp)

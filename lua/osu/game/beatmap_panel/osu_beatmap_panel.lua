@@ -235,6 +235,7 @@ function OSU:GetBeatmapBackground(maps, path)
 	return fullP
 end
 
+local scrollOffset = 0
 function OSU:RefreshBeatmapList(keyWord)
 	OSU.BeatmapPanels = {}
 	local hasinvalidmap = false
@@ -289,10 +290,14 @@ function OSU:RefreshBeatmapList(keyWord)
 			end
 		end
 		local pBase = OSU:CreateFrameScroll(OSU.BeatmapScrollPanel, OSU.BeatmapScrollPanel:GetWide(), ScreenScale(40), Color(0, 0, 0, 0))
+		pBase.ShouldSort = false
+		pBase.TargetMaps = 1
 		pBase.StrTitle = name[OSU.BeatmapNameType]
 		pBase.iAlpha = 0
 		pBase.pID = v
 		pBase.SubPanels = {}
+		pBase.StarRatings = {}
+		pBase.NextCheckTime = 0
 		pBase.Clicked = false
 		pBase.TargetHeight = pBase:GetTall()
 		local wide, height = pBase:GetWide(), pBase:GetTall()
@@ -308,6 +313,9 @@ function OSU:RefreshBeatmapList(keyWord)
 			if(keyCode == 107) then
 				OSU.NextClickTime = OSU.CurTime + 0.15
 				OSU:PlaySoundEffect(OSU.CurrentSkin["menu-freeplay-click"])
+				pBase.ShouldSort = true
+				pBase.TargetMaps = 1
+				pBase.StarRatings = {}
 				local _index = 0
 				OSU.CurrentBeatmapSet = name["BeatmapSetID"]
 				if(tonumber(name["BeatmapSetID"]) < 0) then
@@ -329,11 +337,13 @@ function OSU:RefreshBeatmapList(keyWord)
 					end
 					local ver, id, preview, mode = OSU:GetBeatmapVersion(_data, _path)
 					local datas = OSU:GetBeatmapDetails(_data)
+					datas["Audiopath"] = "data/"..string.Left(name["AudioFilename"], string.len(name["AudioFilename"]) - 1)
 					datas["Path"] = _path
 					datas["ID"] = id
 					datas["Title"] = name[OSU.BeatmapArtistType].." - "..name[OSU.BeatmapNameType].." ["..ver.."]"
 					datas["Mapper"] = name["Creator"]
 					local vBase = OSU:CreateFrame(pBase, 0, (_index * height), wide, height, Color(30, 101, 252,220), false)
+					vBase.TargetYAxis = _index * height
 					local StarSx = ScreenScale(8)
 					local StarSxBG = ScreenScale(4)
 					local supported = OSU:IsSupportedMode(tonumber(mode))
@@ -420,7 +430,22 @@ function OSU:RefreshBeatmapList(keyWord)
 					local _sx, _sy = OSU:GetTextSize("OSUBeatmapVersion", "Dummy Text")
 					Version:SetPos(bgmat_w + gap2x + iconsx, sy + _sy)
 					vBase.NextCheckTime = 0
+					vBase.DoSortIndex = function(idx, midx)
+						vBase.Sorted = true
+						vBase.TargetYAxis = (idx * height)
+						if(OSU.CurrentBeatmapID != id) then return end
+						OSU.CurrentScroll = OSU.BeatmapScrollPanel:GetVBar():GetScroll() - ((OSU.BeatmapScrollPanel:GetTall() / 2) - ((pBase:GetY() + (vBase.TargetYAxis + vBase:GetTall() / 2)) + OSU.BeatmapScrollPanel:GetVBar():GetOffset()))
+					end
+					local animscl = 0.2
 					vBase.Think = function()
+						local _y = vBase:GetY()
+						if(_y != vBase.TargetYAxis) then
+							if(_y < vBase.TargetYAxis) then
+								vBase:SetY(math.Clamp(_y + math.max(OSU:GetFixedValue((vBase.TargetYAxis - _y) * animscl), 1), _y, vBase.TargetYAxis))
+							else
+								vBase:SetY(math.Clamp(_y - math.max(OSU:GetFixedValue((_y - vBase.TargetYAxis) * animscl), 1), _y, vBase.TargetYAxis))
+							end
+						end
 						local vDst = math.abs((OSU.BeatmapScrollPanel:GetTall() / 2) - ((pBase:GetY() + vBase:GetY()) + OSU.BeatmapScrollPanel:GetVBar():GetOffset())) * 0.1
 						vBase:DockMargin(math.Clamp(vDst, 0, ScreenScale(60)), 0, 0, -1)
 						vBase:SetX(math.Clamp(vDst, 0, ScreenScale(60)), 0)
@@ -442,10 +467,11 @@ function OSU:RefreshBeatmapList(keyWord)
 								local _base = OSU.MapDifficulties[tonumber(name["BeatmapSetID"])]
 								if(_base != nil) then
 									if(_base[id] != nil) then
-										datas["Stars"] = math.Round(_base[id], 2)
+										datas["Stars"] = math.Round(_base[id], 2) + 0.001
 										if(OSU.CurrentBeatmapID == id && OSU.BeatmapDetailsTab.UpdateRating != nil) then
 											OSU.BeatmapDetailsTab.UpdateRating(datas)
 										end
+										table.insert(pBase.StarRatings, {tonumber(datas["Stars"]), vBase})
 									end
 								end
 							end
@@ -458,6 +484,9 @@ function OSU:RefreshBeatmapList(keyWord)
 					end
 					function vBase:OnMousePressed(keyCode, at)
 						if(OSU.NextClickTime > OSU.CurTime && at == nil) then return end
+						if(vBase.Sorted) then
+							OSU.CurrentScroll = OSU.BeatmapScrollPanel:GetVBar():GetScroll() - ((OSU.BeatmapScrollPanel:GetTall() / 2) - ((pBase:GetY() + (vBase:GetY() + vBase:GetTall() / 2)) + OSU.BeatmapScrollPanel:GetVBar():GetOffset()))
+						end
 						local aStr = "data/"..string.Left(name["AudioFilename"], string.len(name["AudioFilename"]) - 1)
 						if(keyCode != 107) then return end
 						OSU.CurrentMode = tonumber(mode)
@@ -551,11 +580,27 @@ function OSU:RefreshBeatmapList(keyWord)
 		pBase.Think = function()
 			local _w, _h = pBase:GetWide(), pBase:GetTall()
 			if(OSU.CurrentBeatmapSet == name["BeatmapSetID"]) then
+				--print(#pBase.StarRatings, pBase.TargetMaps)
 				pBase.Title:SetVisible(false)
 				pBase.Clicked = true
 				if(_h < pBase.TargetHeight) then
 					local smooth = math.abs(pBase.TargetHeight - _h) * 0.3
 					pBase:SetTall(math.Clamp(_h + math.max(OSU:GetFixedValue(smooth), 1), height, pBase.TargetHeight))
+				end
+				if(pBase.ShouldSort) then
+					if(pBase.NextCheckTime < OSU.CurTime) then
+						if(#pBase.StarRatings >= pBase.TargetMaps) then
+							table.SortByMember(pBase.StarRatings, 1, true)
+							for k,v in next, pBase.StarRatings do
+								if(!IsValid(v[2])) then
+									continue
+								end
+								v[2].DoSortIndex(k - 1, #pBase.StarRatings)
+							end
+							pBase.ShouldSort = false
+						end
+						pBase.NextCheckTime = OSU.CurTime + 0.1
+					end
 				end
 			else
 				pBase.Title:SetVisible(true)

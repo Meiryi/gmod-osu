@@ -860,6 +860,22 @@ function OSU:PrintBeatmapDetails(details)
 	if(IsValid(OSU.BeatmapDetailsTab)) then
 		OSU.BeatmapDetailsTab:Remove()
 	end
+	local bpmstr = details["BPM"]
+	if(#details["BPMs"] > 1) then
+		local lowestbpm = details["BPM"]
+		local highestbpm = details["BPM"]
+		for k,v in next, details["BPMs"] do
+			if(v < lowestbpm) then
+				lowestbpm = v
+			end
+			if(v > highestbpm) then
+				highestbpm = v
+			end
+		end
+		if(lowestbpm != highestbpm) then
+			bpmstr = math.Round(lowestbpm, 2).." - "..math.Round(highestbpm, 2)
+		end
+	end
 	OSU:SetNextBPM(details["BPM"])
 	OSU:FlashEffect(30, 100)
 	OSU.BeatmapDetailsTab = OSU.PlayMenuLayer:Add("DImage")
@@ -918,7 +934,7 @@ function OSU:PrintBeatmapDetails(details)
 		detail:SetSize(OSU.BeatmapDetailsTab:GetWide(), _tit)
 		detail:SetColor(Color(255, 255, 255))
 		detail:SetFont("OSUBeatmapDetails_TOP")
-		detail:SetText(OSU:LookupTranslate("#BMLength")..": "..OSU:SecondsToMin(details["Length"]).."  BPM: "..details["BPM"].."  "..OSU:LookupTranslate("#BMObjects")..": "..details["Objects"])
+		detail:SetText(OSU:LookupTranslate("#BMLength")..": "..OSU:SecondsToMin(details["Length"]).."  BPM: "..bpmstr.."  "..OSU:LookupTranslate("#BMObjects")..": "..details["Objects"])
 		detail.iAlpha = 0
 		detail.Think = function()
 			detail:SetColor(Color(255 ,255, 255, detail.iAlpha))
@@ -954,7 +970,7 @@ function OSU:PrintBeatmapDetails(details)
 		difficulty:SetSize(OSU.BeatmapDetailsTab:GetWide(), _tit)
 		difficulty:SetColor(Color(255, 255, 255))
 		difficulty:SetFont("OSUBeatmapDifficulty_TOP")
-		difficulty:SetText(tx..details["CS"].."  AR: "..details["AR"].."  OD: "..details["OD"].."  HP: "..details["HP"].."  Star Rating: "..details["Stars"])
+		difficulty:SetText(tx..details["CS"].."  AR: "..details["AR"].."  OD: "..details["OD"].."  HP: "..details["HP"].."  Star Rating: "..math.Round(details["Stars"], 2))
 		difficulty.iAlpha = 0
 		difficulty.Think = function()
 			difficulty:SetColor(Color(255 ,255, 255, difficulty.iAlpha))
@@ -963,7 +979,7 @@ function OSU:PrintBeatmapDetails(details)
 			end
 		end
 		function OSU.BeatmapDetailsTab.UpdateRating(details)
-			difficulty:SetText("CS: "..details["CS"].."  AR: "..details["AR"].."  OD: "..details["OD"].."  HP: "..details["HP"].."  Star Rating: "..details["Stars"])
+			difficulty:SetText("CS: "..details["CS"].."  AR: "..details["AR"].."  OD: "..details["OD"].."  HP: "..details["HP"].."  Star Rating: "..math.Round(details["Stars"], 2))
 		end
 end
 
@@ -996,6 +1012,10 @@ function OSU:CreateModsButton(parent, texture, x, y, w, h, opt, opt_off, func)
 	local ext = 0
 	local centX, centY = _w / 2, _h / 2
 	local clr = 0
+	local nofunc = false
+	if(func != nil) then
+		nofunc = true
+	end
 	local base = parent:Add("DPanel")
 		base:SetSize(_w, _h)
 		base:SetPos(x - _w / 2, y - _h / 2)
@@ -1008,6 +1028,9 @@ function OSU:CreateModsButton(parent, texture, x, y, w, h, opt, opt_off, func)
 				rotate = math.Clamp(rotate + OSU:GetFixedValue(4), -12, 0)
 				ext = math.Clamp(ext - OSU:GetFixedValue(5), 0, max)
 				clr = math.Clamp(clr - OSU:GetFixedValue(10), 230, 255)
+			end
+			if(nofunc) then
+				clr = 100
 			end
 			local __w, __h = w + ext, h + ext
 			surface.SetDrawColor(clr, clr, clr, 255)

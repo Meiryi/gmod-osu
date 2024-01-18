@@ -21,6 +21,9 @@ function OSU:CalcScoreMul()
 			mul = mul - 0.5
 		end
 	end
+	if(OSU.RL || OSU.AP) then
+		mul = 0.1
+	end
 	if(OSU.HR) then
 		mul = mul + 0.06
 	end
@@ -35,6 +38,9 @@ function OSU:CalcScoreMul()
 	end
 	if(OSU.FL) then
 		mul = mul + 0.12
+	end
+	if(OSU.SO) then
+		mul = mul * 0.9
 	end
 	OSU.ScoreMul = mul
 end
@@ -100,10 +106,14 @@ function OSU:SetupModsPanel()
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "SD", {"NF"}, nil)
 	cX2 = cX2 + nextX
 	local texture = Material(OSU.CurrentSkin["selection-mod-doubletime"], "noclamp smooth")
+	--[[
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "DT", {"HT"}, function()
 		OSU:PlaySoundEffect(OSU.CurrentSkin["check-off"])
 		OSU:CenteredMessage("This mod is still WIP!")
 	end)
+	]]
+	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "DT", {"HT"}, nil)
+
 	cX2 = cX2 + nextX
 	local texture = Material(OSU.CurrentSkin["selection-mod-hidden"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "HD", {}, nil)
@@ -111,8 +121,17 @@ function OSU:SetupModsPanel()
 	local texture = Material(OSU.CurrentSkin["selection-mod-flashlight"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "FL", {}, nil)
 
+	local texture = Material(OSU.CurrentSkin["selection-mod-relax"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, speX + cX3, speY, w, h, "RL", {"AP", "AutoNotes"}, nil)
+	cX3 = cX3 + nextX
+	local texture = Material(OSU.CurrentSkin["selection-mod-relax2"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, speX + cX3, speY, w, h, "AP", {"RL", "SO", "AutoNotes"}, nil)
+	cX3 = cX3 + nextX
+	local texture = Material(OSU.CurrentSkin["selection-mod-spunout"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, speX + cX3, speY, w, h, "SO", {"AP", "AutoNotes"}, nil)
+	cX3 = cX3 + nextX
 	local texture = Material(OSU.CurrentSkin["selection-mod-autoplay"], "noclamp smooth")
-	OSU:CreateModsButton(parent, texture, speX + cX3, speY, w, h, "AutoNotes", {}, nil)
+	OSU:CreateModsButton(parent, texture, speX + cX3, speY, w, h, "AutoNotes", {"RL", "AP", "SO"}, nil)
 
 	OSU:CreateBackButton(OSU.ModePanel, OSU_MENU_STATE_MAIN, true, function()
 		if(IsValid(OSU.PlayMenuLayer)) then

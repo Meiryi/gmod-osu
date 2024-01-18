@@ -32,7 +32,7 @@ function OSU:DownloadBeatmapSet(_SetID)
 		success = function(code, body, headers)
 			OSU.WebDownloadingTable[_SetID] = nil
 			if(string.find(body, "server_error")) then
-
+				OSU:CenteredMessage("Internal server error", 0.33)
 			else
 				file.Write("osu!/download/".._SetID..".dat", body)
 				OSU:SideNotify("Beatmap set ".._SetID.."\n"..OSU:LookupTranslate("#DLDownloadFinished"), 2)

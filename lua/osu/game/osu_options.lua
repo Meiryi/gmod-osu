@@ -23,6 +23,12 @@ OSU.FadeMaterial = Material("osu/internal/fade.png")
 OSU.ShouldWrite = false
 OSU.WriteDelay = 0
 
+OSU.Translators = {
+	["ja"] = "Daypark",
+	["ru"] = "Berry",
+	["tr"] = "Matt",
+}
+
 OSU.ConfigTable = {
 	"BeatmapNameType",
 	"BeatmapArtistType",
@@ -76,6 +82,7 @@ OSU.ConfigTable = {
 	"LoadSkinImage",
 	"Load2x",
 	"BetaSliders",
+	"RevSnakingSliders",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -129,6 +136,7 @@ OSU.CursorTrailSize = 8
 OSU.RGBRate = 22.5
 OSU.Load2x = false
 OSU.BetaSliders = false
+OSU.RevSnakingSliders = true
 OSU.ManiaKeys = {
 	[1] = 29,	
 	[2] = 14,	
@@ -144,7 +152,7 @@ OSU.ManiaKeys = {
 
 OSU.MainVersion = "1.2.2"
 OSU.AvatarVersion = "1.0.1"
-OSU.BeatmapCacheVersion = "1.3.3"
+OSU.BeatmapCacheVersion = "1.3.4"
 
 function OSU:RestartGame()
 	local fade = OSU:CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
@@ -1079,13 +1087,14 @@ function OSU:OpenOptionsMenu()
 		["繁體中文"] = "zh-TW",
 		["日本語"] = "ja",
 		["Русский"] = "ru",
+		["Türkçe"] = "tr",
 	}
 	OSU:Opt_CreateDropDown(OSU:LookupTranslate("#STDisplayLanguage"), "Trans", langTable)
-	if(OSU.Trans == "ja") then
-		OSU:CreateString("*Special thanks to Daypark for the translate*", OSU.OptPink)
-	end
-	if(OSU.Trans == "ru") then
-		OSU:CreateString("*Special thanks to berry for the translate*", OSU.OptPink)
+	if(OSU.Trans != "en" && OSU.Trans != "zh-TW") then
+		local name = OSU.Translators[OSU.Trans]
+		if(name != nil) then
+			OSU:CreateString("*Special thanks to "..name.." for the translate*", OSU.OptPink)
+		end
 	end
 	OSU:CreateString("*Add Meiryi on steam if you want to translate it", Color(255, 255, 255, 255)) 
 	OSU:CreateString("to other language*", Color(255, 255, 255, 255))
@@ -1164,7 +1173,7 @@ function OSU:OpenOptionsMenu()
 		skinTable[v] = v
 	end
 	OSU:Opt_CreateDropDown("Skin > ", "CurrentSkinPath", skinTable)
-	OSU:Opt_CreateButton(OSU:LookupTranslate("#STTestSlider"), "BetaSliders")
+	--OSU:Opt_CreateButton(OSU:LookupTranslate("#STTestSlider"), "BetaSliders")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STLoadSkinImage"), "LoadSkinImage")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrail"), "CursorTrail")
 	OSU:Opt_CreateButton(OSU:LookupTranslate("#STCursorTrailGap"), "FillCursorGap")

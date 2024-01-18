@@ -110,6 +110,11 @@ function OSU:CreateSpinner(vec_2t, sound, zp, killtime)
 			if(_add == math.huge) then
 				_add = 0
 			end
+			if(OSU.SO) then
+				OSU.RPM = 239
+				_add = 2.39
+				OSU.Health = math.Clamp(OSU.Health + 0.125, 0, 100)
+			end
 			if(OSU.AutoNotes) then
 				OSU.RPM = 477
 				_add = 4.77

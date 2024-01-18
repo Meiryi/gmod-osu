@@ -13,21 +13,54 @@
 
 local math_atan2 = math.atan2
 local math_deg = math.deg
+local math_sin = math.sin
+local math_cos = math.cos
 local math_Clamp = math.Clamp
 local math_mod = math.mod
 local math_Distance = math.Distance
 local math_floor = math.floor
 local math_abs = math.abs
+local math_rad = math.rad
 local math_max = math.max
+local table_remove = table.remove
+local table_insert = table.insert
 local surface_SetMaterial = surface.SetMaterial
 local surface_SetDrawColor = surface.SetDrawColor
+local surface_DrawPoly = surface.DrawPoly
 local surface_DrawTexturedRect = surface.DrawTexturedRect
 local surface_DrawTexturedRectRotated = surface.DrawTexturedRectRotated
-local draw_notexture = draw.NoTexture
-function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, len, _amount, sound, zp, stype, ___index, edgesd, comboidx, outlinepoints)
+__BlurTexture = Material("pp/blurscreen")
+draw_NoTexture = draw.NoTexture
+render_ClearStencil = render.ClearStencil
+render_SetStencilEnable = render.SetStencilEnable
+render_SetStencilTestMask = render.SetStencilTestMask
+render_SetStencilWriteMask = render.SetStencilWriteMask
+render_SetStencilReferenceValue = render.SetStencilReferenceValue
+render_SetStencilCompareFunction = render.SetStencilCompareFunction
+render_SetStencilFailOperation = render.SetStencilFailOperation
+render_SetStencilZFailOperation = render.SetStencilZFailOperation
+render_SetStencilEnable = render.SetStencilEnable
+surface_DrawRect = surface.DrawRect
+
+osu_circle_seg = 16
+function OSU:BuildInnerCircle(vec_2t, radius)
+	local c = {}
+	table_insert(c, {x = vec_2t.x, y = vec_2t.y})
+	for i = 0, osu_circle_seg do
+		local a = math_rad((i / osu_circle_seg) * -360)
+		table_insert(c, {x = vec_2t.x + math_sin(a) * radius, y = vec_2t.y + math_cos(a) * radius})
+	end
+	local a = math_rad(0)
+	table_insert(c, {x = vec_2t.x + math_sin(a) * radius, y = vec_2t.y + math_cos(a) * radius})
+	return c
+end
+
+function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, len, _amount, sound, zp, stype, ___index, edgesd, comboidx)
 	-- https://osu.ppy.sh/wiki/en/Beatmap/Circle_size
 	local radius = OSU.CircleRadius
-	local radius2 = radius * 0.9
+	local radius2 = radius * 0.915
+	local ___offs = radius - radius2
+	local holerad = (radius2 / 2) - ___offs
 	local offs = radius / 2
 	local offs2 = radius2 / 2
 	local dec, fadein, ms = OSU:GetApproachRate(radius)
@@ -62,8 +95,8 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	local traced = false
 	local traceTime = OSU.CurTime + (ms / 5)
 	local target = OSU.Objects[2]
+	local innerCircle = {}
 	local sdtmp = edgesd
-	local outlineIndex = 0
 	if(OSU.ReplayMode) then
 		if(OSU.CurrentReplayData.HitData[___index] != nil) then
 			_roffset = OSU.CurrentReplayData.HitData[___index]
@@ -83,27 +116,33 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	area.Finished = false
 	area.SizeScale = rh / rw
 	area.Removed = false
-	if(!OSU.AutoNotes) then
+	if(!OSU.AutoNotes && !OSU.AP) then
 		area.Removed = true
 	end
 	if(OSU.SnakingSliders) then
 		area.MaxDrawIndex = 1
 	else
 		area.MaxDrawIndex = #followpoint
-		outlineIndex = #outlinepoints
 	end
 	local apprTime = OSU:GetApprTime()
 	local snakingRate = #followpoint / (22 * apprTime)
-	local snakingRate2 = #outlinepoints / (22 * apprTime)
 	area.Paint = function()
 	if(OSU.SnakingSliders) then
 		area.MaxDrawIndex = math_Clamp(area.MaxDrawIndex + OSU:GetFixedValue(snakingRate), 1, #followpoint)
-		outlineIndex = math_Clamp(outlineIndex + OSU:GetFixedValue(snakingRate2), 1, #outlinepoints)
 	end
 	local beat = OSU.SliderBeat * 1.5
 	local completeTime = len / (OSU.SliderMultiplier * 100 * OSU.SliderVelocity) * OSU.BeatLength -- ms
 	completeTime = (completeTime / 1000)
+	if(OSU.HT) then
+		completeTime = completeTime / 0.75
+	end
+	if(OSU.DT) then
+		completeTime = completeTime / 1.5
+	end
 	ctime = basetime + completeTime
+	if(_amount > 1) then
+		traceTime = OSU.CurTime + completeTime * 0.75
+	end
 	if(traceTime < OSU.CurTime && !traced) then
 		if(target != nil) then
 			if(!target["newcombo"]) then
@@ -115,61 +154,53 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				end
 				local ang = math_deg(math_atan2(followpoint[idx].y - pos.y, pos.x - followpoint[idx].x))
 				local dst = math_Distance(followpoint[idx].x, followpoint[idx].y, pos.x, pos.y)
-				local __end = time + (OSU.AppearTime / 2)
-				local _trend = time
-				if(dst > radius) then
-					OSU:TraceFollowPoint(followpoint[idx], pos, ang, (target["time"] - (ms / 5)) - OSU.CurTime, dst, target["time"] + ms / 2)
+				if(dst > radius * 1.5) then
+					--from, to, angle, time, dst, _end
+					OSU:TraceFollowPoint(followpoint[idx], pos, ang, OSU.CurTime, target["time"] + ms / 1.4, dst, true)
 				end
 			end
 		end
 		traced = true
 	end
 	local incrate = #realfollowpoint / (60 * completeTime)
-		if(!OSU.SingleColorSlider) then
-			--[[
-			surface_SetDrawColor(Color(255, 255, 255, area.iAlpha))
+		--surface_SetDrawColor(math_Clamp((_clr.r) + beat, 0, 255), math_Clamp((_clr.g ) + beat, 0, 255), math_Clamp((_clr.b) + beat, 0, 255), area.iAlpha)
+		surface_SetDrawColor(255, 255, 255, area.iAlpha * 0.8)
+
+		render_ClearStencil()
+		render_SetStencilEnable(true)
+			render_SetStencilTestMask(0xFF)
+			render_SetStencilWriteMask(0xFF)
+			render_SetStencilReferenceValue(0x01)
+
+			render_SetStencilCompareFunction(STENCIL_NEVER)
+			render_SetStencilFailOperation(STENCIL_REPLACE)
+			render_SetStencilZFailOperation(STENCIL_REPLACE)
+			draw_NoTexture()
+			for k,v in next, innerCircle do
+				surface_DrawPoly(v)
+			end
+			render_SetStencilCompareFunction(STENCIL_EQUAL)
+			render_SetStencilFailOperation(STENCIL_KEEP)
+			render_SetStencilZFailOperation(STENCIL_KEEP)
+
+			surface_SetDrawColor(math_Clamp((_clr.r) + beat, 0, 255), math_Clamp((_clr.g ) + beat, 0, 255), math_Clamp((_clr.b) + beat, 0, 255), area.iAlpha * 0.1)
+			surface_DrawRect(0, 0, ScrW(), ScrH())
+			
+			render_SetStencilCompareFunction(STENCIL_GREATER)
+			render_SetStencilFailOperation(STENCIL_KEEP)
+			render_SetStencilZFailOperation(STENCIL_KEEP)
+			surface_SetDrawColor(255, 255, 255, area.iAlpha * 0.8)
+			surface_SetMaterial(OSU.SliderInnerTexture)
 			for i = 1, area.MaxDrawIndex, 1 do
 				local v = followpoint[i]
+				if(v == nil) then continue end
+				if(innerCircle[i] == nil) then
+					innerCircle[i] = OSU:BuildInnerCircle(Vector(v.x, v.y), holerad)
+				end
 				surface_DrawTexturedRect(v.x - offs, v.y - offs, radius, radius)
-				surface_SetDrawColor(255, 255, 255, area.iAlpha)
 			end
-			]]
-			if(OSU.BetaSliders) then
-				surface_SetMaterial(OSU.SliderInnerTexture)
-				surface_SetDrawColor(math_Clamp((_clr.r * 0.7) + beat, 0, 255), math_Clamp((_clr.g * 0.7) + beat, 0, 255), math_Clamp((_clr.b * 0.7) + beat, 0, 255), area.iAlpha * 0.1)
-				for i = 1, area.MaxDrawIndex, 1 do
-					local v = followpoint[i]
-					surface_DrawTexturedRect(v.x - offs2, v.y - offs2, radius2, radius2)
-				end
-				draw_notexture()
-				surface_SetDrawColor(255, 255, 255, area.iAlpha)
-				for k,v in next, outlinepoints do
-					if(k > outlineIndex) then continue end
-					for _, p in next, v do
-						surface.DrawPoly(p)
-					end
-				end
-			else
-				surface_SetMaterial(OSU.SliderInnerTexture)
-				surface_SetDrawColor(255, 255, 255, area.iAlpha)
-				for i = 1, area.MaxDrawIndex, 1 do
-					local v = followpoint[i]
-					surface_DrawTexturedRect(v.x - offs, v.y - offs, radius, radius)
-				end
-				surface_SetDrawColor(math_Clamp((_clr.r * 0.7) + beat, 0, 255), math_Clamp((_clr.g * 0.7) + beat, 0, 255), math_Clamp((_clr.b * 0.7) + beat, 0, 255), area.iAlpha)
-				for i = 1, area.MaxDrawIndex, 1 do
-					local v = followpoint[i]
-					surface_DrawTexturedRect(v.x - offs2, v.y - offs2, radius2, radius2)
-				end
-			end
-		else
-			for i = 1, area.MaxDrawIndex, 1 do
-				local v = followpoint[i]
-				surface_DrawTexturedRect(v.x - offs, v.y - offs, radius, radius)
-				surface_SetDrawColor(_clr.r, _clr.g, _clr.b, area.iAlpha)
-			end
-		end
-		surface_SetDrawColor(Color(255, 0, 255, 255))
+			render_SetStencilEnable(false)
+
 		if(OSU.DevDisplaySliderConnectPoints) then
 			for k,v in next, connectpoints do
 				if(k == #connectpoints) then continue end
@@ -297,7 +328,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				area.iFollowAlpha = math_Clamp(area.iFollowAlpha + OSU:GetFixedValue(20), 0, 255)
 				area.iFollowSize = math_Clamp(area.iFollowSize + OSU:GetFixedValue(5), radius, radius * 1.5)
 			end
-			if(OSU.AutoNotes) then
+			if(OSU.AutoNotes || OSU.AP) then
 				if(OSU.CurrentTarget == area) then
 					input.SetCursorPos(x, y)
 				else

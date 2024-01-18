@@ -65,6 +65,10 @@ function OSU:GetSampleSet(sample)
 	end
 end
 
+function OSU:UpdateTimeOffs(t)
+	--print(OSU.CurTime - t)
+end
+
 function OSU:RunTime()
 	if(!IsValid(OSU.PlayFieldLayer)) then
 		local color = OSU.Background:GetImageColor()
@@ -78,14 +82,12 @@ function OSU:RunTime()
 	OSU.Background:SetImageColor(Color(cv, cv, cv, 255))
 	if(OSU.BeatmapTime - OSU.AppearTime > OSU.CurTime) then return end
 	if(!OSU.MusicStarted && OSU.BeatmapTime < OSU.CurTime) then
-		if(OSU.HT) then
-			OSU.SoundChannel:SetPlaybackRate(0.5)
+		if(OSU.HT || OSU.DT) then
+			OSU.PlayFieldLayer.SoundChannel:Call("PlayAudio("..(OSU.MusicVolume * 0.2)..", "..(OSU.CurTime)..")")
+		else
+			OSU.SoundChannel:Play()
 		end
-		if(OSU.DT) then
-			OSU.SoundChannel:SetPlaybackRate(1.5)
-		end
-		OSU.SoundChannel:Play()
-		if(OSU.BeatmapStartTime - OSU.BeatmapTime >= 3) then 
+		if(OSU.BeatmapStartTime - OSU.BeatmapTime >= 3 && !OSU.DT && !OSU.HT) then 
 			OSU.SkipButton = OSU:CreateSkipButton()
 		end
 		OSU.MusicStarted = true
@@ -120,7 +122,19 @@ function OSU:RunTime()
 		else
 			if(v[1] <= OSU.CurTime && !v[3]) then
 				OSU.CurrentHitSound = OSU:GetSampleSet(v[4])
-				OSU.SliderVelocity = 1 / (math.abs(tonumber(v[2])) / 100)
+				if(v[2] < 0) then
+					OSU.SliderVelocity = 1 / (math.abs(tonumber(v[2])) / 100)
+				else
+					local mul = 1
+					if(OSU.DT) then
+						mul = 1.5
+					end
+					if(OSU.HT) then
+						mul = 0.75
+					end
+					OSU.BeatLength = tonumber(v[2])
+					OSU.BPM = 1 / (tonumber(v[2]) / mul) * 1000 * 60
+				end
 				if(v[5] == 1 && !OSU.DisableFlash) then
 					if(!OSU.KiaiTime) then
 						OSU.BackgroundDimInc = 75
@@ -187,12 +201,18 @@ function OSU:RunTime()
 	else
 		if(OSU.BeatmapStartTime < OSU.CurTime && #OSU.Objects > 0) then
 			local drain = OSU.HP * 0.02
+			if(OSU.DT) then
+				drain = drain * 1.35
+			end
 			if(OSU.Health <= 33) then
 				drain = drain * math.Clamp(OSU.Health / 100, 0.7, 1)
 			end
 			OSU.Health = math.Clamp(OSU.Health - OSU:GetFixedValue(drain), 0, 100)
 		end
-		if(OSU.Health <= 0 && OSU.PlayFieldYOffs <= 0 && !OSU.NF && !OSU.ReplayMode) then
+		if(OSU.Health <= 0 && OSU.PlayFieldYOffs <= 0 && !OSU.NF && !OSU.ReplayMode && !OSU.GameEnded) then
+			if(IsValid(OSU.PlayFieldLayer.SoundChannel)) then
+				OSU.PlayFieldLayer.SoundChannel:Remove()
+			end
 			OSU:SetupFailPanel()
 		end
 		OSU.GlobalAlphaMult = math.Clamp(OSU.GlobalAlphaMult + OSU:GetFixedValue(0.035), 0, 1)
@@ -206,12 +226,27 @@ function OSU:RunTime()
 		OSU.GameEnded = true
 		OSU.ShouldDrawFakeCursor = false
 	else
-		if(input.IsKeyDown(70) && !OSU.GameEnded) then
+		if(input.IsKeyDown(70) && !OSU.GameEnded && !IsValid(OSU.FailPanel)) then
+			if(IsValid(OSU.PlayFieldLayer.SoundChannel)) then
+				OSU.PlayFieldLayer.SoundChannel:Call("SetTime()")
+			end
 			OSU.SoundChannel:SetPlaybackRate(1)
 			OSU.GlobalAlphaMult = 1
 			OSU:ChangeScene(OSU_MENU_STATE_MAIN)
 			OSU.GameEnded = true
 			OSU.ShouldDrawFakeCursor = false
+			if(OSU.ReplayMode) then
+				OSU.EZ = false
+				OSU.NF = false
+				OSU.HR = false
+				OSU.SD = false
+				OSU.HD = false
+				OSU.FL = false
+				OSU.RL = false
+				OSU.AP = false
+				OSU.SO = false
+				OSU.ScoreMul = 1
+			end
 		end
 	end
 
@@ -274,7 +309,7 @@ local Key1Down = false
 local Key2Down = false
 local GlobalKeyDown = false
 hook.Add("Think", "OSU_RunTime", function()
-	if(IsValid(OSU.PlayFieldLayer) && OSU.CurTime > OSU.BeatmapStartTime && !OSU.ReplayMode) then
+	if(IsValid(OSU.PlayFieldLayer) && OSU.CurTime > OSU.BeatmapStartTime && !OSU.ReplayMode && !OSU.RL) then
 		local time = OSU.CurTime - OSU.BeatmapTime
 		if(OSU:IsKeyDown()) then
 			if(!GlobalKeyDown) then
@@ -288,10 +323,21 @@ hook.Add("Think", "OSU_RunTime", function()
 			end
 		end
 	end
+	if(OSU.RL) then
+		OSU.KeyDown = true
+	end
 	local vPanel = vgui.GetHoveredPanel()
 	if(!IsValid(vPanel)) then return end
 	if(!vPanel.IsHitObject) then return end
 	if(OSU.ReplayMode) then return end
+	if(OSU.RL) then
+		if(OSU.CurTime > vPanel.ptime || (vPanel.ptime - OSU.CurTime) <= (OSU.HIT300Time * 0.55)) then
+			if(vPanel.Click != nil) then
+				vPanel.Click()
+			end
+		end
+		return
+	end
 	if(!OSU.DisableMouse) then
 		if(input.IsMouseDown(MOUSE_LEFT)) then
 			OSU.KeyDown = true
