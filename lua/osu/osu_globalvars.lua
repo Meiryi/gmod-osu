@@ -122,6 +122,33 @@ OSU.GlobalAlphaMult = 1
 OSU.MenuAlphaMul = 1
 OSU.MouseVecTemp = Vector(0, 0, 0)
 
+OSU.PP_Points = 0
+OSU.PP_AvgDst = 60
+OSU.PP_AimChunk = 0
+OSU.PP_SpeedChunk = 0
+OSU.PP_AimAvg = 0
+OSU.PP_SpeedAvg = 0
+OSU.PP_AimAvgSum = 0
+OSU.PP_SpeedAvgSum = 0
+OSU.PP_DiffSampleCount = 0
+OSU.PP_DiffDstAvg = 0
+OSU.PP_DiffSpeedAvg = 0
+OSU.PP_DiffDstAvgSum = 0
+OSU.PP_DiffSpeedAvgSum = 0
+OSU.PP_AimVal = 0
+OSU.PP_SpeedVal = 0
+OSU.PP_AimSampledCount = 0
+OSU.PP_SpeedSampledCount = 0
+OSU.PP_BaseScore = 0
+OSU.PP_BaseSpeed = 0.155 -- Avg tapping speed
+OSU.PP_RecordInterval = 0
+OSU.PP_StartedDiff = 0
+OSU.PP_TotalDiff = 0
+OSU.PP_DiffSwitch = false
+
+OSU.PP_LastHitTime = 0
+OSU.PP_LastHitVector = Vector(0, 0, 0)
+
 function OSU:ChatPrint(_string)
 	LocalPlayer():ChatPrint("[osu!] ".._string)
 end

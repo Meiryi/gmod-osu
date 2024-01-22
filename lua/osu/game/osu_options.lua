@@ -83,6 +83,7 @@ OSU.ConfigTable = {
 	"Load2x",
 	"BetaSliders",
 	"RevSnakingSliders",
+	"DisplayPP",
 }
 
 OSU.Vec1 = Vector(0, 0, 0)
@@ -137,6 +138,7 @@ OSU.RGBRate = 22.5
 OSU.Load2x = false
 OSU.BetaSliders = false
 OSU.RevSnakingSliders = true
+OSU.DisplayPP = false
 OSU.ManiaKeys = {
 	[1] = 29,	
 	[2] = 14,	
@@ -152,7 +154,7 @@ OSU.ManiaKeys = {
 
 OSU.MainVersion = "1.2.2"
 OSU.AvatarVersion = "1.0.1"
-OSU.BeatmapCacheVersion = "1.3.4"
+OSU.BeatmapCacheVersion = "1.3.5"
 
 function OSU:RestartGame()
 	local fade = OSU:CreateFrame(nil, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 0), true)
@@ -1216,6 +1218,9 @@ function OSU:OpenOptionsMenu()
 	OSU:Opt_CreateClickButton("Reload all fonts", function()
 		OSU:InitFonts()
 	end)
+	OSU:Opt_InsertGap(ScreenScale(5))
+	OSU:CreateSubTitle("Peformance Points")
+	OSU:Opt_CreateButton("Display PP details", "DisplayPP")
 	OSU:Opt_InsertGap(ScreenScale(15))
 	OSU:Opt_CreateTopTitle("Gmod osu! by Meiryi", 0, ScreenScale(3), "OSUOptionDesc", OSU.OptPink)
 	OSU:Opt_CreateTopTitle("! Do not modify or reupload !", 0, ScreenScale(3), "OSUOptionDesc", Color(255, 55, 55, 255))

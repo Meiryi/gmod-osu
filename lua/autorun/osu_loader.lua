@@ -34,6 +34,7 @@ if(CLIENT) then
 	include("osu/game/osu_authorizator.lua")
 	include("osu/game/osu_rankingpanel.lua")
 	include("osu/game/osu_mods.lua")
+	include("osu/game/osu_performance.lua")
 
 	include("osu/game/replay/osu_replay_recorder.lua")
 	include("osu/game/replay/osu_replay_importer.lua")
@@ -104,6 +105,7 @@ if(SERVER) then
 	AddCSLuaFile("osu/game/osu_authorizator.lua")
 	AddCSLuaFile("osu/game/osu_rankingpanel.lua")
 	AddCSLuaFile("osu/game/osu_mods.lua")
+	AddCSLuaFile("osu/game/osu_performance.lua")
 
 	AddCSLuaFile("osu/game/replay/osu_replay_recorder.lua")
 	AddCSLuaFile("osu/game/replay/osu_replay_importer.lua")

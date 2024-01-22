@@ -41,7 +41,7 @@ function OSU:GetHitImageSize(type)
 	return osu_vec2t(w * scl, h * scl)
 end
 
-function OSU:CreateHitScore(vec_2t, type)
+function OSU:CreateHitScore(vec_2t, type, slider)
 	if(type == 1 && !OSU.PerfectHit) then return end
 	local vFadeOut = 0
 	local vTime = OSU.CurTime + 0.07
@@ -83,5 +83,5 @@ function OSU:CreateHitScore(vec_2t, type)
 			circle:SetY(vec_2t.y + yOffs - size_2t.y / 2)
 		end
 
-	OSU:RunHitObjectsCheck(type)
+	OSU:RunHitObjectsCheck(type, slider, vec_2t)
 end

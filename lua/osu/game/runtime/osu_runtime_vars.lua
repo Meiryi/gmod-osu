@@ -110,7 +110,7 @@ OSU.SliderVelocity = 1
 OSU.SliderTickRate = 1
 OSU.CurrentHitSound = "soft"
 OSU.BeatmapDefaultSet = "soft"
-
+OSU.PerformancePoints = 0
 OSU.AppearTime = 0
 OSU.RPM = 0
 OSU.LastDegree = 0

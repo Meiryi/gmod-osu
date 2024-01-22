@@ -111,7 +111,6 @@ function OSU:SetupResultPanel(name, fBack, func, date)
 	local _gap = ScreenScale(3)
 	innerFrame.Paint = function()
 		OSU:DrawStringAsMaterial(OSU.Score, innerFrame:GetWide() - (_w + (gapX * 2)), ih * 2.15, tsize, tgap, 255, false, false)
-		surface.SetDrawColor(255, 255, 255, 255)
 		surface.SetMaterial(_3m)
 		local yPos = 60
 		local diff = math.abs((ScreenScale(yPos) + _3h) - (ScreenScale(yPos) + th)) / 2

@@ -1319,16 +1319,15 @@ surface.CreateFont("OSUOverlayWarning", {
 local inactive = false
 local rotate_deg = 0
 local gap = ScreenScale(3)
-local samplefps = 15
-local sampled = 0
-local sampletime = 0
-local CTempedFrameTime = 0
 local CAlpha = 0
 local cursorTrails = {}
 local cursorLayer = {}
+local fpsTotal = 1
+local fpsSpikes = {}
+local fpsInterval = 0
+local fpsAvg = 60
+local fpslowpeak = 30
 local lastCursorPos = {x = 0, y = 0}
-local flSx = 10240
-local min = ScrW() * 7
 local snowTable = {}
 local snowInterval = 0
 local mouseoffs = 0
@@ -1342,22 +1341,39 @@ local breathingAlpha = 0
 local breathingAlphaSwitch = false
 local mul = 0.05
 local footerh = ScreenScale(16)
+local __w = ScreenScale(8)
+local __gap = ScreenScale(3)
+local __h = ScreenScale(50)
 hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 	local cx, cy = input.GetCursorPos()
 	OSU.CursorPos = osu_vec2t(cx, cy)
 	OSU.TempFrameTime = FrameTime()
-
+	if(fpsInterval <= OSU.CurTime) then
+		fpsAvg = fpsAvg / fpsTotal
+		fpslowpeak = fpsAvg / 2
+		fpsTotal = 1
+		fpsInterval = OSU.CurTime + 1
+	else
+		fpsAvg = (fpsAvg + (1 / OSU.TempFrameTime))
+		fpsTotal = fpsTotal + 1
+	end
 	if(gui.IsGameUIVisible() && game.SinglePlayer()) then
 		surface.SetMaterial(OSU.WarningFooter)
 		surface.SetDrawColor(255, 255, 255, 100)
 		surface.DrawTexturedRect(0, 0, ScrW(), footerh)
 		draw.DrawText(OSU:LookupTranslate("#SPWarning3"), "OSUOverlayTitle", ScrW() / 2, 0, Color(255, 255, 255, 205), TEXT_ALIGN_CENTER)
 	end
-
 	local inGame = IsValid(OSU.MainGameFrame)
 	if(!inGame) then return end
-	local ms = math.Round(OSU.TempFrameTime * 1000, 1)
+	if(OSU.DisplayPP) then
+		draw.DrawText("Aim : "..math.Round(OSU.PP_AimVal, 2).." Spd : "..math.Round(OSU.PP_SpeedVal, 2).." PP : "..math.Round(OSU.PP_Points, 2).."\nMap Avg DST : "..math.Round(OSU.PP_DiffDstAvg, 2).."\nMap Avg NIV : "..math.Round(OSU.PP_DiffSpeedAvg, 2).."\nAvg Aim : "..math.Round(OSU.PP_AimChunk, 2).."\nAvg Speed : "..math.Round(OSU.PP_SpeedChunk, 2), "OSUBeatmapDetails", ScreenScale(10), ScrH() * 0.2, Color(255, 255, 255, 200), TEXT_ALIGN_LEFT)
+		draw.RoundedBox(0, (ScrW() * 0.025), ScrH() * 0.35, __w, __h, Color(55, 55, 55, 150))
+		draw.RoundedBox(0, (ScrW() * 0.025), ScrH() * 0.35, __w, __h * (OSU.PP_AimVal / 100), Color(255, 165, 48, 255))
+		draw.RoundedBox(0, (ScrW() * 0.025) + __w + __gap, ScrH() * 0.35, __w, __h, Color(55, 55, 55, 150))
+		draw.RoundedBox(0, (ScrW() * 0.025) + __w + __gap, ScrH() * 0.35, __w, __h * (OSU.PP_SpeedVal / 100), Color(54, 255, 228, 255))
+	end
 	local fps = math.floor(1 / OSU.TempFrameTime)
+	local ms = math.Round(OSU.TempFrameTime * 1000, 1)
 	local w, h = ScreenScale(30), ScreenScale(10)
 	local r, g, b = 152, 184, 30
 	if(ms > 16) then
@@ -1376,7 +1392,33 @@ hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 			CAlpha = math.Clamp(CAlpha - OSU:GetFixedValue(15), 0, 255)
 		end
 	end
-
+	if(fps < fpslowpeak / 3 && fps < 60) then
+		fpslowpeak = fpslowpeak / 2
+		if(#fpsSpikes < 6) then
+			table.insert(fpsSpikes, {
+				ScreenScale(3),
+				Color(r, g, b),
+				0,
+				OSU.CurTime + 3,
+				ScrH() - gap * 2.5,
+				ScrW() - (w + gap) + ScreenScale(3) * (#fpsSpikes + 1),
+				ScrW() - (w + gap),
+			})
+		end
+	end
+	for k,v in next, fpsSpikes do
+		if(v[4] < OSU.CurTime) then
+			v[3] = math.Clamp(v[3] - OSU:GetFixedValue(10), 0, 255)
+			if(v[3] <= 0) then
+				table.remove(fpsSpikes, k)
+			end
+		else
+			v[3] = math.Clamp(v[3] + OSU:GetFixedValue(10), 0, 255)
+		end
+		local targetX = v[7] - ((k) * ScreenScale(5))
+		v[6] = math.Clamp(v[6] - OSU:GetFixedValue((v[6] - targetX) * 0.1), 0, ScrW())
+		draw.RoundedBox(v[1], v[6], v[5], v[1], v[1], Color(v[2].r, v[2].g, v[2].b, v[3]))
+	end
 	draw.RoundedBox(8, ScrW() - (gap + w), ScrH() - (gap + h), w, h, Color(r, g, b, CAlpha))
 	draw.DrawText(ms.."ms", "OSUFPS", ScrW() - (gap + (w / 2)), ScrH() - (gap + h) + ScreenScale(0.5), Color(0, 0, 0, CAlpha), TEXT_ALIGN_CENTER)
 	draw.RoundedBox(8, ScrW() - (gap + w), ScrH() - ((gap * 2) + (h * 2)), w, h, Color(r, g, b, CAlpha))

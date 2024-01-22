@@ -422,6 +422,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 	OSU.BreakTime = 0
 	OSU.AppearTime = 0
 	OSU.ObjectIndex = 0
+	OSU.PerformancePoints = 0
 	OSU.SliderBackground = Material(OSU.CurrentSkin["hitcircle"], "smooth")
 	OSU.rHitCircleOverlay = Material(OSU.CurrentSkin["hitcircleoverlay"], "smooth")
 	OSU.HitCircleOverlay = Material(OSU.CurrentSkin["sliderb0"], "smooth")
@@ -447,7 +448,6 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		OSU.AR = OSU.AR * 1.1
 		OSU.BPM = details["BPM"] * 1.5
 	end
-
 	local __st = SysTime()
 	OSU.CurrentHitSound = "soft"
 	local apprTime = OSU:GetApprTime()
@@ -786,6 +786,8 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 			end
 		end
 	OSU.CircleRadius = ScreenScale(54.4 - 1.5 * OSU.CS)
+	OSU:ResetPerformance(OSU.CircleRadius, details["Stars"])
+	local maxScl = math.Distance(0, 0, ScrW(), ScrH()) / (OSU.CircleRadius * 4)
 	local mul = 1
 	if(OSU.HT) then
 		mul = 0.75
@@ -949,6 +951,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 		end
 	end
 	OSU.PlayFieldLayer.UpperLayer.Paint = function()
+			OSU:ProcessStrain()
 			if(OSU.FL) then
 				local x, y = input.GetCursorPos()
 				if(OSU.ReplayMode) then

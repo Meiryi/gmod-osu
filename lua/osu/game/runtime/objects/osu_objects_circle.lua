@@ -108,6 +108,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 					end
 					base:Remove()
 					OSU:ComboBreak()
+					OSU:CalcPerformance(4, vec_2t)
 				else
 					base:Remove()
 					OSU:CreateHitScore(vec_2t, 4)
@@ -169,6 +170,7 @@ function OSU:CreateCircle(vec_2t, sound, zp, noscore, __index, comboidx)
 				OSU.Score = math.Clamp(OSU.Score + 50, 0, 2147000000)
 				OSU:AddCombo(true)
 				OSU:InsertHitDetails(5)
+				OSU:CalcPerformance(OSU:GetHitType(hitoffs), vec_2t)
 			else
 				if(hitoffs <= OSU:GetMissTime()) then
 					OSU:CreateHitScore(vec_2t, OSU:GetHitType(hitoffs))

@@ -120,7 +120,46 @@ function OSU:ComboBreak()
 	OSU:InsertHitDetails(4)
 end
 
-function OSU:RunHitObjectsCheck(type)
+function OSU:CalculatePerformancePoints(type, vec_2t)
+	type = math.Clamp(type, 1, 4)
+	--[[
+	if(OSU.PP_LastHitVector == Vector(0, 0, 0)) then 
+		OSU.PP_LastHitVector = vec_2t
+		OSU.PP_LastHitTime = OSU.CurTime
+		return
+	end
+	local avgGap = OSU.CircleRadius * 4
+	local dst = math.Distance(vec_2t.x, vec_2t.y, OSU.PP_LastHitVector.x, OSU.PP_LastHitVector.y)
+	if(dst > OSU.CircleRadius * 1.5) then
+		dst = dst * 1.35
+	end
+	local blist = {
+		[1] = 1,
+		[2] = 0.66,
+		[3] = -0.98,
+		[4] = -0.92,
+	}
+	local vScl = OSU.PP_AvgNvS / math.max((OSU.CurTime - OSU.PP_LastHitTime), 0.01)
+	local bScl = blist[type]
+	local kScl = math.Clamp(1 - (OSU.PerformancePoints / OSU.PP_MaxiPP), 0, 1)
+	if(bScl < 0) then bScl = 1 end
+	if(vScl == math.huge) then return end
+	local basePoints = 5 * (dst / avgGap) * vScl * bScl
+	if(blist[type] < 0) then
+		OSU.PerformancePoints = math.Round(OSU.PerformancePoints * math.abs(blist[type]), 2)
+	else
+		OSU.PerformancePoints = math.Round(OSU.PerformancePoints + basePoints * kScl, 2)
+	end
+	OSU.PP_LastHitVector = vec_2t
+	OSU.PP_LastHitTime = OSU.CurTime
+	]]
+	
+end
+
+function OSU:RunHitObjectsCheck(type, slider, vec_2t)
+	if(!slider) then
+		OSU:CalcPerformance(type, vec_2t)
+	end
 	if(type != 4) then
 		local mul = (10 + math.floor((OSU.Combo + 1) / 40))
 		if(type == 1) then

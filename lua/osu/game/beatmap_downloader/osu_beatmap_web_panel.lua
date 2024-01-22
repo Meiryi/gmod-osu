@@ -550,6 +550,10 @@ function OSU:SetupBeatmapDownloadPanel()
 		if(interval > OSU.CurTime) then return end
 		OSU.WebDownloadPanel.ImportList.Scroll:Clear()
 		local f = file.Find("osu!/download/*.dat", "DATA")
+		local x = file.Find("osu!/download/*.osz", "DATA")
+		for k,v in next, x do
+			table.insert(f, v)
+		end
 		if(!fAdded) then
 			for k,v in next, f do
 				local str = string.Replace(v, ".dat", "")
@@ -574,7 +578,7 @@ function OSU:SetupBeatmapDownloadPanel()
 					draw.DrawText(size, "OSUDetails", tgap, bsx01, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
 				end
 		end
-		interval = OSU.CurTime + 1
+		interval = OSU.CurTime + 3
 	end
 
 	local pagestr = OSU:LookupTranslate("#DLCurPage").." : "
@@ -592,8 +596,6 @@ function OSU:SetupBeatmapDownloadPanel()
 		if(table.Count(OSU.UnpackingQuery) <= 0) then return end
 		OSU.Unpacking = true
 	end, Color(20, 20, 20, 255), OSU.OptBlue, "OSUBeatmapDetails", Color(20, 20, 20, 255))
-
-
 
 	OSU:RequestBeatmapList()
 	OSU:CreateBackButton(OSU.WebDownloadPanel, OSU_MENU_STATE_MAIN)

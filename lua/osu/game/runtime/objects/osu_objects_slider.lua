@@ -42,7 +42,7 @@ render_SetStencilZFailOperation = render.SetStencilZFailOperation
 render_SetStencilEnable = render.SetStencilEnable
 surface_DrawRect = surface.DrawRect
 
-osu_circle_seg = 16
+osu_circle_seg = 15
 function OSU:BuildInnerCircle(vec_2t, radius)
 	local c = {}
 	table_insert(c, {x = vec_2t.x, y = vec_2t.y})
@@ -183,7 +183,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			render_SetStencilFailOperation(STENCIL_KEEP)
 			render_SetStencilZFailOperation(STENCIL_KEEP)
 
-			surface_SetDrawColor(math_Clamp((_clr.r) + beat, 0, 255), math_Clamp((_clr.g ) + beat, 0, 255), math_Clamp((_clr.b) + beat, 0, 255), area.iAlpha * 0.1)
+			surface_SetDrawColor(_clr.r, _clr.g, _clr.b, (area.iAlpha * 0.05) + (beat * 0.5))
 			surface_DrawRect(0, 0, ScrW(), ScrH())
 			
 			render_SetStencilCompareFunction(STENCIL_GREATER)
@@ -348,6 +348,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 					edgesd[1] = false
 					edgesd[0] = true
 				end
+				OSU:CalcPerformance(1, osu_vec2t(realfollowpoint[__index].x, realfollowpoint[__index].y), true)
 				area.DoCheckAcc(osu_vec2t(realfollowpoint[__index].x, realfollowpoint[__index].y), OSU.CurTime)
 				area.Finished = true
 			end
@@ -393,12 +394,12 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 			OSU:PlayHitSound(OSU.CurrentSkin[OSU.CurrentHitSound.."-hit"..OSU:HitsoundChooser(edgesd)])
 			OSU:CreateClickEffect(radius, vec_2t, zp, _clr)
 			if(missed && type == 1) then
-				OSU:CreateHitScore(vec_2t, 2)
+				OSU:CreateHitScore(vec_2t, 2, true)
 			else
-				OSU:CreateHitScore(vec_2t, type)
+				OSU:CreateHitScore(vec_2t, type, true)
 			end
 		else
-			OSU:CreateHitScore(vec_2t, 4)
+			OSU:CreateHitScore(vec_2t, 4, true)
 		end
 	end
 	OSU:InsertObjects(area)
