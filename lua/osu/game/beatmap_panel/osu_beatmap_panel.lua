@@ -830,6 +830,47 @@ function OSU:SetupBeatmapPanel()
 		end
 		]]
 	end
+	local sx, sy = OSU:GetTextSize("OSUName", "Dummy Text")
+	local _sx, _sy = OSU:GetTextSize("OSUDetails", "Dummy Text")
+	local accstr = OSU:LookupTranslate("#Acc")
+	local rksstr = OSU:LookupTranslate("#RKS")
+	local tmpstr = OSU:LookupTranslate("#TotalMap")
+	local rscl = ScreenScale(60)
+	local nick = LocalPlayer():Nick()
+	local gap = ScreenScale(1)
+	local lRotate = 0
+	local asx = ((h * 0.9) - o)
+	local lsx = asx * 0.65
+	local offs = h - asx
+	local baseX = asx + offs + gap + lsx
+	local baseXt = asx + offs + gap
+	local avatarFrame = OSU.PlayMenuLayer:Add("DFrame")
+		avatarFrame:SetPos(ScrW() * 0.6, ScrH() - h + o)
+		avatarFrame:SetSize(ScrW() - avatarFrame:GetX(), h)
+		avatarFrame:SetDraggable(false)
+		avatarFrame:ShowCloseButton(false)
+		avatarFrame:SetTitle("")
+		avatarFrame.Paint = function()
+			if(OSU.UserScoreFetching) then
+				lRotate = math.Clamp(lRotate + OSU:GetFixedValue(2), 0, 360)
+				if(lRotate >= 360) then
+					lRotate = 0
+				end
+				surface.SetMaterial(OSU.LoadingTx)
+				surface.SetDrawColor(255, 255, 255, 255)
+				surface.DrawTexturedRectRotated(baseX, (h / 2), lsx, lsx, lRotate)
+			else
+				draw.DrawText(nick, "OSUName", baseXt, gap * 2, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				draw.DrawText(accstr.." : "..OSU.UserAccuracy, "OSUDetails", baseXt, gap * 2 + sy, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				draw.DrawText(rksstr.." : "..OSU.UserRankingScore, "OSUDetails", baseXt, gap * 2 + sy + _sy, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				draw.DrawText(tmpstr.." : "..OSU.UserMapsPlayed, "OSUDetails", baseXt, gap * 2 + sy + _sy * 2, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT)
+				draw.DrawText("#"..OSU.UserRanking, "OSUBeatmapTitle", baseX + rscl, h - sy * 1.15, Color(255, 255, 255, 125), TEXT_ALIGN_LEFT)
+			end
+		end
+	local avatar = avatarFrame:Add("AvatarImage")
+		avatar:SetPos(offs / 2, offs / 2)
+		avatar:SetSize(asx, asx)
+		avatar:SetPlayer(LocalPlayer(), 128)
 	function OSU.BeatmapScrollPanel:OnMouseWheeled(scrollDelta)
 		if(OSU.MaxScroll == 0) then return end
 		OSU.CurrentScroll = math.Clamp(OSU.CurrentScroll - (scrollDelta * (ScreenScale(50))), 0, OSU.MaxScroll)

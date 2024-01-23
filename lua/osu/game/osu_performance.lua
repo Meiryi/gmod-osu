@@ -41,7 +41,7 @@ function OSU:ProcessStrain()
 			OSU.PP_SpeedChunk = OSU.PP_SpeedAvgSum / OSU.PP_SpeedSampledCount
 			OSU.PP_SpeedSampledCount = OSU.PP_SpeedSampledCount + 1
 		end
-		local mul = (100 / OSU.Accuracy)
+		local mul = (OSU.Accuracy / 100)
 		local basePP = (OSU.PP_BaseScore * (OSU.PP_AimChunk + OSU.PP_SpeedChunk)) * mul
 		local targetPP = (OSU.PP_BaseScore * (OSU.PP_AimVal + OSU.PP_SpeedVal)) * mul
 		if(targetPP > OSU.PP_Points) then
@@ -104,6 +104,9 @@ function OSU:CalcPerformance(_t, vec_2t, slider)
 		punishment = (OSU.PP_BaseSpeed * 2.5) / tim
 	end
 	local ap, sp = (d * bonus * punishment) * mul, (t * mul)
+	if(_t == 4) then
+		ap, sp = math.max(ap, 0), math.max(sp, 0)
+	end
 	OSU.PP_AimVal = math.max(OSU.PP_AimVal + ap, 0)
 	OSU.PP_SpeedVal = math.max(OSU.PP_SpeedVal + sp, 0)
 	if(_t == 4) then

@@ -183,6 +183,24 @@ function draw.Circle( x, y, radius, seg )
 	surface.DrawPoly( cir )
 end
 
+function OSU:RoundedOutlineRect(r, x, y, w, h, color, px)
+	render_ClearStencil()
+	render_SetStencilEnable(true)
+	render_SetStencilTestMask(0xFF)
+	render_SetStencilWriteMask(0xFF)
+	render_SetStencilReferenceValue(0x01)
+
+	render_SetStencilCompareFunction(STENCIL_NEVER)
+	render_SetStencilFailOperation(STENCIL_REPLACE)
+	render_SetStencilZFailOperation(STENCIL_REPLACE)
+	draw.RoundedBox(r, x + px,  y + px, w - px * 2, h - px * 2, color)
+	render_SetStencilCompareFunction(STENCIL_GREATER)
+	render_SetStencilFailOperation(STENCIL_KEEP)
+	render_SetStencilZFailOperation(STENCIL_KEEP)
+	draw.RoundedBox(r, x,  y, w, h, color)
+
+	render_SetStencilEnable(false)
+end
 hook.Add("HUDPaint", "PolygonCircleTest", function()
 
 end)

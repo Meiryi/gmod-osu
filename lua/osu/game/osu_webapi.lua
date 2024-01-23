@@ -538,6 +538,7 @@ function OSU:SubmitScore(tmp)
 		name = OSU:RemoveillegalChar(OSU.UserName)
 	end
 	OSU.ReplayData.ResultDetails = {
+		pp = tostring(OSU.PP_Points),
 		score = tostring(tmp["score"]),
 		combo = tostring(tmp["combo"]),
 		accuracy = tostring(tmp["accuracy"]),
@@ -573,7 +574,7 @@ function OSU:SubmitScore(tmp)
 		end,
 		method = "POST",
 		body =  util.TableToJSON(OSU.ReplayData),
-		url = "https://osu.gmaniaserv.xyz/apiv2/LD/osuScoreHandlerv2.php"
+		url = "https://osu.gmaniaserv.xyz/apiv2/LD/osuScoreHandlerv3.php"
 	})
 	--[[
 	http.Post("https://osu.gmaniaserv.xyz/apiv2/osuScoreHandlerv2.php", {
