@@ -66,7 +66,9 @@ function OSU:GetSampleSet(sample)
 end
 
 function OSU:UpdateTimeOffs(t)
-	--print(OSU.CurTime - t)
+	local diff = OSU.CurTime - t
+	print("[osu] HTML Audio Player : Updated time diff -> "..diff)
+	OSU.PlayFieldLayer.SoundChannel:Call("SetAudioTime("..diff..")")
 end
 
 function OSU:RunTime()
@@ -83,7 +85,7 @@ function OSU:RunTime()
 	if(OSU.BeatmapTime - OSU.AppearTime > OSU.CurTime) then return end
 	if(!OSU.MusicStarted && OSU.BeatmapTime < OSU.CurTime) then
 		if(OSU.HT || OSU.DT) then
-			OSU.PlayFieldLayer.SoundChannel:Call("PlayAudio("..(OSU.MusicVolume * 0.2)..", "..(OSU.CurTime)..")")
+			OSU.PlayFieldLayer.SoundChannel:Call("PlayAudio("..(OSU.MusicVolume * 0.5)..", "..(OSU.CurTime)..")")
 		else
 			OSU.SoundChannel:Play()
 		end
@@ -245,6 +247,8 @@ function OSU:RunTime()
 				OSU.RL = false
 				OSU.AP = false
 				OSU.SO = false
+				OSU.DT = false
+				OSU.HT = false
 				OSU.ScoreMul = 1
 			end
 		end
@@ -303,10 +307,6 @@ function OSU:IsKeyDown()
 	return (input.IsMouseDown(MOUSE_LEFT) || input.IsMouseDown(MOUSE_RIGHT) || input.IsKeyDown(OSU.Key1Code) || input.IsKeyDown(OSU.Key2Code)) -- holy shit lmao
 end
 
-local LeftDown = false
-local RightDown = false
-local Key1Down = false
-local Key2Down = false
 local GlobalKeyDown = false
 hook.Add("Think", "OSU_RunTime", function()
 	if(IsValid(OSU.PlayFieldLayer) && OSU.CurTime > OSU.BeatmapStartTime && !OSU.ReplayMode && !OSU.RL) then
@@ -341,48 +341,48 @@ hook.Add("Think", "OSU_RunTime", function()
 	if(!OSU.DisableMouse) then
 		if(input.IsMouseDown(MOUSE_LEFT)) then
 			OSU.KeyDown = true
-			if(!LeftDown) then
+			if(!OSU.LeftDown) then
 				if(vPanel.Click != nil) then
 					vPanel.Click()
 				end
-				LeftDown = true
+				OSU.LeftDown = true
 			end
 		else
-			LeftDown = false
+			OSU.LeftDown = false
 		end
 		if(input.IsMouseDown(MOUSE_RIGHT)) then
 			OSU.KeyDown = true
-			if(!RightDown) then
+			if(!OSU.RightDown) then
 				if(vPanel.Click != nil) then
 					vPanel.Click()
 				end
-				RightDown = true
+				OSU.RightDown = true
 			end
 		else
-			RightDown = false
+			OSU.RightDown = false
 		end
 	end
 	if(input.IsKeyDown(OSU.Key1Code)) then
 		OSU.KeyDown = true
-		if(!Key1Down) then
+		if(!OSU.Key1Down) then
 			if(vPanel.Click != nil) then
 				vPanel.Click()
 			end
-			Key1Down = true
+			OSU.Key1Down = true
 		end
 	else
-		Key1Down = false
+		OSU.Key1Down = false
 	end
 	if(input.IsKeyDown(OSU.Key2Code)) then
 		OSU.KeyDown = true
-		if(!Key2Down) then
+		if(!OSU.Key2Down) then
 			if(vPanel.Click != nil) then
 				vPanel.Click()
 			end
-			Key2Down = true
+			OSU.Key2Down = true
 		end
 	else
-		Key2Down = false
+		OSU.Key2Down = false
 	end
 	if(!input.IsMouseDown(MOUSE_LEFT) && !input.IsMouseDown(MOUSE_RIGHT) && !input.IsKeyDown(OSU.Key1Code) && !input.IsKeyDown(OSU.Key2Code)) then
 		OSU.KeyDown = false

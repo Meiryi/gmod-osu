@@ -27,6 +27,7 @@ OSU.Translators = {
 	["ja"] = "Daypark",
 	["ru"] = "Berry",
 	["tr"] = "Matt",
+	["zh-CN"] = "Kliment",
 }
 
 OSU.ConfigTable = {
@@ -1087,6 +1088,7 @@ function OSU:OpenOptionsMenu()
 	local langTable = {
 		["English"] = "en",
 		["繁體中文"] = "zh-TW",
+		["简体中文"] = "zh-CN",
 		["日本語"] = "ja",
 		["Русский"] = "ru",
 		["Türkçe"] = "tr",

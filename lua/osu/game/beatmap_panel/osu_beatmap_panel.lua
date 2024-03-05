@@ -666,7 +666,7 @@ function OSU:RefreshBeatmapList(keyWord)
 				function btn_n:OnCursorEntered()
 					OSU:PlaySoundEffect(OSU.CurrentSkin["menuclick"])
 				end
-				--gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
+				gui.OpenURL("https://mega.nz/file/daIwCTiA#Axoi9UOZddOZyMN5u98GkBkr1ocyAuYOCWoNhOj38-o")
 				btn_n.DoClick = function()
 					if(base.tutPage >= 4) then
 						base:Remove()
@@ -920,6 +920,37 @@ function OSU:SetupBeatmapPanel()
 		OSU.BeatmapScrollPanel:SetX(OSU.BeatmapScrollPanel:GetX() + OSU.PlayMenuObjectOffset)
 	end
 	local vBar = OSU.BeatmapScrollPanel:GetVBar()
+	function vBar:OnMousePressed()
+		local x, y = vBar:CursorPos()
+		local scl = y / vBar:GetTall()
+		local ScrollTarget = vBar.CanvasSize * scl
+		OSU.CurrentScroll = OSU.CurrentScroll + (ScrollTarget - vBar:GetScroll())
+	end
+	local mouseDown = false
+	local grip = vBar.btnGrip
+	function vBar.btnGrip:OnMousePressed()
+		return
+	end
+	function vBar.btnGrip:Think()
+		if(grip:IsHovered()) then
+			if(input.IsMouseDown(107)) then
+				mouseDown = true
+			else
+				mouseDown = false
+			end
+		else
+			if(!input.IsMouseDown(107)) then
+				mouseDown = false
+			end
+		end
+		if(mouseDown) then
+			local x, y = vBar:CursorPos()
+			local scl = y / vBar:GetTall()
+			local ScrollTarget = vBar.CanvasSize * scl
+			OSU.CurrentScroll = ScrollTarget
+			vBar:SetScroll(OSU.CurrentScroll)
+		end
+	end
 	vBar:SetHideButtons(true)
 	vBar:SetWide(ScreenScale(3))
 	function vBar:Paint(w, h)

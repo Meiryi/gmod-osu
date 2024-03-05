@@ -1311,6 +1311,31 @@ function OSU:GetFixedValue(input)
 	return input * (cur / target)
 end
 
+function OSU:DrawKeyoverlay(keyCode, mouse, x, y, w, h)
+	local t = 0
+	if(keyCode == OSU.Key1Code) then
+		t = OSU.K1Count
+	elseif(keyCode == OSU.Key2Code) then
+		t = OSU.K2Count
+	elseif(keyCode == 107) then
+		t = OSU.LKeyCount
+	elseif(keyCode == 108) then
+		t = OSU.RKeyCount
+	end
+	surface.SetDrawColor(255, 255, 255, 255)
+	if(mouse) then
+		if(input.IsMouseDown(keyCode)) then
+			surface.SetDrawColor(236, 117, 140, 255)
+		end
+	else
+		if(input.IsKeyDown(keyCode)) then
+			surface.SetDrawColor(236, 117, 140, 255)
+		end
+	end
+	surface.DrawTexturedRect(x, y, w, h)
+	draw.DrawText(t, "OSUBeatmapDetails_TOP", x + w / 2, y + h / 2 - ScreenScale(4), Color(0, 0, 0, 255), TEXT_ALIGN_CENTER)
+end
+
 surface.CreateFont("OSUOverlayWarning", {
 	font = "Aller",
 	size = ScreenScale(12),
@@ -1319,6 +1344,8 @@ surface.CreateFont("OSUOverlayWarning", {
 local inactive = false
 local rotate_deg = 0
 local gap = ScreenScale(3)
+local gap1x = ScreenScale(1)
+local koverlaysx = ScreenScale(16)
 local CAlpha = 0
 local cursorTrails = {}
 local cursorLayer = {}
@@ -1344,6 +1371,9 @@ local footerh = ScreenScale(16)
 local __w = ScreenScale(8)
 local __gap = ScreenScale(3)
 local __h = ScreenScale(50)
+local moving = false
+local acced = false
+local lastAccedVec = {x= 0, y = 0}
 hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 	local cx, cy = input.GetCursorPos()
 	OSU.CursorPos = osu_vec2t(cx, cy)
@@ -1372,6 +1402,21 @@ hook.Add("DrawOverlay", "OSU_DrawCursor", function()
 		draw.RoundedBox(0, (ScrW() * 0.025) + __w + __gap, ScrH() * 0.35, __w, __h, Color(55, 55, 55, 150))
 		draw.RoundedBox(0, (ScrW() * 0.025) + __w + __gap, ScrH() * 0.35, __w, __h * (OSU.PP_SpeedVal / 100), Color(54, 255, 228, 255))
 	end
+	--[[
+	surface.SetMaterial(OSU.KeyOverlayBG)
+	surface.SetDrawColor(255, 255, 255, 255)
+	local w, h = (ScreenScale(64) + gap1x * 4) * 1.25, ScreenScale(18) * 1.25
+	local basex, basey = ScrW() - h / 2, (ScrH() / 2)
+	surface.DrawTexturedRectRotated(basex, basey, w, h, -90)
+	local kw, kh = ScreenScale(14) * 1.2, ScreenScale(15) * 1.2
+	local offs = ScreenScale(1) + kw
+	surface.SetMaterial(OSU.KeyOverlay)
+	basex = basex - h / 2
+	OSU:DrawKeyoverlay(OSU.Key1Code, false, ScrW() - offs, basey - (kh * 2) - gap1x * 2, kw, kh)
+	OSU:DrawKeyoverlay(OSU.Key2Code, false, ScrW() - offs, basey - (kh) - gap1x, kw, kh)
+	OSU:DrawKeyoverlay(107, true, ScrW() - offs, basey + gap1x, kw, kh)
+	OSU:DrawKeyoverlay(108, true, ScrW() - offs, basey + kh + gap1x * 2, kw, kh)
+	]]
 	local fps = math.floor(1 / OSU.TempFrameTime)
 	local ms = math.Round(OSU.TempFrameTime * 1000, 1)
 	local w, h = ScreenScale(30), ScreenScale(10)

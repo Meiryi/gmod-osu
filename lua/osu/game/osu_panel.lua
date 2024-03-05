@@ -102,7 +102,7 @@ function OSU:Startup(pskip)
 	OSU:SetupSkins()
 	local introTime = 2.5
 	local maximumfade = 70
-	local fademul = 0.6
+	local fademul = 0.35
 	local oldtime = 0
 	OSU.AlphaIncrease = 255 / (60 * (1 / (OSU.BPM / 60)))
 	OSU.BeatDivisor = 4
@@ -125,7 +125,7 @@ function OSU:Startup(pskip)
 		end
 		OSU:ProcessNotify()
 		OSU:RunTime()
-		OSU.SliderBeat = math.Clamp(OSU.SliderBeat - OSU:GetFixedValue(1.5), 0, 255)
+		OSU.SliderBeat = math.Clamp(OSU.SliderBeat - OSU:GetFixedValue(1), 0, 255)
 		for k,v in next, OSU.MenuTimingPoints do
 			if(v[3]) then continue end
 			if(v[1] < OSU.SoundChannel:GetTime()) then
@@ -168,7 +168,7 @@ function OSU:Startup(pskip)
 			end
 		end
 		if(OSU.MainGameFrame.iAlpha_L) then
-			OSU.MainGameFrame.iAlpha__L = math.Clamp(OSU.MainGameFrame.iAlpha__L + OSU:GetFixedValue(OSU.AlphaIncrease * fademul), 0, maximumfade)
+			OSU.MainGameFrame.iAlpha__L = math.Clamp(OSU.MainGameFrame.iAlpha__L + 255, 0, maximumfade)
 			if(OSU.MainGameFrame.iAlpha__L >= maximumfade) then
 				OSU.MainGameFrame.iAlpha_L = false
 			end
@@ -176,7 +176,7 @@ function OSU:Startup(pskip)
 			OSU.MainGameFrame.iAlpha__L = math.Clamp(OSU.MainGameFrame.iAlpha__L - OSU:GetFixedValue(OSU.AlphaIncrease * fademul), 0, maximumfade)
 		end
 		if(OSU.MainGameFrame.iAlpha_R) then
-			OSU.MainGameFrame.iAlpha__R = math.Clamp(OSU.MainGameFrame.iAlpha__R + OSU:GetFixedValue(OSU.AlphaIncrease * fademul), 0, maximumfade)
+			OSU.MainGameFrame.iAlpha__R = math.Clamp(OSU.MainGameFrame.iAlpha__R + 255, 0, maximumfade)
 			if(OSU.MainGameFrame.iAlpha__R >= maximumfade) then
 				OSU.MainGameFrame.iAlpha_R = false
 			end
@@ -261,7 +261,7 @@ function OSU:Startup(pskip)
 			gui.OpenURL("https://discord.gg/tN8K3TMFaR")
 		end
 	]]
-	local width = ScrW() * 0.08
+	local width = ScrW() * 0.1
 	local width2x = width * 2
 	local svonl = OSU:LookupTranslate("#ServerOnline")
 	local svoff = OSU:LookupTranslate("#ServerOffline")

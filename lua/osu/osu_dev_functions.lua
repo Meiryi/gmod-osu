@@ -173,7 +173,7 @@ function draw.Circle( x, y, radius, seg )
 
 	table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
 	for i = 0, seg do
-		local a = math.rad( ( i / seg ) * -360 )
+		local a = math.rad( ( i / seg ) * (math.floor( math.sin( CurTime() * 1 ) * 360 )))
 		table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
 	end
 
@@ -186,7 +186,7 @@ end
 function OSU:RoundedOutlineRect(r, x, y, w, h, color, px)
 	render_ClearStencil()
 	render_SetStencilEnable(true)
-	render_SetStencilTestMask(0xFF)
+	render_SetStencilTestMask(0xFF) --255
 	render_SetStencilWriteMask(0xFF)
 	render_SetStencilReferenceValue(0x01)
 
@@ -201,7 +201,10 @@ function OSU:RoundedOutlineRect(r, x, y, w, h, color, px)
 
 	render_SetStencilEnable(false)
 end
+
 hook.Add("HUDPaint", "PolygonCircleTest", function()
 
 end)
 ]]
+
+

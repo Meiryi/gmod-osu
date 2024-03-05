@@ -104,6 +104,14 @@ OSU.SP = false
 OSU.SO = false
 OSU.AT = false
 
+OSU.LeftDown = false
+OSU.RightDown = false
+OSU.Key1Down = false
+OSU.Key2Down = false
+OSU.LKeyCount = 0
+OSU.RKeyCount = 0
+OSU.K1Count = 0
+OSU.K2Count = 0
 OSU.BeatLength = 180
 OSU.SliderMultiplier = 1
 OSU.SliderVelocity = 1

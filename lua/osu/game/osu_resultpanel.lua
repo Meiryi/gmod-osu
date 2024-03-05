@@ -191,6 +191,7 @@ function OSU:SetupResultPanel(name, fBack, func, date)
 							OSU.AP = OSU.ModesTMP.AP
 							OSU.SO = OSU.ModesTMP.SO
 							OSU.DT = OSU.ModesTMP.DT
+							OSU.HT = OSU.ModesTMP.HT
 							OSU.CurrentReplayData = data
 							OSU:StartBeatmap(OSU.BeatmapCTX, OSU.BeatmapDetails, OSU.CurrentBeatmapID, true)
 							OSU.ResultLayer:Remove()

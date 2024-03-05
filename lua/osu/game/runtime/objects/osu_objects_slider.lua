@@ -125,7 +125,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 		area.MaxDrawIndex = #followpoint
 	end
 	local apprTime = OSU:GetApprTime()
-	local snakingRate = #followpoint / (22 * apprTime)
+	local snakingRate = #followpoint / (25 * apprTime)
 	area.Paint = function()
 	if(OSU.SnakingSliders) then
 		area.MaxDrawIndex = math_Clamp(area.MaxDrawIndex + OSU:GetFixedValue(snakingRate), 1, #followpoint)
@@ -164,7 +164,7 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 	end
 	local incrate = #realfollowpoint / (60 * completeTime)
 		--surface_SetDrawColor(math_Clamp((_clr.r) + beat, 0, 255), math_Clamp((_clr.g ) + beat, 0, 255), math_Clamp((_clr.b) + beat, 0, 255), area.iAlpha)
-		surface_SetDrawColor(255, 255, 255, area.iAlpha * 0.8)
+		surface_SetDrawColor(255, 255, 255, area.iAlpha)
 
 		render_ClearStencil()
 		render_SetStencilEnable(true)
@@ -200,7 +200,6 @@ function OSU:CreateSlider(vec_2t, followpoint, realfollowpoint, connectpoints, l
 				surface_DrawTexturedRect(v.x - offs, v.y - offs, radius, radius)
 			end
 			render_SetStencilEnable(false)
-
 		if(OSU.DevDisplaySliderConnectPoints) then
 			for k,v in next, connectpoints do
 				if(k == #connectpoints) then continue end

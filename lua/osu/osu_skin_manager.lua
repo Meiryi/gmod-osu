@@ -13,6 +13,8 @@
 OSU.ImageExtensions = {".png", ".jpg", "jpeg"}
 OSU.AudioExtensions = {".wav", ".ogg", ".mp3"}
 OSU.CurrentLoadedSkin = "?"
+OSU.KeyOverlayBG = Material("osu/inputoverlay-background.png", "smooth")
+OSU.KeyOverlay = Material("osu/inputoverlay-key.png", "smooth")
 
 function OSU:IsWhitelistedImage(fn)
 	local str = string.Replace(fn, "@2x", "")
@@ -117,6 +119,10 @@ function OSU:SetupSkins()
 	OSU.CursorTexture = Material(OSU.CurrentSkin["cursor"])
 	OSU.CursorMiddleTexture = Material(OSU.CurrentSkin["cursormiddle"])
 	OSU.CurTrailMat = Material(OSU.CurrentSkin["cursortrail"])
+	--[[
+		OSU.KeyOverlayBG = Material("osu/inputoverlay-background.png")
+		OSU.KeyOverlay = Material("osu/inputoverlay-key.png")
+	]]
 	for i = 0, 9, 1 do
 		OSU.ScoreMaterialTable[tostring(i)] = Material(OSU.CurrentSkin["score-"..i])
 	end

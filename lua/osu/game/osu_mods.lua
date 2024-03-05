@@ -94,10 +94,13 @@ function OSU:SetupModsPanel()
 	OSU:CreateModsButton(parent, texture, decX + cX1, decY, w, h, "NF", {"SD"}, nil)
 	cX1 = cX1 + nextX
 	local texture = Material(OSU.CurrentSkin["selection-mod-halftime"], "noclamp smooth")
+	OSU:CreateModsButton(parent, texture, decX + cX1, decY, w, h, "HT", {"DT"}, nil)
+	--[[
 	OSU:CreateModsButton(parent, texture, decX + cX1, decY, w, h, "HT", {"DT"}, function()
 		OSU:PlaySoundEffect(OSU.CurrentSkin["check-off"])
 		OSU:CenteredMessage("This mod is still WIP!")
 	end)
+	]]
 
 	local texture = Material(OSU.CurrentSkin["selection-mod-hardrock"], "noclamp smooth")
 	OSU:CreateModsButton(parent, texture, diffX + cX2, diffY, w, h, "HR", {"EZ"}, nil)

@@ -231,17 +231,20 @@ function OSU:InitHTMLAudio(audiopath, html)
 	end
 	html.OnDocumentReady = function(url)
 		for _, v in next, chunk do
+			print("[osu] Loading file chunks to HTML Audio Player ".._.." / "..#chunk)
 		   	html:Call([[
 				b64.push("]]..v..[[");
 			]])
 		end
+			local spd = 1.5
+			if(OSU.HT) then spd = 0.75 end
 			html:Call([[
 				let _audio = document.getElementById("audioplayer");
 				for (var i = 0; i < b64.length; i++) {
 				  output = output + b64[i];
 				}
 				_audio.src = "data:audio/wav;base64,"+ output;
-				_audio.playbackRate = 1.5;
+				_audio.playbackRate = ]]..spd..[[;
 				_audio.volume = 0.2;
 			]])
 		end
@@ -321,7 +324,7 @@ function OSU:StartBeatmap(beatmap, details, id, replay)
 							}
 							function SetAudioTime(t) {
 								let _audio = document.getElementById("audioplayer");
-								_audio.currentTime = t;
+								_audio.currentTime = _audio.currentTime - t;
 							}
 						</script>
 					</body> 

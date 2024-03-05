@@ -141,7 +141,7 @@ function OSU:GetBeatmapDetails(ctx)
 		for i = tps_start, tps_end, 1 do
 			local line = ctx[i]
 			local str = string.Explode(",", line)
-			if(str[2] == nil) then continue end
+			if(str[1] || str[2] == nil) then continue end
 			if(tonumber(str[2]) > 0) then
 				table.insert(details["BPMs"], 1 / tonumber(str[2]) * 1000 * 60)
 			end
