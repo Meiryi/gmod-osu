@@ -10,3 +10,6 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=3147754980
 Simply drop it into your addons folder and that's it
 
 Note: I don't suggest messing with score system, your score might won't be accepted by server if you modified any part of score system
+
+# For developers
+This is actually poorly written, I'd suggest you take the necessary part and start from scratch
